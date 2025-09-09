@@ -9,3 +9,52 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+
+:root {
+  --primary: #00205C;
+  --secondary: #5E7B96;
+  --accent: #FF6B6B;
+}
+
+
+@layer base {
+  .bg-primary {
+    background-color: var(--primary);
+  }
+
+  .bg-secondary {
+    background-color: var(--secondary);
+  }
+
+  .bg-accent {
+    background-color: var(--accent);
+  }
+
+  .text-primary {
+    color: var(--primary);
+  }
+
+  .text-secondary {
+    color: var(--secondary);
+  }
+
+  .text-accent {
+    color: var(--accent);
+  }
+}
+
+
+@layer components {
+  .banner {
+    @apply bg-primary m-0 h-auto flex items-center justify-center;
+  }
+
+  .titleHome{
+    @apply text-2xl sm:text-3xl md:text-4xl font-bold text-center text-secondary uppercase;
+  }
+}
+
+
+
+
