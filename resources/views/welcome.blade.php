@@ -12,9 +12,18 @@
 </head>
 
 <body>
-<div>
-    <h1>Hola</h1>
-</div>
+    <header>
+        <div class="bg-[#00205C] m-0 h-auto flex items-center justify-center">
+            <img src="{{ asset('img/escuworblan.png') }}" alt="Logo" class="h-auto w-64">
+        </div>
+    </header>
+
+    <main>
+        <div class="pt-10">
+            <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-center text-[#5E7B96] uppercase">Registra tu asistencia</h1>
+        </div>
+    </main>
+
 </body>
 
 </html>
