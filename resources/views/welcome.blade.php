@@ -6,14 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checador Cumbres</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <!-- <link rel="shortcut icon" type="image/svg" href="{{ asset('/img/sello-cumbres-en-blanco-01.png') }}">
-    <link rel="shortcut icon" sizes="192x192" href="{{ asset('/img/sello-cumbres-en-blanco-01.png') }}"> -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" type="image/svg" href="{{ asset('/img/sello-cumbres-en-blanco-01.png') }}">
+    <link rel="shortcut icon" sizes="192x192" href="{{ asset('/img/sello-cumbres-en-blanco-01.png') }}">
+    <!-- <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet"> -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
 
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 
-<body class="min-h-screen flex flex-col">
+<body style="font-family: 'Roboto', sans-serif; font-style: italic;" class="min-h-screen flex flex-col">
 
     <header>
         <div class="banner">
@@ -52,9 +53,9 @@
             <div class="pt-6 w-full flex justify-center">
                 <div>
                     <h1 class="text-numEmpl">
-                        Si no cuenta con QR ingrese su numero de empleado</h1>
+                        Si no cuenta con código QR ingrese su numero de empleado</h1>
                     <div class="flex gap-3 pt-4">
-                        <input type="number" class="imput-numEmp"  placeholder="Escribe tu numero de empleado"/>
+                        <input type="number" class="imput-numEmp" placeholder="Escribe tu numero de empleado" />
                         <button class="btn-numEmp">
                             Ingresar
                         </button>
