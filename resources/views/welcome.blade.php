@@ -6,107 +6,67 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checador Cumbres</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link rel="shortcut icon" type="image/svg" href="{{ asset('/img/sello-cumbres-en-blanco-01.png') }}">
-    <link rel="shortcut icon" sizes="192x192" href="{{ asset('/img/sello-cumbres-en-blanco-01.png') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- <link rel="shortcut icon" type="image/svg" href="{{ asset('/img/sello-cumbres-en-blanco-01.png') }}">
+    <link rel="shortcut icon" sizes="192x192" href="{{ asset('/img/sello-cumbres-en-blanco-01.png') }}"> -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 
-<body>
+<body class="min-h-screen flex flex-col">
+
     <header>
         <div class="banner">
-            <img src="{{ asset('img/escuworblan.png') }}" alt="Logo" class="h-auto w-64">
+            <img src="{{ asset('img/escuworblan.png') }}" alt="Logo" class="h-auto w-45 2xl:w-80">
         </div>
     </header>
 
-    <main>
-        <div class="py-10">
+    <main class="flex-grow">
+        <div class="pb-8">
+            <div class="banner-time">
+                <div id="datetime" class="text-date"></div>
+                <div id="timeonly" class="text-time"></div>
+            </div>
             <h1 class="titleHome">Registra tu asistencia</h1>
         </div>
+
+        <section class="bg-white">
+            <div class="content-scanResult">
+                <!-- Div lector QR -->
+                <div class="content-QR">
+                    <div id="reader" class="w-full h-auto"></div>
+                    <p id="result" class="text-center mt-4 font-bold text-lg text-gray-700">
+                        Esperando escaneo...
+                    </p>
+                </div>
+                <!-- Div 2 -->
+                <div class="content-Result">
+                    <div class="flex justify-center mb-4">
+                        <img src="{{ asset('img/escudo-gris.png') }}" alt="Logo" class="w-44 2xl:w-60 h-auto">
+                    </div>
+                    <h2 class="text-result">
+                        Bienvenido: <span>Lalo</span>
+                    </h2>
+                </div>
+            </div>
+            <div class="pt-6 w-full flex justify-center">
+                <div>
+                    <h1 class="text-numEmpl">
+                        Si no cuenta con QR ingrese su numero de empleado</h1>
+                    <div class="flex gap-3 pt-4">
+                        <input type="number" class="imput-numEmp"  placeholder="Escribe tu numero de empleado"/>
+                        <button class="btn-numEmp">
+                            Ingresar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
 
-    <section>
-        <div class="flex gap-x-3 pt-7">
-            <div class="border-4 border-[#FF6C37] ml-4 p-4 w-1/2 ">
-                <div id="reader"></div>
-                <p id="result" class="text-center mt-4 font-bold text-lg text-gray-700">Esperando escaneo...</p>
-            </div>
-            <div class="border-4 border-[#7A00BF] mr-4 p-4 w-1/2">
-                Div 2
-            </div>
-        </div>
-    </section>
-
-
-
-    <!-- <script>
-        const html5QrCode = new Html5Qrcode("reader");
-
-        function onScanSuccess(decodedText, decodedResult) {
-            console.log("✅ QR detectado:", decodedText); // <--- Aquí se imprime en consola
-            document.getElementById("result").innerText = "QR: " + decodedText;
-            html5QrCode.stop(); // Detenemos la cámara después del escaneo
-        }
-
-        Html5Qrcode.getCameras().then(devices => {
-            if (devices && devices.length) {
-                let cameraId = devices[0].id;
-                html5QrCode.start(
-                    cameraId, {
-                        fps: 10,
-                        qrbox: 250
-                    },
-                    onScanSuccess,
-                    errorMessage => {
-                        // Mostramos errores silenciosos de escaneo
-                        // console.warn("No se detectó QR:", errorMessage);
-                    }
-                );
-            } else {
-                alert("No se encontró ninguna cámara.");
-            }
-        }).catch(err => {
-            console.error("Error al acceder a la cámara:", err);
-        });
-    </script> -->
-
-
-    <script>
-        const qrRegionId = "reader";
-        const html5QrCode = new Html5Qrcode(qrRegionId);
-
-        // Configura el tamaño del recuadro del QR
-        const config = {
-            fps: 10,
-            qrbox: {
-                width: 450,
-                height: 450
-            } // tamaño del cuadro de escaneo
-        };
-
-        function onScanSuccess(decodedText, decodedResult) {
-            // Mostrar el resultado
-            document.getElementById("result").innerText = "Resultado: " + decodedText;
-
-            // Opcional: detener la cámara después de leer
-            // html5QrCode.stop().then(() => {
-            //     console.log("Cámara detenida");
-            // }).catch(err => {
-            //     console.error("Error al detener cámara:", err);
-            // });
-        }
-
-        // Iniciar escaneo
-        Html5Qrcode.getCameras().then(devices => {
-            if (devices && devices.length) {
-                let cameraId = devices[0].id;
-                html5QrCode.start(cameraId, config, onScanSuccess);
-            }
-        }).catch(err => {
-            console.error("No se pudo acceder a la cámara:", err);
-        });
-    </script>
-
+    <footer>
+        <h2 class=" text-gray-600/50 text-center pb-1 italic">&copy; {{ date('Y') }} Desarrollado e implementado por el Depto. de Tecnologías de la Información.</h2>
+    </footer>
 </body>
 
 </html>
