@@ -14,10 +14,12 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('last_name');
             $table->string('email')->unique();
             $table->string('password');
-            $table->boolean('is_admin')->default(false);
+            $table->tinyInteger('level_user')->default(0);
             $table->boolean('yes_notifications')->default(false); // 👉 Aquí se agrega la columna
+            $table->text('foto')->nullable();
             $table->timestamps();
         });
     }
