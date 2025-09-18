@@ -19,21 +19,21 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             // if (Auth::user()->is_admin) {
-            return redirect('/');
+              return redirect('/admin/dashboard');
             // } else {
             // Auth::logout();
             // return redirect('/login')->withErrors(['no_admin' => 'Acceso solo para administradores.']);
             // }
         }
 
-        return redirect('/admin')->withErrors(['login_error' => 'Credenciales inválidas.']);
+        return redirect('/login')->withErrors(['login_error' => 'Credenciales inválidas.']);
     }
 
 
     public function logout()
     {
         Auth::logout();
-        return redirect('/admin');
+        return redirect('/login');
     }
 
     public function dashboard()

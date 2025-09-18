@@ -30,7 +30,7 @@
             </ul>
         </div>
         @endif
-        <form method="POST" action="/admin">
+        <form method="POST" action="/login">
             @csrf
             <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2">Correo electrónico</label>
