@@ -8,6 +8,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="shortcut icon" type="image/svg" href="{{ asset('/img/sello-cumbres-en-blanco-01.png') }}">
     <link rel="shortcut icon" sizes="192x192" href="{{ asset('/img/sello-cumbres-en-blanco-01.png') }}">
+    <!-- <script src="https://unpkg.com/alpinejs" defer></script> -->
 </head>
 
 <body x-data="{
@@ -40,7 +41,7 @@
                 </button>
 
                 <h1 class="text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold text-gray-800">
-                    Administración
+                    Control de Asistencias
                 </h1>
             </div>
 

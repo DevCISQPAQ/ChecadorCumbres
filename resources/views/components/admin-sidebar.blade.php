@@ -4,7 +4,7 @@
         <div class="flex justify-center mb-3">
             <img src="/img/sello-cumbres.svg" alt="Logo" class="h-24">
         </div>
-        Panel de Administración de Asistencias
+        Panel de Control de Asistencias
     </div>
 
     {{-- Navegación --}}
@@ -16,13 +16,13 @@
             Dashboard
         </a>
         @endif
-        <a href="{{ route('empleados.index') }}"
-            class="block py-2.5 px-4 {{ request()->routeIs('estudiantes.*') ? 'bg-blue-100 text-blue-700' : 'text-gray-700' }} hover:bg-blue-50 transition-colors">
+        <a href="{{ route('admin.empleados.index') }}"
+            class="block py-2.5 px-4 {{ request()->routeIs('admin.empleados.*') ? 'bg-blue-100 text-blue-700' : 'text-gray-700' }} hover:bg-blue-50 transition-colors">
             Empleados
         </a>
 
         {{-- Solo mostrar este enlace si el usuario es administrador --}}
-        @if(auth()->user()->level_user)
+        @if(auth()->user()->level_user >= 1)
         <a href="{{ route('admin.usuarios') }}"
             class="block py-2.5 px-4 {{ request()->routeIs('admin.usuarios*') ? 'bg-blue-100 text-blue-700' : 'text-gray-700' }} hover:bg-blue-50 transition-colors">
             Usuarios

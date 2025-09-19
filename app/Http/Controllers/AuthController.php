@@ -26,14 +26,14 @@ class AuthController extends Controller
             // }
         }
 
-        return redirect('/login')->withErrors(['login_error' => 'Credenciales inválidas.']);
+        return redirect('/admin')->withErrors(['login_error' => 'Credenciales inválidas.']);
     }
 
 
     public function logout()
     {
         Auth::logout();
-        return redirect('/login');
+        return redirect('/admin');
     }
 
     public function dashboard()

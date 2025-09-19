@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Login Administrador</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="shortcut icon" type="image/svg" href="{{ asset('/img/sello-cumbres-en-blanco-01.png') }}">
     <link rel="shortcut icon" sizes="192x192" href="{{ asset('/img/sello-cumbres-en-blanco-01.png') }}">
 </head>
@@ -30,7 +31,7 @@
             </ul>
         </div>
         @endif
-        <form method="POST" action="/login">
+        <form method="POST" action="/admin">
             @csrf
             <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2">Correo electrónico</label>
@@ -58,13 +59,14 @@
         </form>
     </div>
 </body>
+
 </html>
 
 <script>
     const togglePassword = document.querySelector('#togglePassword');
     const password = document.querySelector('#password');
 
-    togglePassword.addEventListener('click', function () {
+    togglePassword.addEventListener('click', function() {
         // Cambiar tipo del input
         const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
         password.setAttribute('type', type);

@@ -11,7 +11,7 @@
     <!-- <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet"> -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
 
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <!-- <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script> -->
 </head>
 
 <body style="font-family: 'Roboto', sans-serif; font-style: italic;" class="min-h-screen flex flex-col">
