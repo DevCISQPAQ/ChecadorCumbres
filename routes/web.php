@@ -24,6 +24,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::delete('/usuarios/{id}', [UsuarioController::class, 'eliminarUsuario'])->name('usuarios.eliminar');
     // Empleados
     Route::get('/empleados', [EmpleadoController::class, 'index'])->name('empleados.index');
+    Route::get('/empleados/crear', [EmpleadoController::class, 'crearEmpleado'])->name('empleados.crear');
+    Route::post('/empleados', [EmpleadoController::class, 'guardarEmpleado'])->name('empleados.guardar');
+    Route::get('/empleados/{id}/editar', [EmpleadoController::class, 'editarEmpleado'])->name('empleados.editar');
+    Route::put('/empleados/{id}', [EmpleadoController::class, 'actualizarEmpleado'])->name('empleados.actualizar');
+    Route::delete('/empleados/{id}', [EmpleadoController::class, 'destroy'])->name('empleados.destroy');
 });
 
 // Logout fuera del prefix si aplica a usuarios no administradores también
