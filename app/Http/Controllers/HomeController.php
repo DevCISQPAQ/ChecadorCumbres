@@ -24,7 +24,7 @@ class HomeController extends Controller
         }
 
         try {
-         $respuesta = $this->agregarAsistencia($empleado);
+            $respuesta = $this->agregarAsistencia($empleado);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -41,82 +41,112 @@ class HomeController extends Controller
 
     public function agregarAsistencia($empleado)
     {
-        $horariosPorDepartamento = [
-            'Preescolar' => '07:30:00',
-            'Primaria' => '08:00:00',
-            'Secundaria' => '07:45:00',
-            // Agrega los que necesites
-        ];
-
-        // Hora límite para el departamento del empleado o 07:30 si no está definido
-        $horaLimite = $horariosPorDepartamento[$empleado->departamento] ?? '07:30:00';
-
         $ahora = now(); // Fecha y hora actual (Carbon instance)
         $fechaHoy = $ahora->format('Y-m-d');
-        $horaLimiteCompleta = \Carbon\Carbon::parse("$fechaHoy $horaLimite");
-        $horaDiez = \Carbon\Carbon::parse("$fechaHoy 09:20:00");
+        $horaLimiteCompleta = \Carbon\Carbon::parse("$fechaHoy" . $this->obtenerHoraLimite($empleado));
+        $horaLimiteSalida = \Carbon\Carbon::parse("$fechaHoy 09:20:00");
 
-        if ($ahora->lessThan($horaDiez)) {
-            // Registro de entrada (antes de las 10am)
-            // Verificar si ya existe asistencia para hoy
-            $asistenciaExistente = Asistencia::where('empleado_id', $empleado->id)
-                ->whereDate('hora_entrada', $fechaHoy)
-                ->first();
 
-            if ($asistenciaExistente) {
-                // Ya marcó entrada
+        if ($ahora->lessThan($horaLimiteSalida)) {
+            // Intento de marcar entrada
+            if ($this->yaTieneEntradaHoy($empleado)) {
                 return [
                     'success' => false,
                     'message' => 'Ya tienes la entrada marcada para hoy.',
                 ];
             }
 
-            // Registrar entrada
-            $retardo = $ahora->greaterThan($horaLimiteCompleta);
-            Asistencia::create([
-                'empleado_id' => $empleado->id,
-                'hora_entrada' => $ahora,
-                'hora_salida' => null,
-                'retardo' => $retardo,
-            ]);
-
-            return [
-                'success' => true,
-                'message' => 'Entrada registrada correctamente.',
-            ];
-        } else {
-            // Después de las 10 am: actualizar la asistencia existente del día para marcar salida
-
-            // Buscar asistencia del empleado para hoy (la entrada)
-            $asistencia = Asistencia::where('empleado_id', $empleado->id)
-                ->whereDate('hora_entrada', $fechaHoy)
-                ->first();
-
-            if ($asistencia) {
-                if ($asistencia->hora_salida) {
-                    // Ya marcó salida
-                    return [
-                        'success' => false,
-                        'message' => 'Ya has marcado la salida para hoy.',
-                    ];
-                }
-
-                $asistencia->hora_salida = $ahora;
-                $asistencia->save();
-
-                return [
-                    'success' => true,
-                    'message' => 'Salida registrada correctamente.',
-                ];
-            } else {
-                // Opcional: si no existe la asistencia de entrada hoy, crear una con solo salida
-                Asistencia::create([
-                    'empleado_id' => $empleado->id,
-                    'hora_entrada' => $ahora,  // Puede ser null o hora actual, según lógica
-                    'hora_salida' => $ahora,
-                    'retardo' => false,
-                ]);
-            }
+            return $this->registrarEntrada($empleado, $ahora, $horaLimiteCompleta);
         }
+        // Intento de marcar salida
+        $asistencia = $this->obtenerAsistenciaHoy($empleado);
+
+        if ($asistencia) {
+            if ($this->yaTieneSalidaHoy($asistencia)) {
+                return [
+                    'success' => false,
+                    'message' => 'Ya has marcado la salida para hoy.',
+                ];
+            }
+
+            return $this->registrarSalida($asistencia, $ahora);
+        }
+
+        // No hay entrada, crear asistencia solo con salida
+        return $this->crearSalidaSinEntrada($empleado, $ahora);
+    }
+
+    private function obtenerHoraLimite($empleado)
+    {
+        $horarios = [
+            'Preescolar' => '07:30:00',
+            'Primaria' => '08:00:00',
+            'Secundaria' => '07:45:00',
+            // Agrega los que necesites
+        ];
+
+        return $horarios[$empleado->departamento] ?? '07:30:00';
+    }
+
+    private function yaTieneEntradaHoy($empleado)
+    {
+        return Asistencia::where('empleado_id', $empleado->id)
+            ->whereDate('hora_entrada', today())
+            ->exists();
+    }
+
+    private function obtenerAsistenciaHoy($empleado)
+    {
+        return Asistencia::where('empleado_id', $empleado->id)
+            ->whereDate('hora_entrada', today())
+            ->first();
+    }
+
+    private function registrarEntrada($empleado, $ahora, $horaLimiteCompleta)
+    {
+        $retardo = $ahora->greaterThan($horaLimiteCompleta);
+
+        Asistencia::create([
+            'empleado_id' => $empleado->id,
+            'hora_entrada' => $ahora,
+            'hora_salida' => null,
+            'retardo' => $retardo,
+        ]);
+
+        return [
+            'success' => true,
+            'message' => 'Entrada registrada correctamente.',
+        ];
+    }
+
+    private function yaTieneSalidaHoy($asistencia)
+    {
+        return !is_null($asistencia->hora_salida);
+    }
+
+    private function registrarSalida($asistencia, $ahora)
+    {
+        $asistencia->hora_salida = $ahora;
+        $asistencia->save();
+
+        return [
+            'success' => true,
+            'message' => 'Salida registrada correctamente.',
+        ];
+    }
+
+    private function crearSalidaSinEntrada($empleado, $ahora)
+    {
+        Asistencia::create([
+            'empleado_id' => $empleado->id,
+            'hora_entrada' => $ahora, // puedes usar null si prefieres
+            'hora_salida' => $ahora,
+            'retardo' => false,
+        ]);
+
+        return [
+            'success' => true,
+            'message' => 'Salida registrada correctamente.',
+        ];
     }
 }

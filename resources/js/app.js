@@ -1,7 +1,8 @@
 import './bootstrap';
 import Alpine from 'alpinejs';
-import './homeview.js';
-
+import './qrscan.js';
+import './timenow.js';
+import './addasistencia.js';
 window.Alpine = Alpine;
 
 Alpine.start();

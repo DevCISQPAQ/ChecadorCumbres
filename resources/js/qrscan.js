@@ -24,11 +24,12 @@ if (document.getElementById(qrRegionId)) {
         html5QrCode.pause(true); // Pausa temporalmente el escaneo
 
         const resultElement = document.getElementById("result");
+        const pResult = resultElement.querySelector('p');
         const nombreElement = document.getElementById("nombre-empleado");
         const fotoElement = document.getElementById("foto-empleado");
 
         // Guarda los valores originales para poder restaurarlos después
-        const textoOriginal = resultElement.innerText;
+        const textoOriginal = pResult.innerText;
         const nombreOriginal = nombreElement.innerText;
         const fotoOriginal = fotoElement.src;
 
@@ -46,9 +47,8 @@ if (document.getElementById(qrRegionId)) {
             const empleado = data.empleado;
             const asistencia = data.asistencia;
 
-
-            // Mostrar datos del empleado
-            nombreElement.innerText = `${empleado.nombres} ${empleado.apellido_paterno} ${empleado.apellido_materno}`;
+            const saludo = obtenerSaludoPorHora();
+            nombreElement.innerText = `${saludo}\n${empleado.nombres} ${empleado.apellido_paterno} ${empleado.apellido_materno}`;
 
             if (empleado.foto) {
                 fotoElement.src = `/img/empleados/${empleado.foto}`;
@@ -58,22 +58,24 @@ if (document.getElementById(qrRegionId)) {
 
             // resultElement.innerText = `Empleado ${empleado.nombres} encontrado`;
             // Mostrar mensaje de asistencia (entrada/salida/mensajes)
-            resultElement.innerText = asistencia.message;
-            resultElement.style.color = asistencia.success ? "green" : "red";
+            pResult.innerText = asistencia.message;
+            pResult.style.color = asistencia.success ? "white" : "white";
+            resultElement.style.backgroundColor = asistencia.success ? "green" : "red";
 
         } catch (error) {
-            resultElement.innerText = error.message;
-            resultElement.style.color = "red";
+            pResult.innerText = error.message;
+            resultElement.style.backgroundColor = "red";
+            pResult.style.color = "white";
             nombreElement.innerText = "No identificado";
             fotoElement.src = `/img/escudo-gris.png`;
         } finally {
             setTimeout(() => {
-                resultElement.innerText = textoOriginal;
-                 resultElement.style.color = "black";
+                pResult.innerText = textoOriginal;
+                pResult.style.color = "black";
                 nombreElement.innerText = nombreOriginal;
                 fotoElement.src = fotoOriginal;
                 html5QrCode.resume(); // Reanuda escaneo después de 3 seg
-            }, 3000);
+            }, 2500);
         }
     }
 
@@ -88,43 +90,18 @@ if (document.getElementById(qrRegionId)) {
 }
 
 
+function obtenerSaludoPorHora() {
+    const ahora = new Date();
+    const hora = ahora.getHours();
 
-function updateDateTime() {
-    const now = new Date();
-
-    // Opciones para fecha completa
-    const dateOptions = {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    };
-
-    // Opciones solo para hora
-    const timeOptions = {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false  // Nota: es hour12, no hour24
-    };
-
-    // Formatear fecha y hora
-    const formattedDate = now.toLocaleDateString('es-ES', dateOptions);
-    const formattedTime = now.toLocaleTimeString('es-ES', timeOptions);
-
-    const datetimeEl = document.getElementById('datetime');
-    const timeonlyEl = document.getElementById('timeonly');
-
-    if (datetimeEl) {
-        datetimeEl.innerText = formattedDate;
-    }
-
-    if (timeonlyEl) {
-        timeonlyEl.innerText = formattedTime;
+    if (hora < 10) {
+        return 'Bienvenido';
+    } else if (hora >= 15) {
+        return 'Hasta pronto';
+    } else {
+        return 'Hola';
     }
 }
 
-// Actualiza la fecha y hora cada segundo
-setInterval(updateDateTime, 1000);
-updateDateTime();
-// Actualiza la fecha y hora cada segundo
+
+

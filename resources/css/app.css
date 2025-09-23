@@ -79,7 +79,7 @@
   }
 
   .text-result{
-    @apply text-base sm:text-2xl font-bold text-center text-[#FF5900];
+    @apply text-base sm:text-2xl font-bold text-center text-[#00205C];
   }
 
   .content-numEmpl{
