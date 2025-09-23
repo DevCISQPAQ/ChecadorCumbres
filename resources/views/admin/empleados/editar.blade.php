@@ -14,7 +14,7 @@
     </div>
     @endif
 
-    <form method="POST" action="{{ route('admin.empleados.actualizar', $empleado->id) }}">
+    <form method="POST" action="{{ route('admin.empleados.actualizar', $empleado->id) }}" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
@@ -26,7 +26,7 @@
         <div class="flex gap-4">
             <div class="mb-4 w-1/2">
                 <label class="block text-sm font-semibold text-gray-700">Numero de empleado</label>
-                <input type="text" name="name" value="{{ old('id', $empleado->id) }}" required class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
+                <input type="text" name="id" value="{{ old('id', $empleado->id) }}" required class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
             </div>
 
             <div class="mb-4 w-1/2">
@@ -69,6 +69,22 @@
         <div class="mb-4">
             <label class="block text-sm font-semibold text-gray-700">Correo electrónico</label>
             <input type="email" name="email" value="{{ old('email', $empleado->email) }}" required class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-sm font-semibold text-gray-700 mb-1" for="foto">Subir foto</label>
+            <input
+                type="file"
+                id="foto"
+                name="foto"
+                accept="image/*"
+                class="block w-full text-sm text-gray-500
+           file:mr-4 file:py-2 file:px-4
+           file:rounded file:border-0
+           file:text-sm file:font-semibold
+           file:bg-blue-100 file:text-blue-700
+           hover:file:bg-blue-200
+           cursor-pointer">
         </div>
 
 

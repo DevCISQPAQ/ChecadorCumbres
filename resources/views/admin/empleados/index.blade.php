@@ -25,12 +25,12 @@
     <!-- Tarjeta para Administrativo -->
     <div class="bg-blue-100 p-2 rounded shadow-lg text-center flex-1 min-w-[200px] sm:basis-[calc(20%-1rem)]">
         <h3 class="text-xl font-semibold text-blue-600">Administrativos</h3>
-        <p class="text-2xl font-bold text-gray-800">{{ $administrativoCount ?? 0 }}</p>
+        <p class="text-2xl font-bold text-gray-800">{{ $administrativosCount ?? 0 }}</p>
     </div>
 
     <div class="bg-blue-100 p-2 rounded shadow-lg text-center flex-1 min-w-[200px] sm:basis-[calc(20%-1rem)]">
         <h3 class="text-xl font-semibold text-blue-600">Academias</h3>
-        <p class="text-2xl font-bold text-gray-800">{{ $AcademiaCount ?? 0 }}</p>
+        <p class="text-2xl font-bold text-gray-800">{{ $academiasCount ?? 0 }}</p>
     </div>
     <!-- totales -->
     <div class="bg-blue-100 p-2 rounded shadow-lg text-center flex-1 min-w-[200px] sm:basis-[calc(20%-1rem)]">
@@ -40,7 +40,7 @@
 </div>
 
 
-<div x-data="{ buscar: '{{ request('buscar', '') }}', eliminarActivo: false  }">
+<div x-data="{ buscar: '{{ request('buscar', '') }}', editarActivo: false  }">
     <!-- Formulario de búsqueda -->
     <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4 pt-10">
         <!-- Campo de búsqueda -->
@@ -63,15 +63,15 @@
         @if(auth()->user()->level_user)
         <div class="flex flex-col items-center justify-center min-h-[10px]">
             <label for="toggle" class="inline-flex relative items-center cursor-pointer">
-                <input type="checkbox" id="toggle" class="sr-only peer" x-model="eliminarActivo" />
+                <input type="checkbox" id="toggle" class="sr-only peer" x-model="editarActivo" />
                 <div
                     class="w-11 h-6 bg-gray-300 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-300
-            peer-checked:bg-red-600 transition-colors duration-300"></div>
+            peer-checked:bg-green-600 transition-colors duration-300"></div>
                 <div
                     class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transform
             peer-checked:translate-x-5 transition-transform duration-300"></div>
             </label>
-            <p class="mt-2 text-center">Eliminar empleado: <strong x-text="eliminarActivo ? 'ON' : 'OFF'"></strong></p>
+            <p class="mt-2 text-center">Editar empleado: <strong x-text="editarActivo ? 'ON' : 'OFF'"></strong></p>
         </div>
         @endif
     </div>
@@ -100,7 +100,7 @@
                         <td class="p-3">{{ $empleado->email }}</td>
                         <td class="p-3 flex gap-2">
                             <!-- Botón Eliminar solo visible si eliminarActivo es true -->
-                            <template x-if="eliminarActivo">
+                            <template x-if="editarActivo">
                                 <div class="flex gap-2">
                                     <a href="{{ route('admin.empleados.editar', $empleado->id) }}" target="_self"
                                         class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">

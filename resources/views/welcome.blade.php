@@ -37,16 +37,15 @@
                 <div class="content-QR">
                     <div id="reader" class="w-full h-auto"></div>
                     <p id="result" class="text-center mt-4 font-bold text-lg text-gray-700">
-                        Esperando escaneo...
                     </p>
                 </div>
-                <!-- Div 2 -->
+                <!-- Div de resultado -->
                 <div class="content-Result">
                     <div class="flex justify-center mb-4">
-                        <img src="{{ asset('img/escudo-gris.png') }}" alt="Logo" class="w-44 2xl:w-60 h-auto">
+                        <img id="foto-empleado" src="{{ asset('img/escudo-gris.png') }}" alt="Logo" class="w-44 2xl:w-60 h-auto">
                     </div>
                     <h2 class="text-result">
-                        Bienvenido: <span>Lalo</span>
+                        Bienvenido: <span id="nombre-empleado">Lalo</span>
                     </h2>
                 </div>
             </div>

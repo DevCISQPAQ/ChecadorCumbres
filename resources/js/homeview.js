@@ -9,14 +9,9 @@ if (document.getElementById(qrRegionId)) {
     function getResponsiveQrbox() {
         const width = window.innerWidth;
         let size = 250; // tamaño por defecto para móviles
-
         if (width >= 768) size = 350; // tablets
         if (width >= 1024) size = 450; // desktop
-
-        return {
-            width: size,
-            height: size
-        };
+        return { width: size, height: size };
     }
 
     const config = {
@@ -24,8 +19,62 @@ if (document.getElementById(qrRegionId)) {
         qrbox: getResponsiveQrbox()
     };
 
-    function onScanSuccess(decodedText, decodedResult) {
-        document.getElementById("result").innerText = "Resultado: " + decodedText;
+
+    async function onScanSuccess(decodedText, decodedResult) {
+        html5QrCode.pause(true); // Pausa temporalmente el escaneo
+
+        const resultElement = document.getElementById("result");
+        const nombreElement = document.getElementById("nombre-empleado");
+        const fotoElement = document.getElementById("foto-empleado");
+
+        // Guarda los valores originales para poder restaurarlos después
+        const textoOriginal = resultElement.innerText;
+        const nombreOriginal = nombreElement.innerText;
+        const fotoOriginal = fotoElement.src;
+
+        // resultElement.innerText = "Buscando empleado con ID: " + decodedText;
+
+        try {
+            const response = await fetch(`/empleado/${decodedText}/buscar`);
+            if (!response.ok) {
+                throw new Error("Empleado no encontrado");
+            }
+
+            const data = await response.json();
+
+            // data.empleado y data.asistencia vienen del backend
+            const empleado = data.empleado;
+            const asistencia = data.asistencia;
+
+
+            // Mostrar datos del empleado
+            nombreElement.innerText = `${empleado.nombres} ${empleado.apellido_paterno} ${empleado.apellido_materno}`;
+
+            if (empleado.foto) {
+                fotoElement.src = `/img/empleados/${empleado.foto}`;
+            } else {
+                fotoElement.src = `/img/escudo-gris.png`; // Imagen por defecto
+            }
+
+            // resultElement.innerText = `Empleado ${empleado.nombres} encontrado`;
+            // Mostrar mensaje de asistencia (entrada/salida/mensajes)
+            resultElement.innerText = asistencia.message;
+            resultElement.style.color = asistencia.success ? "green" : "red";
+
+        } catch (error) {
+            resultElement.innerText = error.message;
+            resultElement.style.color = "red";
+            nombreElement.innerText = "No identificado";
+            fotoElement.src = `/img/escudo-gris.png`;
+        } finally {
+            setTimeout(() => {
+                resultElement.innerText = textoOriginal;
+                 resultElement.style.color = "black";
+                nombreElement.innerText = nombreOriginal;
+                fotoElement.src = fotoOriginal;
+                html5QrCode.resume(); // Reanuda escaneo después de 3 seg
+            }, 3000);
+        }
     }
 
     Html5Qrcode.getCameras().then(devices => {
@@ -37,10 +86,8 @@ if (document.getElementById(qrRegionId)) {
         console.error("No se pudo acceder a la cámara:", err);
     });
 }
-// Opcional: Ajustar si la ventana cambia de tamaño
-// window.addEventListener('resize', () => {
-//     location.reload(); // recarga para reiniciar con nuevo tamaño
-// });
+
+
 
 function updateDateTime() {
     const now = new Date();
