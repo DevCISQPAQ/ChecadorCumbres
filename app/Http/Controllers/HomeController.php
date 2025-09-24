@@ -44,7 +44,7 @@ class HomeController extends Controller
         $ahora = now(); // Fecha y hora actual (Carbon instance)
         $fechaHoy = $ahora->format('Y-m-d');
         $horaLimiteCompleta = \Carbon\Carbon::parse("$fechaHoy" . $this->obtenerHoraLimite($empleado));
-        $horaLimiteSalida = \Carbon\Carbon::parse("$fechaHoy 09:20:00");
+        $horaLimiteSalida = \Carbon\Carbon::parse("$fechaHoy 11:30:00");
 
 
         if ($ahora->lessThan($horaLimiteSalida)) {
@@ -58,6 +58,8 @@ class HomeController extends Controller
 
             return $this->registrarEntrada($empleado, $ahora, $horaLimiteCompleta);
         }
+
+        //
         // Intento de marcar salida
         $asistencia = $this->obtenerAsistenciaHoy($empleado);
 
@@ -98,8 +100,14 @@ class HomeController extends Controller
     private function obtenerAsistenciaHoy($empleado)
     {
         return Asistencia::where('empleado_id', $empleado->id)
-            ->whereDate('hora_entrada', today())
-            ->first();
+            // ->whereDate('hora_entrada', today())
+            // ->first();
+        ->whereDate('hora_entrada', today())
+        ->orWhere(function ($query) use ($empleado) {
+            $query->where('empleado_id', $empleado->id)
+                  ->whereDate('hora_salida', today());
+        })
+        ->first();
     }
 
     private function registrarEntrada($empleado, $ahora, $horaLimiteCompleta)
@@ -139,9 +147,9 @@ class HomeController extends Controller
     {
         Asistencia::create([
             'empleado_id' => $empleado->id,
-            'hora_entrada' => $ahora, // puedes usar null si prefieres
+            'hora_entrada' => null, // puedes usar null si prefieres
             'hora_salida' => $ahora,
-            'retardo' => false,
+            'retardo' => true,
         ]);
 
         return [

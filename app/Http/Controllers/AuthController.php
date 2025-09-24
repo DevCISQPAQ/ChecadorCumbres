@@ -19,7 +19,7 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             // if (Auth::user()->is_admin) {
-              return redirect('/admin/dashboard');
+              return redirect('/admin/asistencias');
             // } else {
             // Auth::logout();
             // return redirect('/login')->withErrors(['no_admin' => 'Acceso solo para administradores.']);

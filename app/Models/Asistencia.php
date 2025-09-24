@@ -8,11 +8,18 @@ class Asistencia extends Model
 {
     protected $table = 'asistencias';
 
+    
+
     protected $fillable = [
         'empleado_id',
         'hora_entrada',
         'hora_salida',
         'retardo'
+    ];
+
+     protected $casts = [
+        'hora_entrada' => 'datetime',
+        'hora_salida' => 'datetime',
     ];
 
     // Relación con empleado

@@ -11,7 +11,7 @@ use Illuminate\Support\Str;
 
 class EmpleadoController extends Controller
 {
-    public function index(Request $request)
+    public function listarEmpleados(Request $request)
     {
         try {
 
@@ -147,7 +147,7 @@ class EmpleadoController extends Controller
 
             ]);
 
-            return redirect()->route('admin.empleados.index')->with('success', 'Empleado creado correctamente.');
+            return redirect()->route('admin.empleados')->with('success', 'Empleado creado correctamente.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error al guardar empleado ' . $e->getMessage());
         }
@@ -208,7 +208,7 @@ class EmpleadoController extends Controller
 
             $empleado->update($data);
 
-            return redirect()->route('admin.empleados.index')->with('success', 'Empleado actualizado.');
+            return redirect()->route('admin.empleados')->with('success', 'Empleado actualizado.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error al actualizar empleado ' . $e->getMessage());
         }

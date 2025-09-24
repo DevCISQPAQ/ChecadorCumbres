@@ -90,7 +90,7 @@
 
 
         <div class="flex justify-end">
-            <a href="{{ route('admin.empleados.index') }}" class="px-4 py-2 text-gray-600 hover:underline">Cancelar</a>
+            <a href="{{ route('admin.empleados') }}" class="px-4 py-2 text-gray-600 hover:underline">Cancelar</a>
             <button type="submit" class="ml-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
                 Actualizar
             </button>

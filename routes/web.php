@@ -15,7 +15,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AuthController::class, 'showLoginForm'])->name('login.form');
     Route::post('/', [AuthController::class, 'login'])->name('login');
     // Dashboard
-    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('/asistencias', [AdminController::class, 'asistencias'])->name('asistencias');
     // Usuarios
     Route::get('/usuarios', [UsuarioController::class, 'listarUsuarios'])->name('usuarios');
     Route::get('/usuarios/crear', [UsuarioController::class, 'crearUsuario'])->name('usuarios.crear');
@@ -24,7 +24,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::put('/usuarios/{id}', [UsuarioController::class, 'actualizarUsuario'])->name('usuarios.actualizar');
     Route::delete('/usuarios/{id}', [UsuarioController::class, 'eliminarUsuario'])->name('usuarios.eliminar');
     // Empleados
-    Route::get('/empleados', [EmpleadoController::class, 'index'])->name('empleados.index');
+    Route::get('/empleados', [EmpleadoController::class, 'listarEmpleados'])->name('empleados');
     Route::get('/empleados/crear', [EmpleadoController::class, 'crearEmpleado'])->name('empleados.crear');
     Route::post('/empleados', [EmpleadoController::class, 'guardarEmpleado'])->name('empleados.guardar');
     Route::get('/empleados/{id}/editar', [EmpleadoController::class, 'editarEmpleado'])->name('empleados.editar');
