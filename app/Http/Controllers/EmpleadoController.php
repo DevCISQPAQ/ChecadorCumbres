@@ -26,24 +26,24 @@ class EmpleadoController extends Controller
         }
     }
 
-    private function obtenerPeriodoEscolar()
-    {
-        $hoy = Carbon::now();
-        $anioInicio = $hoy->month >= 9 ? $hoy->year : $hoy->year - 1;
+    // private function obtenerPeriodoEscolar()
+    // {
+    //     $hoy = Carbon::now();
+    //     $anioInicio = $hoy->month >= 9 ? $hoy->year : $hoy->year - 1;
 
-        return [
-            'inicio' => Carbon::create($anioInicio, 10, 1)->startOfMonth(),
-            'fin' => Carbon::create($anioInicio + 1, 9, 30)->endOfMonth(),
-            // 'etiqueta' => 'Septiembre ' . $anioInicio . ' - Septiembre ' . ($anioInicio + 1),
-            'etiqueta' => $anioInicio . '-' . ($anioInicio + 1),
-        ];
-    }
+    //     return [
+    //         'inicio' => Carbon::create($anioInicio, 10, 1)->startOfMonth(),
+    //         'fin' => Carbon::create($anioInicio + 1, 9, 30)->endOfMonth(),
+    //         // 'etiqueta' => 'Septiembre ' . $anioInicio . ' - Septiembre ' . ($anioInicio + 1),
+    //         'etiqueta' => $anioInicio . '-' . ($anioInicio + 1),
+    //     ];
+    // }
 
     private function obtenerEmpleados(Request $request)
     {
         $query = Empleado::query();  // <-- Aquí no usas all(), sino query()
 
-        $periodo = $this->obtenerPeriodoEscolar();
+        // $periodo = $this->obtenerPeriodoEscolar();
 
         if ($request->filled('buscar')) {
             $buscar = strtolower($request->buscar);
@@ -69,7 +69,7 @@ class EmpleadoController extends Controller
 
     private function obtenerConteosPorDepartamento()
     {
-        $periodo = $this->obtenerPeriodoEscolar();
+        // $periodo = $this->obtenerPeriodoEscolar();
 
         $preescolarCount = Empleado::where(function ($query) {
             $query->where('departamento', 'LIKE', '%preescolar%');

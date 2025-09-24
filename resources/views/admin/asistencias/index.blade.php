@@ -27,62 +27,112 @@
 </div>
 {{-- Sección adicional --}}
 
-<div x-data="{ buscar: '{{ request('buscar', '') }}', editarActivo: false  }">
-    <!-- Formulario de búsqueda -->
-    <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4 pt-10">
-        <!-- Campo de búsqueda -->
-        <div class="w-full md:flex-1">
-            <form method="GET" action="{{ route('admin.asistencias') }}" class="w-full">
-                <input type="text" name="buscar" x-model="buscar" placeholder="Buscar estudiante..."
-                    class="px-4 py-2 border rounded  w-1/2 focus:outline-none focus:ring focus:border-blue-300"
-                    value="{{ request('buscar') }}" />
-
-                <button type="submit" class="px-4 py-2 bg-gray-600 text-white rounded mt-2 md:mt-2">Buscar</button>
-            </form>
+<div x-data="{
+    buscar: '{{ request('buscar', '') }}',
+    fecha_inicio: '{{ request('fecha_inicio', '') }}',
+    fecha_fin: '{{ request('fecha_fin', '') }}',
+    retardo: '{{ request('retardo', '') }}',
+    hora_entrada: '{{ request('hora_entrada', '') }}',
+    hora_salida: '{{ request('hora_salida', '') }}'
+}" class="pt-10">
+    <!-- Formulario de filtros -->
+    <form id="filtrosForm" method="GET" action="{{ route('admin.asistencias') }}" class="mb-0 space-y-4 md:space-y-0 md:flex md:items-end md:gap-4">
+        <div>
+            <label class="block mb-1 font-semibold">Buscar nombre o apellido</label>
+            <input type="text" name="buscar" x-model="buscar" placeholder="Buscar..." class="border rounded px-3 py-2 w-full md:w-64" />
         </div>
 
-        <!-- Crear empleado -->
-        <div class="flex justify-between mb-0 pr-4">
-            <a href="" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-blue-700">Crear reporte</a>
+        <div>
+            <label class="block mb-1 font-semibold">Fecha inicio</label>
+            <input type="date" name="fecha_inicio" x-model="fecha_inicio" class="border rounded px-3 py-2" />
         </div>
 
+        <div>
+            <label class="block mb-1 font-semibold">Fecha fin</label>
+            <input type="date" name="fecha_fin" x-model="fecha_fin" class="border rounded px-3 py-2" />
+        </div>
+
+        <div>
+            <label class="block mb-1 font-semibold">Retardo</label>
+            <select name="retardo" x-model="retardo" class="border rounded px-3 py-2">
+                <option value="">Todos</option>
+                <option value="1">Sí</option>
+                <option value="0">No</option>
+            </select>
+        </div>
+
+        <div>
+            <label class="block mb-1 font-semibold">Hora de entrada</label>
+            <select name="hora_entrada" x-model="hora_entrada" class="border rounded px-3 py-2">
+                <option value="">Todos</option>
+                <option value="1">Con hora</option>
+                <option value="0">Sin hora</option>
+            </select>
+        </div>
+
+        <div>
+            <label class="block mb-1 font-semibold">Hora de salida</label>
+            <select name="hora_salida" x-model="hora_salida" class="border rounded px-3 py-2">
+                <option value="">Todos</option>
+                <option value="1">Con hora</option>
+                <option value="0">Sin hora</option>
+            </select>
+        </div>
+
+        <div>
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Filtrar</button>
+        </div>
+        @if(request()->hasAny(['buscar', 'fecha_inicio', 'fecha_fin', 'retardo', 'hora_entrada', 'hora_salida']) && collect(request()->only(['buscar', 'fecha_inicio', 'fecha_fin', 'retardo', 'hora_entrada', 'hora_salida']))->filter(fn($v) => $v !== null && $v !== '')->isNotEmpty())
+        <a href="{{ route('admin.asistencias') }}"
+            class="ml-2 px-4 py-2 bg-red-600 rounded hover:bg-red-400 text-white">Borrar filtros</a>
+        @endif
+    </form>
+
+    <div class="flex justify-end mb-1 pr-4">
+        <form method="GET" action="{{ route('admin.asistencias.reporte') }}" target="_blank">
+            <!-- Envía los filtros actuales como inputs ocultos -->
+            <input type="hidden" name="buscar" value="{{ request('buscar') }}">
+            <input type="hidden" name="fecha_inicio" value="{{ request('fecha_inicio') }}">
+            <input type="hidden" name="fecha_fin" value="{{ request('fecha_fin') }}">
+            <input type="hidden" name="retardo" value="{{ request('retardo') }}">
+            <input type="hidden" name="hora_entrada" value="{{ request('hora_entrada') }}">
+            <input type="hidden" name="hora_salida" value="{{ request('hora_salida') }}">
+
+            <button type="submit" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Crear reporte
+            </button>
+        </form>
     </div>
-
-    <!-- Tabla de empleado -->
+    <!-- Tabla de asistencias -->
     <div class="overflow-x-auto">
         <div class="max-h-[500px] overflow-y-auto border border-gray-300 rounded-lg">
-            <table class="min-w-full text-left bg-white">
-                <thead class="sticky top-0 bg-gray-500 z-10 shadow">
+            <table class="min-w-full bg-white">
+                <thead class="sticky top-0 bg-gray-700 text-white">
                     <tr>
-                        <th class="p-3 text-center text-white">IdEmpleado</th>
-                        <th class="p-3 text-center text-white">Nombre</th>
-                        <th class="p-3 text-center text-white">Hora de entrada</th>
-                        <th class="p-3 text-center text-white">Hora de salida</th>
-                        <th class="p-3 text-center text-white">Retardo</th>
-                        <!-- <th class="p-3 text-center text-white">Acciones</th> -->
+                        <th class="p-3 text-center">IdEmpleado</th>
+                        <th class="p-3 text-center">Nombre</th>
+                        <th class="p-3 text-center">Hora de entrada</th>
+                        <th class="p-3 text-center">Hora de salida</th>
+                        <th class="p-3 text-center">Retardo</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($asistencias as $asistencia)
-                    @php
-                    $empleado = $asistencia->empleado;
-                    @endphp
-                    <tr class="border border-gray-300 rounded-lg hover:bg-gray-50">
+                    @forelse ($asistencias as $asistencia)
+                    @php $empleado = $asistencia->empleado; @endphp
+                    <tr class="border border-gray-300 hover:bg-gray-50">
                         <td class="p-3 text-center">{{ $asistencia->empleado_id }}</td>
                         <td class="p-3 text-center">{{ $empleado ? $empleado->nombres . ' ' . $empleado->apellido_paterno . ' ' . $empleado->apellido_materno : 'N/A' }}</td>
                         <td class="p-3 text-center">{{ $asistencia->hora_entrada ? $asistencia->hora_entrada->format('H:i') : 'N/A' }}</td>
                         <td class="p-3 text-center">{{ $asistencia->hora_salida ? $asistencia->hora_salida->format('H:i') : 'N/A' }}</td>
                         <td class="p-3 text-center {{ $asistencia->retardo ? 'text-red-600 font-semibold' : 'text-green-600 font-semibold' }}">
-                            {{ $asistencia->retardo ? 'Si' : 'No' }}
+                            {{ $asistencia->retardo ? 'Sí' : 'No' }}
                         </td>
-                        <!-- <td class="p-3 text-center">
-                            <a href="" target="_blank"
-                                class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">
-                                Ver PDF
-                            </a>
-                        </td> -->
                     </tr>
-                    @endforeach
+                    @empty
+                    <tr>
+                        <td colspan="5" class="text-center p-4">No se encontraron registros.</td>
+                    </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
@@ -92,10 +142,16 @@
     <div class="mt-4">
         {{ $asistencias->links() }}
     </div>
-
 </div>
 
-
-
-
 @endsection
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Si hay query string y queremos ocultarla tras carga:
+        if (window.location.search.length) {
+            // opcional: conservas historial (replaceState) sin query
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    });
+</script>

@@ -37,13 +37,20 @@
                 </div>
                 <!-- Div de resultado -->
                 <div class="content-Result">
-                    <div class="flex justify-center mb-4">
-                        <img id="foto-empleado" src="{{ asset('img/escudo-gris.png') }}" alt="Logo" class="w-44 2xl:w-60 h-auto pt-7">
+                    <!-- Imagen del empleado -->
+                    <div class="flex justify-center mb-2 h-auto">
+                        <div class="w-44 h-44 2xl:w-60 2xl:h-60 overflow-hidden rounded-xl ">
+                            <img id="foto-empleado"
+                                src="{{ asset('img/escudo-gris.png') }}"
+                                alt="Foto empleado"
+                                class="w-full h-full object-cover" />
+                        </div>
                     </div>
+
                     <h2 class="text-result" id="nombre-empleado">
                         <!-- Bienvenido <span id="nombre-empleado">Lalo</span> -->
                     </h2>
-                    <div id="result"  class="mt-auto w-full">
+                    <div id="result" class="mt-auto w-full">
                         <p class="text-center font-bold text-lg text-gray-700"> </p>
                     </div>
                 </div>

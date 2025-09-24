@@ -11,7 +11,7 @@
     <nav class="mt-6 flex-1 overflow-y-auto">
         <a href="{{ route('admin.asistencias')  }}"
             class="block py-2.5 px-4 {{ request()->routeIs('admin.asistencias*') ? 'bg-blue-100 text-blue-700' : 'text-gray-700' }} hover:bg-blue-50 transition-colors">
-            Dashboard
+            Asistencias
         </a>
         @if(auth()->user()->level_user)
         <a href="{{ route('admin.empleados') }}"

@@ -8,6 +8,7 @@ use App\Models\Empleado;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class AdminController extends Controller
 {
@@ -44,10 +45,15 @@ class AdminController extends Controller
     public function listarAsistencias(Request $request)
     {
         // Iniciamos el query builder, sin llamar a get()
-        $query = Asistencia::with('empleado')
-            ->whereDate('created_at', Carbon::today());
+        $query = Asistencia::with('empleado');
+
+        // Solo filtrar por hoy si NO hay búsqueda ni filtro de fechas
+        if (!$request->filled('buscar') && !$request->filled('fecha_inicio') && !$request->filled('fecha_fin')) {
+            $query->whereDate('created_at', Carbon::today());
+        }
 
         if ($request->filled('buscar')) {
+            $query = Asistencia::with('empleado');
             $buscar = strtolower($request->buscar);
 
             // Buscamos en los campos del empleado relacionados usando whereHas
@@ -56,6 +62,37 @@ class AdminController extends Controller
                     ->orWhereRaw('LOWER(apellido_paterno) LIKE ?', ["%{$buscar}%"])
                     ->orWhereRaw('LOWER(apellido_materno) LIKE ?', ["%{$buscar}%"]);
             });
+        }
+
+        // Filtrar por rango de fecha (fecha_inicio y fecha_fin sobre created_at)
+        if ($request->filled('fecha_inicio')) {
+            $query->whereDate('created_at', '>=', $request->fecha_inicio);
+        }
+        if ($request->filled('fecha_fin')) {
+            $query->whereDate('created_at', '<=', $request->fecha_fin);
+        }
+
+        // Filtrar por retardo (1 o 0)
+        if ($request->filled('retardo') && in_array($request->retardo, ['0', '1'])) {
+            $query->where('retardo', $request->retardo);
+        }
+
+        // Filtrar por existencia de hora_entrada (1 = con hora, 0 = sin hora)
+        if ($request->filled('hora_entrada') && in_array($request->hora_entrada, ['0', '1'])) {
+            if ($request->hora_entrada == '1') {
+                $query->whereNotNull('hora_entrada');
+            } else {
+                $query->whereNull('hora_entrada');
+            }
+        }
+
+        // Filtrar por existencia de hora_salida (1 = con hora, 0 = sin hora)
+        if ($request->filled('hora_salida') && in_array($request->hora_salida, ['0', '1'])) {
+            if ($request->hora_salida == '1') {
+                $query->whereNotNull('hora_salida');
+            } else {
+                $query->whereNull('hora_salida');
+            }
         }
 
         // Ordenamos por fecha descendente
@@ -71,9 +108,11 @@ class AdminController extends Controller
     {
 
         $asistenciaE = Asistencia::whereNotNull('hora_entrada')
+            ->whereDate('created_at', Carbon::today())
             ->count();
 
         $asistenciaS = Asistencia::whereNotNull('hora_salida')
+            ->whereDate('created_at', Carbon::today())
             ->count();
 
         $retardosHoy = Asistencia::where('retardo', 1)
@@ -81,8 +120,22 @@ class AdminController extends Controller
             ->count();
 
         $cantidadSinAsistencia = Empleado::doesntHave('asistencias')
+            ->whereDate('created_at', Carbon::today())
             ->count();
 
         return compact('asistenciaE', 'asistenciaS', 'retardosHoy', 'cantidadSinAsistencia');
+    }
+
+    public function generarReporte(Request $request)
+    {
+        // Reutilizar la lógica para obtener asistencias según filtro o por defecto del día
+        $asistencias = $this->listarAsistencias($request);
+
+        // Cargar vista para PDF (puede ser similar a la vista web, pero más sencilla para PDF)
+        $pdf = PDF::loadView('admin.asistencias.reporte', compact('asistencias'));
+
+        // Descargar o mostrar el PDF
+        //  return $pdf->download('reporte_asistencias_' . now()->format('Y-m-d') . '.pdf');
+        return $pdf->stream('reporte_asistencias_' . now()->format('Y-m-d') . '.pdf');
     }
 }

@@ -16,6 +16,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/', [AuthController::class, 'login'])->name('login');
     // Dashboard
     Route::get('/asistencias', [AdminController::class, 'asistencias'])->name('asistencias');
+    Route::get('/asistencias/reporte', [AdminController::class, 'generarReporte'])->name('asistencias.reporte');
     // Usuarios
     Route::get('/usuarios', [UsuarioController::class, 'listarUsuarios'])->name('usuarios');
     Route::get('/usuarios/crear', [UsuarioController::class, 'crearUsuario'])->name('usuarios.crear');

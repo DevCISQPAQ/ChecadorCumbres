@@ -47,7 +47,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const saludo = obtenerSaludoPorHora();
 
-            nombreElement.innerText = `${saludo}\n${empleado.nombres} ${empleado.apellido_paterno} ${empleado.apellido_materno}`;
+            let saludoColor = saludo.includes('Bienvenido') ? 'text-green-600' :
+                saludo.includes('Hasta pronto') ? 'text-yellow-600' :
+                    'text-blue-600';
+
+
+            nombreElement.innerHTML = `<span class="${saludoColor} font-bold">${saludo}</span><br>${empleado.nombres} ${empleado.apellido_paterno} ${empleado.apellido_materno}`;
+
+            // nombreElement.innerText = `${saludo}\n${empleado.nombres} ${empleado.apellido_paterno} ${empleado.apellido_materno}`;
 
             if (empleado.foto) {
                 fotoElement.src = `/img/empleados/${empleado.foto}`;

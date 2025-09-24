@@ -5,7 +5,7 @@
 
 <!-- Tarjetas de conteo de empleados por secciones -->
 <!-- <div class="flex flex-wrap gap-4 mb-2"> -->
-    <div class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-6 gap-6 md:space-y-0 space-y-2">
+<div class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-6 gap-6 md:space-y-0 space-y-2">
     <!-- Tarjeta para Prescolar -->
     <div class="bg-blue-100 p-2 rounded shadow-lg text-center flex-1 min-w-[200px] sm:basis-[calc(20%-1rem)]">
         <h3 class="text-xl font-semibold text-blue-600">Preescolar</h3>
@@ -47,11 +47,15 @@
         <!-- Campo de búsqueda -->
         <div class="w-full md:flex-1">
             <form method="GET" action="{{ route('admin.empleados') }}" class="w-full">
-                <input type="text" name="buscar" x-model="buscar" placeholder="Buscar estudiante..."
+                <input type="text" name="buscar" x-model="buscar" placeholder="Buscar empleado..."
                     class="px-4 py-2 border rounded  w-1/2 focus:outline-none focus:ring focus:border-blue-300"
                     value="{{ request('buscar') }}" />
 
                 <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded mt-2 md:mt-2">Buscar</button>
+                @if(request()->hasAny(['buscar']) && collect(request()->only(['buscar']))->filter(fn($v) => $v !== null && $v !== '')->isNotEmpty())
+                <a href="{{ route('admin.empleados') }}"
+                    class="ml-2 px-4 py-2 bg-red-600 rounded hover:bg-red-400 text-white">Borrar filtros</a>
+                @endif
             </form>
         </div>
 
@@ -88,40 +92,35 @@
                         <th class="p-3">Departamento</th>
                         <th class="p-3">Puesto</th>
                         <th class="p-3">Email</th>
-                        <th class="p-3">Acciones</th>
+                        <template x-if="editarActivo">
+                            <th class="p-3">Acciones</th>
+                        </template>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($empleados as $empleado)
                     <tr class="border border-gray-300 rounded-lg hover:bg-gray-50">
                         <td class="p-3">{{ $empleado->id }}</td>
-                        <td class="p-3">{{ $empleado->nombres }}</td>
+                        <td class="p-3">{{ $empleado ? $empleado->nombres . ' ' . $empleado->apellido_paterno . ' ' . $empleado->apellido_materno : 'N/A' }}</td>
                         <td class="p-3">{{ $empleado->departamento }}</td>
                         <td class="p-3">{{ $empleado->puesto }}</td>
                         <td class="p-3">{{ $empleado->email }}</td>
-                        <td class="p-3 flex gap-2">
-                            <!-- Botón Ver PDF siempre visible -->
-                            <a href="" target="_blank"
-                                class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">
-                                Crear Reporte
-                            </a>
-                        <!-- Botón Eliminar solo visible si eliminarActivo es true -->
                         <template x-if="editarActivo">
-                            <div class="flex gap-2">
-                                <a href="{{ route('admin.empleados.editar', $empleado->id) }}" target="_self"
-                                    class="bg-orange-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">
-                                    Editar
-                                </a>
-                                <form action="{{ route('admin.empleados.destroy', $empleado->id) }}" method="POST"
-                                    onsubmit="return confirm('¿Eliminar empleado?')" class="inline-block">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">Eliminar</button>
-                                </form>
-                            </div>
+                            <td class="p-3 flex gap-2">
+                                <div class="flex gap-2">
+                                    <a href="{{ route('admin.empleados.editar', $empleado->id) }}" target="_self"
+                                        class="bg-orange-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">
+                                        Editar
+                                    </a>
+                                    <form action="{{ route('admin.empleados.destroy', $empleado->id) }}" method="POST"
+                                        onsubmit="return confirm('¿Eliminar empleado?')" class="inline-block">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">Eliminar</button>
+                                    </form>
+                                </div>
+                            </td>
                         </template>
-
-                        </td>
                     </tr>
                     @endforeach
                 </tbody>
