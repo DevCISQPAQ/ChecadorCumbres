@@ -85,18 +85,30 @@ class EmpleadoController extends Controller
             // ->whereBetween('created_at', [$periodo['inicio'], $periodo['fin']])
             ->count();
 
-        $administrativosCount = Empleado::where('departamento', 'LIKE', '%administrativos%')
+        $administrativosCount = Empleado::where('departamento', 'LIKE', '%administracion%')
             // ->whereBetween('created_at', [$periodo['inicio'], $periodo['fin']])
             ->count();
 
-        $academiasCount = Empleado::where('departamento', 'LIKE', '%academias%')
+        $academiasCount = Empleado::where('departamento', 'LIKE', '%academia%')
+            // ->whereBetween('created_at', [$periodo['inicio'], $periodo['fin']])
+            ->count();
+
+        $promocionCount = Empleado::where('departamento', 'LIKE', '%promocion%')
+            // ->whereBetween('created_at', [$periodo['inicio'], $periodo['fin']])
+            ->count();
+
+        $mantenimientoCount = Empleado::where('departamento', 'LIKE', '%mantenimiento%')
+            // ->whereBetween('created_at', [$periodo['inicio'], $periodo['fin']])
+            ->count();
+
+        $direccionCount = Empleado::where('departamento', 'LIKE', '%direccion%')
             // ->whereBetween('created_at', [$periodo['inicio'], $periodo['fin']])
             ->count();
 
         // $totales_empleados = Empleado::whereBetween('created_at', [$periodo['inicio'], $periodo['fin']])->count();
         $totales_empleados = Empleado::query()->count();
 
-        return compact('preescolarCount', 'primariaCount', 'secundariaCount', 'administrativosCount', 'academiasCount', 'totales_empleados');
+        return compact('preescolarCount', 'primariaCount', 'secundariaCount', 'administrativosCount', 'academiasCount','promocionCount', 'mantenimientoCount','direccionCount', 'totales_empleados');
     }
 
     public function crearEmpleado()

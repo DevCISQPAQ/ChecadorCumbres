@@ -43,22 +43,22 @@
                 <label class="block text-sm font-semibold text-gray-700">Departamento</label>
                 <select name="departamento" class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
                     <option value="" disabled selected>Seleccione una opción</option>
+                    <option value="Academia">Academia</option>
+                    <option value="Administración">Administración</option>
+                    <option value="Dirección">Dirección</option>
                     <option value="Preescolar">Preescolar</option>
                     <option value="Primaria">Primaria</option>
+                    <option value="Promoción">Promoción</option>
                     <option value="Secundaria">Secundaria</option>
-                    <option value="Administrativos">Administrativos</option>
-                    <option value="Academias">Academias</option>
+                    <option value="Mantenimiento">Mantenimiento</option>
+
+
                 </select>
             </div>
 
             <div class="mb-4  w-1/2">
                 <label class="block text-sm font-semibold text-gray-700">Puesto</label>
                 <input type="text" name="puesto" required class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
-                <!-- <label class="block text-sm font-semibold text-gray-700">Puesto</label>
-                <select name="puesto" class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
-                    <option value="0">Docente</option>
-                    <option value="1"></option>
-                </select> -->
             </div>
         </div>
 

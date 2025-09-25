@@ -81,9 +81,15 @@ class HomeController extends Controller
     private function obtenerHoraLimite($empleado)
     {
         $horarios = [
+            'Academia' => '07:35:00',
+            'Administración' => '07:35:00',
+            'Dirección' => '07:45:00',
             'Preescolar' => '07:30:00',
-            'Primaria' => '08:00:00',
-            'Secundaria' => '07:45:00',
+            'Primaria' => '07:30:00',
+            'Promoción' => '07:35:00',
+            'Secundaria' => '07:35:00',
+            'Mantenimiento' => '07:35:00',
+
             // Agrega los que necesites
         ];
 
@@ -102,12 +108,12 @@ class HomeController extends Controller
         return Asistencia::where('empleado_id', $empleado->id)
             // ->whereDate('hora_entrada', today())
             // ->first();
-        ->whereDate('hora_entrada', today())
-        ->orWhere(function ($query) use ($empleado) {
-            $query->where('empleado_id', $empleado->id)
-                  ->whereDate('hora_salida', today());
-        })
-        ->first();
+            ->whereDate('hora_entrada', today())
+            ->orWhere(function ($query) use ($empleado) {
+                $query->where('empleado_id', $empleado->id)
+                    ->whereDate('hora_salida', today());
+            })
+            ->first();
     }
 
     private function registrarEntrada($empleado, $ahora, $horaLimiteCompleta)

@@ -94,7 +94,7 @@ function obtenerSaludoPorHora() {
 
     if (hora < 10) {
         return 'Bienvenido';
-    } else if (hora >= 15) {
+    } else if (hora >= 12) {
         return 'Hasta pronto';
     } else {
         return 'Hola';

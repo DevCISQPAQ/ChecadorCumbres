@@ -53,6 +53,21 @@
         </div>
 
         <div>
+            <label class="block mb-1 font-semibold">Departamento</label>
+            <select name="departamento" x-model="departamento" class="border rounded px-3 py-2">
+                <option value="">Todos</option>
+                <option value="academias" {{ request('departamento') == 'academias' ? 'selected' : '' }}>Academias</option>
+                <option value="administracion" {{ request('departamento') == 'administracion' ? 'selected' : '' }}>Administración</option>
+                 <option value="direccion" {{ request('departamento') == 'direccion' ? 'selected' : '' }}>Dirección</option>
+                <option value="preescolar" {{ request('departamento') == 'preescolar' ? 'selected' : '' }}>Preescolar</option>
+                <option value="primaria" {{ request('departamento') == 'primaria' ? 'selected' : '' }}>Primaria</option>
+                <option value="promocion" {{ request('departamento') == 'promocion' ? 'selected' : '' }}>Promoción</option>
+                <option value="secundaria" {{ request('departamento') == 'secundaria' ? 'selected' : '' }}>Secundaria</option>
+                <option value="mantenimiento" {{ request('departamento') == 'mantenimiento' ? 'selected' : '' }}>Mantenimiento</option>
+            </select>
+        </div>
+
+        <div>
             <label class="block mb-1 font-semibold">Retardo</label>
             <select name="retardo" x-model="retardo" class="border rounded px-3 py-2">
                 <option value="">Todos</option>
@@ -88,12 +103,13 @@
         @endif
     </form>
 
-    <div class="flex justify-end mb-1 pr-4">
+    <div class="flex justify-end mb-1 pr-4 pt-5">
         <form method="GET" action="{{ route('admin.asistencias.reporte') }}" target="_blank">
             <!-- Envía los filtros actuales como inputs ocultos -->
             <input type="hidden" name="buscar" value="{{ request('buscar') }}">
             <input type="hidden" name="fecha_inicio" value="{{ request('fecha_inicio') }}">
             <input type="hidden" name="fecha_fin" value="{{ request('fecha_fin') }}">
+            <input type="hidden" name="departamento" value="{{ request('departamento') }}">
             <input type="hidden" name="retardo" value="{{ request('retardo') }}">
             <input type="hidden" name="hora_entrada" value="{{ request('hora_entrada') }}">
             <input type="hidden" name="hora_salida" value="{{ request('hora_salida') }}">
@@ -109,8 +125,9 @@
             <table class="min-w-full bg-white">
                 <thead class="sticky top-0 bg-gray-700 text-white">
                     <tr>
-                        <th class="p-3 text-center">IdEmpleado</th>
+                        <th class="p-3 text-center">N. Empleado</th>
                         <th class="p-3 text-center">Nombre</th>
+                        <th class="p-3 text-center">Departamento</th>
                         <th class="p-3 text-center">Hora de entrada</th>
                         <th class="p-3 text-center">Hora de salida</th>
                         <th class="p-3 text-center">Retardo</th>
@@ -120,8 +137,9 @@
                     @forelse ($asistencias as $asistencia)
                     @php $empleado = $asistencia->empleado; @endphp
                     <tr class="border border-gray-300 hover:bg-gray-50">
-                        <td class="p-3 text-center">{{ $asistencia->empleado_id }}</td>
+                        <td class="p-3 text-center">{{ $asistencia->empleado_id ?? 0}}</td>
                         <td class="p-3 text-center">{{ $empleado ? $empleado->nombres . ' ' . $empleado->apellido_paterno . ' ' . $empleado->apellido_materno : 'N/A' }}</td>
+                        <td class="p-3 text-center">{{ $empleado->departamento ?? 'N/A' }}</td>
                         <td class="p-3 text-center">{{ $asistencia->hora_entrada ? $asistencia->hora_entrada->format('H:i') : 'N/A' }}</td>
                         <td class="p-3 text-center">{{ $asistencia->hora_salida ? $asistencia->hora_salida->format('H:i') : 'N/A' }}</td>
                         <td class="p-3 text-center {{ $asistencia->retardo ? 'text-red-600 font-semibold' : 'text-green-600 font-semibold' }}">

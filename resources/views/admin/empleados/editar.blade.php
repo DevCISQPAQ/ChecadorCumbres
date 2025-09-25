@@ -50,13 +50,15 @@
             <div class="mb-4 w-1/2">
                 <label class="block text-sm font-semibold text-gray-700">Departamento</label>
                 <select name="departamento" class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
+                    <option value="Academia" {{ $empleado->departamento === 'Academia' ? 'selected' : '' }}>Academia</option>
+                    <option value="Administración" {{ $empleado->departamento === 'Administración' ? 'selected' : '' }}>Administración</option>
+                    <option value="Dirección" {{ $empleado->departamento === 'Dirección' ? 'selected' : '' }}>Dirección</option>
                     <option value="Preescolar" {{ $empleado->departamento === 'Preescolar' ? 'selected' : '' }}>Preescolar</option>
                     <option value="Primaria" {{ $empleado->departamento === 'Primaria' ? 'selected' : '' }}>Primaria</option>
+                    <option value="Promoción" {{ $empleado->departamento === 'Promoción' ? 'selected' : '' }}>Promoción</option>
                     <option value="Secundaria" {{ $empleado->departamento === 'Secundaria' ? 'selected' : '' }}>Secundaria</option>
-                    <option value="Administrativos" {{ $empleado->departamento === 'Administrativos' ? 'selected' : '' }}>Administrativos</option>
-                    <option value="Academias" {{ $empleado->departamento === 'Academias' ? 'selected' : '' }}>Academias</option>
+                    <option value="Mantenimiento" {{ $empleado->departamento === 'Mantenimiento' ? 'selected' : '' }}>Mantenimiento</option>
                 </select>
-
             </div>
 
             <div class="mb-4 w-1/2">
