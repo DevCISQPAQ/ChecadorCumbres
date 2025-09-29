@@ -137,9 +137,9 @@ class AdminController extends Controller
             ->whereDate('created_at', Carbon::today())
             ->count();
 
-        $cantidadSinAsistencia = Empleado::doesntHave('asistencias')
-            ->whereDate('created_at', Carbon::today())
-            ->count();
+        $cantidadSinAsistencia = Empleado::whereDoesntHave('asistencias', function ($query) {
+            $query->whereDate('created_at', Carbon::today()); // Asumo que en asistencias hay un campo 'fecha'
+        })->count();
 
         return compact('asistenciaE', 'asistenciaS', 'retardosHoy', 'cantidadSinAsistencia');
     }
@@ -248,6 +248,4 @@ class AdminController extends Controller
             return redirect()->back()->with('error', 'Error al ver el PDF: ' . $e->getMessage());
         }
     }
-
-
 }

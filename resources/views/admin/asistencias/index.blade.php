@@ -22,7 +22,7 @@
     </div>
     <div class="bg-white p-3 rounded-lg shadow">
         <h3 class="text-sm text-center font-semibold text-gray-700">Faltantes del dia</h3>
-        <p class="text-3xl text-center mt-2 font-bold text-red-600">{{ $cantidadSinAsistencia?? 0}}</p>
+        <p class="text-3xl text-center mt-2 font-bold text-red-600">{{ $cantidadSinAsistencia ?? 0}}</p>
     </div>
 </div>
 {{-- Sección adicional --}}

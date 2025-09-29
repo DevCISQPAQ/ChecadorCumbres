@@ -15,19 +15,25 @@ h2{
     width: 50%;
 }
 
+body {
+    /* font-family: DejaVu Sans, sans-serif;
+    font-size: 12px; */
+    margin-bottom: 100px; /* espacio para footer fijo */
+}
+
 .margin-top {
     margin-top: 1.25rem;
 }
 
 .footer {
     position: fixed;
-    bottom: -50px;
+    bottom: 0px;
     text-align: center; 
     left: 0;
     right: 0;
     font-size: 0.875rem;
     padding: 1rem;
-    background-color: rgb(241 245 249);
+    background-color: #f1f5f9;
 }
 
 table {
@@ -40,7 +46,7 @@ table.products {
 }
 
 table.products tr {
-    background-color: rgb(96 165 250);
+    background-color: #60a5fa;
 }
 
 table.products th {

@@ -25,7 +25,8 @@ break;
     <table class="w-full">
         <tr>
             <td class="w-half">
-                <img src="{{ public_path('img/escudo-gris.png') }}" alt="Logo" width="100" />
+                <!-- <img src="{{ public_path('img/escudo-gris.svg') }}" alt="Logo" width="100" /> -->
+                 <img src="{{ public_path('img/escudo-gris.svg') }}" alt="Logo" style="width: .5rem;">
             </td>
             <td class="w-half">
                 <h2>Cumbres International School</h2>
