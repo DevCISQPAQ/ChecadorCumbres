@@ -14,7 +14,6 @@ class HomeController extends Controller
         return view('welcome');
     }
 
-
     public function buscarEmpleado($id)
     {
         $empleado = Empleado::find($id);
@@ -41,14 +40,62 @@ class HomeController extends Controller
 
     public function agregarAsistencia($empleado)
     {
-        $ahora = now(); // Fecha y hora actual (Carbon instance)
+        $ahora = now();
         $fechaHoy = $ahora->format('Y-m-d');
-        $horaLimiteCompleta = \Carbon\Carbon::parse("$fechaHoy" . $this->obtenerHoraLimite($empleado));
         $horaLimiteSalida = \Carbon\Carbon::parse("$fechaHoy 11:30:00");
 
+        if ($this->esHorarioLibre($empleado)) {
+            return $this->agregarAsistenciaHorarioLibre($empleado, $ahora);
+        }
 
+        // Para horario base u otros
+        return $this->agregarAsistenciaHorarioBase($empleado, $ahora, $horaLimiteSalida, $fechaHoy);
+    }
+
+    private function esHorarioLibre($empleado)
+    {
+        return strtolower($empleado->tipo_horario) === 'horario libre';
+    }
+
+    private function agregarAsistenciaHorarioLibre($empleado, $ahora)
+    {
+        if (!$this->yaTieneEntradaHoy($empleado)) {
+            return $this->registrarEntrada($empleado, $ahora);
+        }
+
+        $asistencia = $this->obtenerAsistenciaHoy($empleado);
+
+        if ($asistencia && is_null($asistencia->hora_salida)) {
+            return $this->validarSalidaHorarioLibre($asistencia, $ahora);
+        }
+
+        return [
+            'success' => false,
+            'message' => 'Ya tienes registrada la entrada y salida para hoy.',
+        ];
+    }
+
+    private function validarSalidaHorarioLibre($asistencia, $ahora)
+    {
+        $horaEntrada = \Carbon\Carbon::parse($asistencia->hora_entrada);
+        $minutosDesdeEntrada = $horaEntrada->diffInMinutes($ahora);
+
+        if ($minutosDesdeEntrada < 60) {
+            return [
+                'success' => false,
+                'confirmar_salida' => true,
+                'message' => 'Ya tienes una entrada sin salida. ¿Quieres marcar la salida?',
+                'asistencia_id' => $asistencia->id,
+            ];
+        }
+
+        // Más de una hora, marcar salida automáticamente
+        return $this->registrarSalida($asistencia, $ahora);
+    }
+
+    private function agregarAsistenciaHorarioBase($empleado, $ahora, $horaLimiteSalida, $fechaHoy)
+    {
         if ($ahora->lessThan($horaLimiteSalida)) {
-            // Intento de marcar entrada
             if ($this->yaTieneEntradaHoy($empleado)) {
                 return [
                     'success' => false,
@@ -56,11 +103,10 @@ class HomeController extends Controller
                 ];
             }
 
+            $horaLimiteCompleta = \Carbon\Carbon::parse("$fechaHoy 07:30:00");
             return $this->registrarEntrada($empleado, $ahora, $horaLimiteCompleta);
         }
 
-        //
-        // Intento de marcar salida
         $asistencia = $this->obtenerAsistenciaHoy($empleado);
 
         if ($asistencia) {
@@ -74,26 +120,7 @@ class HomeController extends Controller
             return $this->registrarSalida($asistencia, $ahora);
         }
 
-        // No hay entrada, crear asistencia solo con salida
         return $this->crearSalidaSinEntrada($empleado, $ahora);
-    }
-
-    private function obtenerHoraLimite($empleado)
-    {
-        $horarios = [
-            'Academia' => '07:35:00',
-            'Administración' => '07:35:00',
-            'Dirección' => '07:45:00',
-            'Preescolar' => '07:30:00',
-            'Primaria' => '07:30:00',
-            'Promoción' => '07:35:00',
-            'Secundaria' => '07:35:00',
-            'Mantenimiento' => '07:35:00',
-
-            // Agrega los que necesites
-        ];
-
-        return $horarios[$empleado->departamento] ?? '07:30:00';
     }
 
     private function yaTieneEntradaHoy($empleado)
@@ -116,9 +143,13 @@ class HomeController extends Controller
             ->first();
     }
 
-    private function registrarEntrada($empleado, $ahora, $horaLimiteCompleta)
+    private function registrarEntrada($empleado, $ahora, $horaLimiteCompleta = null)
     {
-        $retardo = $ahora->greaterThan($horaLimiteCompleta);
+        $retardo = false;
+
+        if ($horaLimiteCompleta) {
+            $retardo = $ahora->greaterThan($horaLimiteCompleta);
+        }
 
         Asistencia::create([
             'empleado_id' => $empleado->id,
@@ -132,6 +163,7 @@ class HomeController extends Controller
             'message' => 'Entrada registrada correctamente.',
         ];
     }
+
 
     private function yaTieneSalidaHoy($asistencia)
     {
@@ -151,16 +183,53 @@ class HomeController extends Controller
 
     private function crearSalidaSinEntrada($empleado, $ahora)
     {
+
+        $retardo = false;
+        $horaE = $ahora;
+
+        if (strtolower($empleado->tipo_horario) === 'horario base') {
+            $horaE = null;
+            $retardo = true; // o aplica otra lógica si lo deseas
+        }
+
         Asistencia::create([
             'empleado_id' => $empleado->id,
-            'hora_entrada' => null, // puedes usar null si prefieres
+            'hora_entrada' => $horaE, // puedes usar null si prefieres
             'hora_salida' => $ahora,
-            'retardo' => true,
+            'retardo' => $retardo,
         ]);
 
         return [
             'success' => true,
             'message' => 'Salida registrada correctamente.',
         ];
+    }
+
+    public function marcarSalidaConfirmada($id)
+    {
+        $asistencia = Asistencia::find($id);
+
+        if (!$asistencia) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Registro de asistencia no encontrado.'
+            ], 404);
+        }
+
+        if ($asistencia->hora_salida !== null) {
+            return response()->json([
+                'success' => false,
+                'message' => 'La salida ya fue registrada previamente.'
+            ], 400);
+        }
+
+        $ahora = now();
+        $asistencia->hora_salida = $ahora;
+        $asistencia->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Salida registrada correctamente.',
+        ]);
     }
 }

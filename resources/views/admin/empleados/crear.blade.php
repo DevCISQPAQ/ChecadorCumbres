@@ -62,11 +62,22 @@
             </div>
         </div>
 
-        <div class="mb-4">
-            <label class="block text-sm font-semibold text-gray-700">Correo electrónico</label>
-            <input type="email" name="email" id="email" required class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
-        </div>
+        <div class="flex justify-between gap-4">
 
+            <div class="mb-4  w-1/2">
+                <label class="block text-sm font-semibold text-gray-700">Tipo de horario</label>
+                <select name="tipo_horario" class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
+                    <option value="" disabled selected>Seleccione una opción</option>
+                    <option value="Horario Base">Horario Base</option>
+                    <option value="Horario Libre">Horario Libre</option>
+                </select>
+            </div>
+
+            <div class="mb-4 w-1/2">
+                <label class="block text-sm font-semibold text-gray-700">Correo electrónico</label>
+                <input type="email" name="email" id="email" required class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
+            </div>
+        </div>
         <div class="mb-4">
             <label class="block text-sm font-semibold text-gray-700 mb-1" for="foto">Subir foto</label>
             <input

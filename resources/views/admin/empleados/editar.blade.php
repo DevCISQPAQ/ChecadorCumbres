@@ -68,9 +68,20 @@
 
         </div>
 
-        <div class="mb-4">
-            <label class="block text-sm font-semibold text-gray-700">Correo electrónico</label>
-            <input type="email" name="email" value="{{ old('email', $empleado->email) }}" required class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
+
+        <div class="flex gap-4">
+            <div class="mb-4 w-1/2">
+                <label class="block text-sm font-semibold text-gray-700">Tipo de horario</label>
+                <select name="tipo_horario" class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
+                    <option value="Horario Base" {{ $empleado->tipo_horario === 'Horario Base' ? 'selected' : '' }}>Horario Base</option>
+                    <option value="Horario Libre" {{ $empleado->tipo_horario === 'Horario Libre' ? 'selected' : '' }}>Horario Libre</option>
+                </select>
+            </div>
+
+            <div class="mb-4 w-1/2">
+                <label class="block text-sm font-semibold text-gray-700">Correo electrónico</label>
+                <input type="email" name="email" value="{{ old('email', $empleado->email) }}" required class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
+            </div>
         </div>
 
         <div class="mb-4">

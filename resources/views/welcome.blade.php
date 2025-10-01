@@ -75,6 +75,15 @@
     <footer>
         <h2 class=" text-gray-600/50 text-center pb-1 italic">&copy; {{ date('Y') }} Desarrollado e implementado por el Depto. de Tecnologías de la Información.</h2>
     </footer>
+    <!-- Modal confirmación salida -->
+    <div id="modalConfirmSalida" class="hidden fixed inset-0 flex justify-center items-center z-50 bg-black/50">
+        <div class="bg-white p-6 rounded-lg max-w-md w-11/12 text-center shadow-lg">
+            <p id="mensajeConfirmSalida" class="mb-6 text-lg font-semibold"></p>
+            <button id="btnConfirmarSalida" class="px-6 py-2 bg-green-600 text-white rounded mr-4 hover:bg-green-700 transition">Sí</button>
+            <button id="btnCancelarSalida" class="px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition">No</button>
+        </div>
+    </div>
+
 </body>
 
 </html>

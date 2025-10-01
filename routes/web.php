@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'showWelcome']);
 Route::get('/empleado/{id}/buscar', [HomeController::class, 'buscarEmpleado']);
+Route::post('/asistencia/{id}/salida', [HomeController::class, 'marcarSalidaConfirmada']);
 
 Route::prefix('admin')->name('admin.')->group(function () {
     // Login y logout

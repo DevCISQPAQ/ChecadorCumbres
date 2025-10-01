@@ -125,6 +125,7 @@ class EmpleadoController extends Controller
             'apellido_materno' => 'required',
             'departamento' => 'required',
             'puesto' => 'required',
+            'tipo_horario' => 'required',
             'email' => ['required', 'email', 'unique:empleados', function ($attribute, $value, $fail) {
                 $domain = substr(strrchr($value, "@"), 1);  // Obtener el dominio del correo
                 if (!checkdnsrr($domain, 'MX')) {  // Verificar registros MX para el dominio
@@ -155,6 +156,7 @@ class EmpleadoController extends Controller
                 'departamento' => $request->departamento,
                 'puesto' => $request->puesto,
                 'email' => $request->email,
+                'tipo_horario' => $request->tipo_horario,
                 'foto' => $fotoNombre, // Guarda el nombre de la foto o null
 
             ]);
@@ -186,6 +188,7 @@ class EmpleadoController extends Controller
             'departamento' => 'required',
             'puesto' => 'required',
             'email' => 'required|email|unique:users,email,' . $id,
+            'tipo_horario' => 'required',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // validar la imagen
 
         ]);
@@ -215,6 +218,7 @@ class EmpleadoController extends Controller
                 'departamento' => $request->departamento,
                 'puesto' => $request->puesto,
                 'email' => $request->email,
+                'tipo_horario' =>$request->tipo_horario,
                 'foto' => $fotoNombre, // Guarda el nombre de la foto o null
             ];
 

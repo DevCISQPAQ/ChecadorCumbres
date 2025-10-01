@@ -23,6 +23,7 @@ class Empleado extends Model
         'departamento',
         'puesto',
         'email',
+        'tipo_horario',
         'foto',
 
 

@@ -27,10 +27,6 @@ class AdminController extends Controller
             // }
 
             $conteosAsistencias = $this->obtenerConteosdeAsistencia();
-            // $conteosRetardos = $this->obtenerConteosdeRetardos();
-            // $conteosSalidas = $this->obtenerConteosdeSalidas();
-            // $conteosFaltantes = $this->obtenerConteosdeFaltantes();
-
             $asistencias = $this->listarAsistencias($request);
 
             return view('admin.asistencias.index', array_merge($conteosAsistencias, compact('asistencias')));
@@ -40,8 +36,6 @@ class AdminController extends Controller
             return redirect()->back()->with('error', 'Error al cargar la página de Dashboard ' . $e->getMessage());
         }
     }
-
-
 
     public function listarAsistencias(Request $request)
     {
@@ -59,68 +53,6 @@ class AdminController extends Controller
 
         return $query->paginate(10)->withQueryString();
     }
-
-    // public function listarAsistencias(Request $request)
-    // {
-    //     // Iniciamos el query builder, sin llamar a get()
-    //     $query = Asistencia::with('empleado');
-
-    //     // Solo filtrar por hoy si NO hay búsqueda ni filtro de fechas
-    //     if (!$request->filled('buscar') && !$request->filled('fecha_inicio') && !$request->filled('fecha_fin')) {
-    //         $query->whereDate('created_at', Carbon::today());
-    //     }
-
-    //     if ($request->filled('buscar')) {
-    //         $query = Asistencia::with('empleado');
-    //         $buscar = strtolower($request->buscar);
-
-    //         // Buscamos en los campos del empleado relacionados usando whereHas
-    //         $query->whereHas('empleado', function ($q) use ($buscar) {
-    //             $q->whereRaw('LOWER(nombres) LIKE ?', ["%{$buscar}%"])
-    //                 ->orWhereRaw('LOWER(apellido_paterno) LIKE ?', ["%{$buscar}%"])
-    //                 ->orWhereRaw('LOWER(apellido_materno) LIKE ?', ["%{$buscar}%"]);
-    //         });
-    //     }
-
-    //     // Filtrar por rango de fecha (fecha_inicio y fecha_fin sobre created_at)
-    //     if ($request->filled('fecha_inicio')) {
-    //         $query->whereDate('created_at', '>=', $request->fecha_inicio);
-    //     }
-    //     if ($request->filled('fecha_fin')) {
-    //         $query->whereDate('created_at', '<=', $request->fecha_fin);
-    //     }
-
-    //     // Filtrar por retardo (1 o 0)
-    //     if ($request->filled('retardo') && in_array($request->retardo, ['0', '1'])) {
-    //         $query->where('retardo', $request->retardo);
-    //     }
-
-    //     // Filtrar por existencia de hora_entrada (1 = con hora, 0 = sin hora)
-    //     if ($request->filled('hora_entrada') && in_array($request->hora_entrada, ['0', '1'])) {
-    //         if ($request->hora_entrada == '1') {
-    //             $query->whereNotNull('hora_entrada');
-    //         } else {
-    //             $query->whereNull('hora_entrada');
-    //         }
-    //     }
-
-    //     // Filtrar por existencia de hora_salida (1 = con hora, 0 = sin hora)
-    //     if ($request->filled('hora_salida') && in_array($request->hora_salida, ['0', '1'])) {
-    //         if ($request->hora_salida == '1') {
-    //             $query->whereNotNull('hora_salida');
-    //         } else {
-    //             $query->whereNull('hora_salida');
-    //         }
-    //     }
-
-    //     // Ordenamos por fecha descendente
-    //     $query->orderByDesc('created_at');
-
-    //     // Finalmente paginamos la consulta
-    //     $asistencias = $query->paginate(10)->withQueryString();
-
-    //     return $asistencias;
-    // }
 
     public function obtenerConteosdeAsistencia()
     {

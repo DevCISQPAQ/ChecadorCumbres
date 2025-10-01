@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('departamento');
             $table->string('puesto');
             $table->string('email')->nullable();
+            $table->string('tipo_horario');
             $table->text('foto')->nullable();
             $table->timestamps();
         });
