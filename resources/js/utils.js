@@ -1,3 +1,5 @@
+import { html5QrCode } from './qrscan.js';  // importa la instancia del scanner
+
 export function obtenerSaludoPorHora() {
     const ahora = new Date();
     const hora = ahora.getHours();
@@ -10,8 +12,8 @@ export function obtenerSaludoPorHora() {
 export function actualizarEmpleadoConSaludo(empleado, nombreElement, fotoElement) {
     const saludo = obtenerSaludoPorHora();
     let saludoColor = saludo === 'Buenos días' ? 'text-green-600' :
-                      saludo === 'Buenas tardes' ? 'text-yellow-600' :
-                      'text-blue-600';
+        saludo === 'Buenas tardes' ? 'text-yellow-600' :
+            'text-blue-600';
 
     nombreElement.innerHTML = `<span class="${saludoColor} font-bold">${saludo}</span><br>${empleado.nombres} ${empleado.apellido_paterno} ${empleado.apellido_materno}`;
     fotoElement.src = empleado.foto ? `/img/empleados/${empleado.foto}` : `/img/escudo-gris.png`;
@@ -19,6 +21,7 @@ export function actualizarEmpleadoConSaludo(empleado, nombreElement, fotoElement
 
 export function mostrarModalConfirmacion(mensaje) {
     return new Promise((resolve) => {
+
         const modal = document.getElementById('modalConfirmSalida');
         const mensajeElem = document.getElementById('mensajeConfirmSalida');
         const btnConfirmar = document.getElementById('btnConfirmarSalida');
@@ -32,23 +35,26 @@ export function mostrarModalConfirmacion(mensaje) {
             btnCancelar.removeEventListener('click', onCancelar);
         }
 
-        function onConfirmar() {
+
+        function finalizar(confirmacion) {
             limpiarEventos();
             modal.classList.add('hidden');
-            resolve(true);
+            resolve(confirmacion);
+        }
+
+
+        function onConfirmar() {
+            finalizar(true);
         }
 
         function onCancelar() {
-            limpiarEventos();
-            modal.classList.add('hidden');
-            resolve(false);
+            finalizar(false);
         }
 
         btnConfirmar.addEventListener('click', onConfirmar);
         btnCancelar.addEventListener('click', onCancelar);
     });
 }
-
 
 // Maneja lógica común para registrar asistencia y mostrar resultados
 export async function manejarAsistencia(empleadoId, elementos, options = {}) {
@@ -67,16 +73,26 @@ export async function manejarAsistencia(empleadoId, elementos, options = {}) {
             },
         });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Error desconocido');
-        }
+        // if (!response.ok) {
+        //     let errorMessage = `Error ${response.status}`;
+        //     try {
+        //         const errorData = await response.json();
+        //         errorMessage = errorData.error || errorMessage;
+        //     } catch (e) {
+        //         // Si no se puede parsear JSON (por ejemplo, HTML), mantenemos el mensaje original
+        //     }
+        //     throw new Error(errorMessage);
+        // }
 
         const data = await response.json();
+        if (data.success === false) {
+            throw new Error(data.error || 'Empleado no encontrado.');
+        }
         const empleado = data.empleado;
         const asistencia = data.asistencia;
 
         if (asistencia.confirmar_salida) {
+            if (options.pauseQr) options.pauseQr();
             const confirmar = await mostrarModalConfirmacion(asistencia.message);
             if (confirmar) {
                 const respSalida = await fetch(`/asistencia/${asistencia.asistencia_id}/salida`, {
@@ -105,6 +121,7 @@ export async function manejarAsistencia(empleadoId, elementos, options = {}) {
                 resultElement.style.backgroundColor = "orange";
                 pResult.style.color = "black";
             }
+            if (options.resumeQr) options.resumeQr();   // Para el qr escáner, reanudar escaneo
         } else {
             actualizarEmpleadoConSaludo(empleado, nombreElement, fotoElement);
             pResult.innerText = asistencia.message;
@@ -126,7 +143,11 @@ export async function manejarAsistencia(empleadoId, elementos, options = {}) {
             resultElement.style.backgroundColor = "white";
             fotoElement.src = fotoOriginal;
 
-            if (options.resumeQr) options.resumeQr();   // Para el qr escáner, reanudar escaneo
+            try {
+                if (options.resumeQr) options.resumeQr();
+            } catch (e) {
+                // console.warn('No se pudo reanudar el QR: ', e.message);
+            }
             if (options.clearInput) options.clearInput(); // Para input, limpiar campo
         }, 2500);
     }

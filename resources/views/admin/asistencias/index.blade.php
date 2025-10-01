@@ -31,6 +31,7 @@
     buscar: '{{ request('buscar', '') }}',
     fecha_inicio: '{{ request('fecha_inicio', '') }}',
     fecha_fin: '{{ request('fecha_fin', '') }}',
+    departamento: '{{ request('departamento', '') }}',
     retardo: '{{ request('retardo', '') }}',
     hora_entrada: '{{ request('hora_entrada', '') }}',
     hora_salida: '{{ request('hora_salida', '') }}'

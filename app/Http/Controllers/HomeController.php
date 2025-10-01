@@ -19,7 +19,10 @@ class HomeController extends Controller
         $empleado = Empleado::find($id);
 
         if (!$empleado) {
-            return response()->json(['error' => 'Empleado no encontrado.'], 404);
+            return response()->json([
+                'success' => false,
+                'error' => 'Empleado no encontrado.'
+            ], 200);  // <--- Retorna 200 para evitar error 404 en frontend
         }
 
         try {
