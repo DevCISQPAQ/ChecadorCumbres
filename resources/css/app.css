@@ -44,6 +44,11 @@
   }
 }
 
+@layer utilities {
+  .scale-x-neg-100 {
+    transform: scaleX(-1);
+  }
+}
 
 @layer components {
   .banner {
@@ -71,11 +76,11 @@
   }
 
   .content-QR{
-    @apply w-110 2xl:w-180 shadow-lg/20 shadow-cyan-500/50;
+    @apply w-110 2xl:w-180 shadow-lg/20 shadow-cyan-500/50 rounded-xl;
   }
 
   .content-Result{
-    @apply flex flex-col items-center p-4 w-120 2xl:w-180 shadow-lg/20 shadow-cyan-500/50;
+    @apply flex flex-col items-center p-4 w-120 2xl:w-180 shadow-lg/20 shadow-cyan-500/50 rounded-xl;
   }
 
   .text-result{

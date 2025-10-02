@@ -33,10 +33,10 @@
             <div class="content-scanResult">
                 <!-- Div lector QR -->
                 <div class="content-QR">
-                    <div id="reader" class="w-full h-auto"></div>
+                    <div id="reader" class="w-full h-auto scale-x-neg-100"></div>
                 </div>
                 <!-- Div de resultado -->
-                <div class="content-Result">
+                <div id="cont_result" class="content-Result">
                     <!-- Imagen del empleado -->
                     <div class="flex justify-center mb-2 h-auto">
                         <div class="w-44 h-44 2xl:w-60 2xl:h-60 overflow-hidden rounded-xl ">
@@ -50,7 +50,7 @@
                     <h2 class="text-result" id="nombre-empleado">
                         <!-- Bienvenido <span id="nombre-empleado">Lalo</span> -->
                     </h2>
-                    <div id="result" class="mt-auto w-full">
+                    <div id="result" class="mt-auto w-full rounded-xl">
                         <p class="text-center font-bold text-lg text-gray-700"> </p>
                     </div>
                 </div>
@@ -76,7 +76,7 @@
         <h2 class=" text-gray-600/50 text-center pb-1 italic">&copy; {{ date('Y') }} Desarrollado e implementado por el Depto. de Tecnologías de la Información.</h2>
     </footer>
     <!-- Modal confirmación salida -->
-    <div id="modalConfirmSalida" class="hidden fixed inset-0 flex justify-center items-center z-50 bg-black/50">
+    <div id="modalConfirmSalida" class="hidden fixed inset-0 justify-center items-center z-50 bg-black/50">
         <div class="bg-white p-6 rounded-lg max-w-md w-11/12 text-center shadow-lg">
             <p id="mensajeConfirmSalida" class="mb-6 text-lg font-semibold"></p>
             <button id="btnConfirmarSalida" class="px-6 py-2 bg-green-600 text-white rounded mr-4 hover:bg-green-700 transition">Sí</button>

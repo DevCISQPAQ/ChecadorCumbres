@@ -4,7 +4,6 @@ import { manejarAsistencia } from './utils.js';
 
 const qrRegionId = "reader";
 export let html5QrCode = null;
-export let isScannerPaused = false; // ✅ NUEVO
 
 if (document.getElementById(qrRegionId)) {
     html5QrCode = new Html5Qrcode(qrRegionId);

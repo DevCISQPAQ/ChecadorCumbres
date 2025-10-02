@@ -29,6 +29,7 @@ export function mostrarModalConfirmacion(mensaje) {
 
         mensajeElem.innerText = mensaje;
         modal.classList.remove('hidden');
+        modal.classList.add('flex');
 
         function limpiarEventos() {
             btnConfirmar.removeEventListener('click', onConfirmar);
@@ -39,6 +40,7 @@ export function mostrarModalConfirmacion(mensaje) {
         function finalizar(confirmacion) {
             limpiarEventos();
             modal.classList.add('hidden');
+            modal.classList.remove('flex');
             resolve(confirmacion);
         }
 
@@ -73,17 +75,6 @@ export async function manejarAsistencia(empleadoId, elementos, options = {}) {
             },
         });
 
-        // if (!response.ok) {
-        //     let errorMessage = `Error ${response.status}`;
-        //     try {
-        //         const errorData = await response.json();
-        //         errorMessage = errorData.error || errorMessage;
-        //     } catch (e) {
-        //         // Si no se puede parsear JSON (por ejemplo, HTML), mantenemos el mensaje original
-        //     }
-        //     throw new Error(errorMessage);
-        // }
-
         const data = await response.json();
         if (data.success === false) {
             throw new Error(data.error || 'Empleado no encontrado.');
@@ -114,7 +105,7 @@ export async function manejarAsistencia(empleadoId, elementos, options = {}) {
                 pResult.innerText = dataSalida.message;
                 resultElement.style.backgroundColor = "green";
                 pResult.style.color = "white";
-
+                // contResult.style.backgroundColor = "rgba(0, 128, 0, 0.3)";
                 actualizarEmpleadoConSaludo(empleado, nombreElement, fotoElement);
             } else {
                 pResult.innerText = 'Salida no marcada.';
@@ -127,6 +118,8 @@ export async function manejarAsistencia(empleadoId, elementos, options = {}) {
             pResult.innerText = asistencia.message;
             pResult.style.color = asistencia.success ? "white" : "white";
             resultElement.style.backgroundColor = asistencia.success ? "green" : "red";
+            // contResult.style.backgroundColor = asistencia.success ? "rgba(0, 128, 0, 0.1)" : "rgba(255, 0, 0, 0.1)";
+
         }
 
     } catch (error) {
@@ -142,6 +135,7 @@ export async function manejarAsistencia(empleadoId, elementos, options = {}) {
             nombreElement.innerText = nombreOriginal;
             resultElement.style.backgroundColor = "white";
             fotoElement.src = fotoOriginal;
+            // contResult.style.backgroundColor = "white";
 
             try {
                 if (options.resumeQr) options.resumeQr();

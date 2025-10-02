@@ -26,7 +26,7 @@ break;
         <tr>
             <td class="w-half">
                 <!-- <img src="{{ public_path('img/escudo-gris.svg') }}" alt="Logo" width="100" /> -->
-                 <img src="{{ public_path('img/escudo-gris.svg') }}" alt="Logo" style="width: .5rem;">
+                <img src="{{ public_path('img/escudo-gris.svg') }}" alt="Logo" style="width: .5rem;">
             </td>
             <td class="w-half">
                 <h2>Cumbres International School</h2>
@@ -47,7 +47,7 @@ break;
                     @endif
                 </td>
                 <td class="w-half" style="text-align: right;">
-                   Fecha: {{ now()->format('d/m/Y') }}
+                    Fecha: {{ now()->format('d/m/Y') }}
                 </td>
             </tr>
         </table>
@@ -81,9 +81,9 @@ break;
                     <td>{{ $asistencia->empleado_id ?? 0 }}</td>
                     <td>{{ $empleado ? $empleado->nombres . ' ' . $empleado->apellido_paterno . ' ' . $empleado->apellido_materno : 'N/A' }}</td>
                     <td>{{ $empleado->departamento ?? 'N/A' }}</td>
-                    <td>{{ $asistencia->hora_entrada ? $asistencia->hora_entrada->format('H:i') : 'N/A' }}</td>
-                    <td>{{ $asistencia->hora_salida ? $asistencia->hora_salida->format('H:i') : 'N/A' }}</td>
-                    <td>{{ $asistencia->retardo ? 'Sí' : 'No' }}</td>
+                    <td @if(!$asistencia->hora_entrada) style="color: red;" @endif>{{ $asistencia->hora_entrada ? $asistencia->hora_entrada->format('Y/m/d H:i') : 'N/A' }}</td>
+                    <td @if(!$asistencia->hora_salida) style="color: red;" @endif>{{ $asistencia->hora_salida ? $asistencia->hora_salida->format('Y/m/d H:i') : 'N/A' }}</td>
+                    <td @if($asistencia->retardo) style="color: red;" @else style="color: green;" @endif>{{ $asistencia->retardo ? 'Sí' : 'No' }}</td>
                 </tr>
                 @endforeach
             </tbody>
@@ -91,10 +91,17 @@ break;
                 <tr>
                     <td colspan="6" style="text-align: right; font-weight: bold; padding-right: 1rem;">Total de retardos: {{ $totalRetardos }}</td>
                 </tr>
+                @if(isset($horasFormateadas))
+                <tr>
+                    <td colspan="6" style="text-align: right; font-weight: bold; padding-right: 1rem;">
+                        <strong> Total de horas trabajadas:</strong> {{ $horasFormateadas }} horas
+                    </td>
+                </tr>
+                @endif
             </tfoot>
         </table>
     </div>
-    <footer class="footer margin-top">
+    <footer class="footer">
         <div>&copy; Cumbres International School</div>
         <div>Documento generado automáticamente por el sistema.</div>
     </footer>

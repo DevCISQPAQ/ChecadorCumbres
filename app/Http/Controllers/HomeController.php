@@ -106,7 +106,7 @@ class HomeController extends Controller
                 ];
             }
 
-            $horaLimiteCompleta = \Carbon\Carbon::parse("$fechaHoy 07:30:00");
+            $horaLimiteCompleta = \Carbon\Carbon::parse("$fechaHoy 07:35:00");
             return $this->registrarEntrada($empleado, $ahora, $horaLimiteCompleta);
         }
 

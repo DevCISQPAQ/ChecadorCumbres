@@ -170,8 +170,12 @@ class AdminController extends Controller
             // Reutilizar la lógica para obtener asistencias según filtro o por defecto del día
             $asistencias = $this->listarAsistencias($request);
 
+            // Llamar a la nueva función para calcular horas trabajadas
+            $horasDecimales = $this->calcularHorasTrabajadas($asistencias);
+            $horasFormateadas = $this->formatearHoras($horasDecimales);
+
             // Cargar vista para PDF (puede ser similar a la vista web, pero más sencilla para PDF)
-            $pdf = PDF::loadView('admin.asistencias.reporte', compact('asistencias'));
+            $pdf = PDF::loadView('admin.asistencias.reporte', compact('asistencias', 'horasFormateadas'));
 
             // Descargar o mostrar el PDF
             //  return $pdf->download('reporte_asistencias_' . now()->format('Y-m-d') . '.pdf');
@@ -179,5 +183,55 @@ class AdminController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error al ver el PDF: ' . $e->getMessage());
         }
+    }
+
+    private function calcularHorasTrabajadas($asistencias)
+    {
+        $horasTotales = null;
+
+        if ($asistencias->count() > 0) {
+            $empleadoIds = $asistencias->pluck('empleado_id')->unique();
+
+            if ($empleadoIds->count() === 1) {
+                $horasTotales = 0;
+
+                foreach ($asistencias as $asistencia) {
+                    if ($asistencia->hora_entrada && $asistencia->hora_salida) {
+                        try {
+                            $entrada = Carbon::parse($asistencia->hora_entrada);
+                            $salida = Carbon::parse($asistencia->hora_salida);
+
+                            if ($salida->gte($entrada)) {
+                                $diffInMinutes = $salida->diffInMinutes($entrada);
+                            } else {
+                                // Turno pasa al día siguiente
+                                $diffInMinutes = $salida->addDay()->diffInMinutes($entrada);
+                            }
+
+                            $horasTotales += $diffInMinutes / 60;
+                        } catch (\Exception $e) {
+                            continue;
+                        }
+                    }
+                }
+
+                $horasTotales = round($horasTotales, 2);
+            }
+        }
+
+        return $horasTotales;
+    }
+
+
+    private function formatearHoras($horasDecimales)
+    {
+        if ($horasDecimales === null) {
+            return null;
+        }
+
+        $horas = floor(abs($horasDecimales));   // abs para evitar negativos
+        $minutos = round((abs($horasDecimales) - $horas) * 60);
+
+        return "{$horas}h {$minutos}min";
     }
 }
