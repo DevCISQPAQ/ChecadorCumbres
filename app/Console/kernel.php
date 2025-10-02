@@ -25,7 +25,7 @@ class Kernel extends ConsoleKernel
     {
         // Aquí defines las tareas programadas, ejemplo:
         // $schedule->command('enviar:reporte-retardos')->fridays();
-         $schedule->command('enviar:reporte-retardos')->fridays()->at('18:00');
+        //  $schedule->command('enviar:reporte-retardos')->fridays()->at('08:00');
     }
 
     /**
