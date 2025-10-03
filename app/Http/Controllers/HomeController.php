@@ -62,11 +62,14 @@ class HomeController extends Controller
 
     private function agregarAsistenciaHorarioLibre($empleado, $ahora)
     {
-        if (!$this->yaTieneEntradaHoy($empleado)) {
+
+        $asistencia = $this->obtenerAsistenciaHoy($empleado);
+
+        if (!$asistencia) {
             return $this->registrarEntrada($empleado, $ahora);
         }
 
-        $asistencia = $this->obtenerAsistenciaHoy($empleado);
+        // $asistencia = $this->obtenerAsistenciaHoy($empleado);
 
         if ($asistencia && is_null($asistencia->hora_salida)) {
             return $this->validarSalidaHorarioLibre($asistencia, $ahora);
@@ -99,11 +102,24 @@ class HomeController extends Controller
     private function agregarAsistenciaHorarioBase($empleado, $ahora, $horaLimiteSalida, $fechaHoy)
     {
         if ($ahora->lessThan($horaLimiteSalida)) {
-            if ($this->yaTieneEntradaHoy($empleado)) {
-                return [
-                    'success' => false,
-                    'message' => 'Ya tienes la entrada marcada para hoy.',
-                ];
+            $asistencia = $this->obtenerAsistenciaHoy($empleado);
+            if ($asistencia) {
+                if (!empty($asistencia->hora_entrada) && empty($asistencia->hora_salida)) {
+                    return [
+                        // 'success' => false,
+                        // 'message' => 'Ya tienes la entrada marcada para hoy.',
+                        'success' => false,
+                        'confirmar_salida' => true,
+                        'message' => 'Ya tienes una entrada sin salida. ¿Quieres marcar la salida?',
+                        'asistencia_id' => $asistencia->id,
+                    ];
+                }
+                if (!empty($asistencia->hora_entrada) && !empty($asistencia->hora_salida)) {
+                    return [
+                        'success' => false,
+                        'message' => 'Ya tienes la entrada y salida marcadas para hoy.',
+                    ];
+                }
             }
 
             $horaLimiteCompleta = \Carbon\Carbon::parse("$fechaHoy 07:35:00");
@@ -126,22 +142,12 @@ class HomeController extends Controller
         return $this->crearSalidaSinEntrada($empleado, $ahora);
     }
 
-    private function yaTieneEntradaHoy($empleado)
-    {
-        return Asistencia::where('empleado_id', $empleado->id)
-            ->whereDate('hora_entrada', today())
-            ->exists();
-    }
-
     private function obtenerAsistenciaHoy($empleado)
     {
         return Asistencia::where('empleado_id', $empleado->id)
-            // ->whereDate('hora_entrada', today())
-            // ->first();
-            ->whereDate('hora_entrada', today())
-            ->orWhere(function ($query) use ($empleado) {
-                $query->where('empleado_id', $empleado->id)
-                    ->whereDate('hora_salida', today());
+            ->where(function ($query) {
+                $query->whereDate('hora_entrada', today())
+                    ->orWhereDate('hora_salida', today());
             })
             ->first();
     }
