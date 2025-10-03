@@ -7,7 +7,7 @@
 </div>
 
 {{-- Tarjetas resumen --}}
-<div class="grid grid-cols-1 md:grid-cols-4 gap-6 md:space-y-0 space-y-2">
+<div class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-1 sm:gap-2 md:gap-4 md:space-y-0 space-y-2">
     <div class="bg-white p-3 rounded-lg shadow">
         <h3 class="text-sm text-center font-semibold text-gray-700">Asistencias del dia</h3>
         <p class="text-3xl mt-2 text-center font-bold text-green-600 ">{{ $asistenciaE ?? 0 }}</p>
@@ -37,7 +37,7 @@
     hora_salida: '{{ request('hora_salida', '') }}'
 }" class="pt-10">
     <!-- Formulario de filtros -->
-    <form id="filtrosForm" method="GET" action="{{ route('admin.asistencias') }}" class="mb-0 space-y-4 md:space-y-0 md:flex md:items-end md:gap-4">
+    <form id="filtrosForm" method="GET" action="{{ route('admin.asistencias') }}" class="flex flex-col md:flex-row flex-wrap md:items-end md:gap-4 space-y-4 md:space-y-0">
         <div>
             <label class="block mb-1 font-semibold">Buscar nombre o apellido</label>
             <input type="text" name="buscar" x-model="buscar" placeholder="Buscar..." class="border rounded px-3 py-2 w-full md:w-64" />
@@ -98,7 +98,7 @@
         <div>
             <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Filtrar</button>
         </div>
-        @if(request()->hasAny(['buscar', 'fecha_inicio', 'fecha_fin', 'retardo', 'hora_entrada', 'hora_salida']) && collect(request()->only(['buscar', 'fecha_inicio', 'fecha_fin', 'retardo', 'hora_entrada', 'hora_salida']))->filter(fn($v) => $v !== null && $v !== '')->isNotEmpty())
+        @if(request()->hasAny(['buscar', 'fecha_inicio', 'fecha_fin', 'departamento', 'retardo', 'hora_entrada', 'hora_salida']) && collect(request()->only(['buscar', 'fecha_inicio', 'fecha_fin','departamento', 'retardo', 'hora_entrada', 'hora_salida']))->filter(fn($v) => $v !== null && $v !== '')->isNotEmpty())
         <a href="{{ route('admin.asistencias') }}"
             class="ml-2 px-4 py-2 bg-red-600 rounded hover:bg-red-400 text-white">Borrar filtros</a>
         @endif

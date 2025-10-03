@@ -56,7 +56,7 @@
   }
 
    .banner-time {
-    @apply p-2 rounded shadow-lg/20 shadow-cyan-500/50 bg-gray-100;
+    @apply p-2 rounded shadow-lg/50 shadow-cyan-500/50 bg-gray-100;
   }
 
   .text-date{
@@ -72,15 +72,15 @@
   }
 
   .content-scanResult{
-    @apply flex flex-col md:flex-row justify-center gap-4 2xl:gap-30 px-6;
+    @apply flex flex-col md:flex-row justify-center gap-6 2xl:gap-30 px-6;
   }
 
   .content-QR{
-    @apply w-110 2xl:w-180 shadow-lg/20 shadow-cyan-500/50 rounded-xl;
+    @apply w-110 2xl:w-180 shadow-md shadow-cyan-500/50 rounded-xl;
   }
 
   .content-Result{
-    @apply flex flex-col items-center p-4 w-120 2xl:w-180 shadow-lg/20 shadow-cyan-500/50 rounded-xl;
+    @apply flex flex-col items-center p-4 w-120 2xl:w-180 shadow-md shadow-cyan-500/50 rounded-xl;
   }
 
   .text-result{

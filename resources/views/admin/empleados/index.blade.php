@@ -5,7 +5,7 @@
 
 <!-- Tarjetas de conteo de empleados por secciones -->
 <!-- <div class="flex flex-wrap gap-4 mb-2"> -->
-<div class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-4 md:space-y-0 space-y-2">
+<div class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-1 md:gap-4 md:space-y-0 space-y-2">
     <div class="bg-blue-100 p-2 rounded shadow-lg text-center flex-1 min-w-[200px] sm:basis-[calc(15%-1rem)]">
         <h3 class="text-xl font-semibold text-blue-600">Academia</h3>
         <p class="text-2xl font-bold text-gray-800">{{ $academiasCount ?? 0 }}</p>
@@ -59,9 +59,9 @@
 
 <div x-data="{ buscar: '{{ request('buscar', '') }}', editarActivo: false  }">
     <!-- Formulario de búsqueda -->
-    <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4 pt-10">
+    <div class="flex flex-col md:flex-row md:flex-wrap md:items-end md:gap-4 space-y-4 md:space-y-0 mb-4 pt-10">
         <!-- Campo de búsqueda -->
-        <div class="w-full md:flex-1">
+        <div class="w-full md:flex-1 flex">
             <form method="GET" action="{{ route('admin.empleados') }}" class="w-full">
                 <input type="text" name="buscar" x-model="buscar" placeholder="Buscar empleado..."
                     class="px-4 py-2 border rounded  w-1/2 focus:outline-none focus:ring focus:border-blue-300"

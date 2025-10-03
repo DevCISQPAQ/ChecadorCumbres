@@ -12,7 +12,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
-<body style="font-family: 'Roboto', sans-serif; font-style: italic;" class="min-h-screen flex flex-col">
+<body style="font-family: 'Roboto', sans-serif; font-style: italic;" class="min-h-screen flex flex-col bg-gray-300">
 
     <header>
         <div class="banner">
@@ -29,7 +29,7 @@
             <h1 class="titleHome">Registra tu asistencia</h1>
         </div>
 
-        <section class="bg-white">
+        <section class="bg-gray-300">
             <div class="content-scanResult">
                 <!-- Div lector QR -->
                 <div class="content-QR">
@@ -55,6 +55,7 @@
                     </div>
                 </div>
             </div>
+
             <div class="pt-6 w-full flex justify-center">
                 <div>
                     <h1 class="text-numEmpl">
