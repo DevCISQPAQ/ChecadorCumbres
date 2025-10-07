@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!btn) return;
 
     btn.addEventListener('click', async () => {
+        btn.disabled = true;
         const input = document.getElementById('numEmpleadoInput');
         const empleadoId = input.value.trim();
 
@@ -17,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
             pResult.innerText = 'Por favor ingresa un número de empleado válido.';
             setTimeout(() => {
                 pResult.innerText = textoOriginal;
+                btn.disabled = false;
             }, 2500);
             return;
         }
@@ -28,11 +30,19 @@ document.addEventListener('DOMContentLoaded', () => {
             fotoElement: document.getElementById("foto-empleado")
         };
 
-        await manejarAsistencia(empleadoId, elementos, {
-            clearInput: () => input.value = '',
-            pauseQr: () => html5QrCode?.pause(true),
-            resumeQr: () => html5QrCode?.resume()
-        });
+        try {
+            await manejarAsistencia(empleadoId, elementos, {
+                clearInput: () => input.value = '',
+                pauseQr: () => html5QrCode?.pause(true),
+                resumeQr: () => html5QrCode?.resume()
+            });
+        } catch (error) {
+            console.error('Error al agregar asistencia:', error);
+        } finally {
+            setTimeout(() => {
+                btn.disabled = false;
+            }, 2500);
+        }
     });
 });
 

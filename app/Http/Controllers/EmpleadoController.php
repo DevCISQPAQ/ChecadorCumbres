@@ -26,19 +26,6 @@ class EmpleadoController extends Controller
         }
     }
 
-    // private function obtenerPeriodoEscolar()
-    // {
-    //     $hoy = Carbon::now();
-    //     $anioInicio = $hoy->month >= 9 ? $hoy->year : $hoy->year - 1;
-
-    //     return [
-    //         'inicio' => Carbon::create($anioInicio, 10, 1)->startOfMonth(),
-    //         'fin' => Carbon::create($anioInicio + 1, 9, 30)->endOfMonth(),
-    //         // 'etiqueta' => 'Septiembre ' . $anioInicio . ' - Septiembre ' . ($anioInicio + 1),
-    //         'etiqueta' => $anioInicio . '-' . ($anioInicio + 1),
-    //     ];
-    // }
-
     private function obtenerEmpleados(Request $request)
     {
         $query = Empleado::query();  // <-- Aquí no usas all(), sino query()
@@ -119,7 +106,7 @@ class EmpleadoController extends Controller
     public function guardarEmpleado(Request $request)
     {
         $request->validate([
-            'id' => 'required',
+            'id' => 'required|unique:empleados,id',
             'nombres' => 'required',
             'apellido_paterno' => 'required',
             'apellido_materno' => 'required',
@@ -142,8 +129,6 @@ class EmpleadoController extends Controller
 
             if ($request->hasFile('foto')) {
                 $file = $request->file('foto');
-                // $fotoNombre = Str::uuid() . '.' . $file->getClientOriginalExtension();
-                // $file->storeAs('public/empleados', $fotoNombre);
                 $fotoNombre = Str::uuid() . '.' . $file->getClientOriginalExtension();
                 $file->move(public_path('img/empleados'), $fotoNombre);
             }
@@ -187,7 +172,7 @@ class EmpleadoController extends Controller
             'apellido_materno' => 'required',
             'departamento' => 'required',
             'puesto' => 'required',
-            'email' => 'required|email|unique:users,email,' . $id,
+            'email' => 'required|email|unique:empleados,email,' . $id,
             'tipo_horario' => 'required',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // validar la imagen
 

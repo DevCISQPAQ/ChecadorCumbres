@@ -105,7 +105,6 @@ export async function manejarAsistencia(empleadoId, elementos, options = {}) {
                 pResult.innerText = dataSalida.message;
                 resultElement.style.backgroundColor = "green";
                 pResult.style.color = "white";
-                // contResult.style.backgroundColor = "rgba(0, 128, 0, 0.3)";
                 actualizarEmpleadoConSaludo(empleado, nombreElement, fotoElement);
             } else {
                 pResult.innerText = 'Salida no marcada.';
@@ -118,8 +117,6 @@ export async function manejarAsistencia(empleadoId, elementos, options = {}) {
             pResult.innerText = asistencia.message;
             pResult.style.color = asistencia.success ? "white" : "white";
             resultElement.style.backgroundColor = asistencia.success ? "green" : "red";
-            // contResult.style.backgroundColor = asistencia.success ? "rgba(0, 128, 0, 0.1)" : "rgba(255, 0, 0, 0.1)";
-
         }
 
     } catch (error) {
@@ -135,7 +132,6 @@ export async function manejarAsistencia(empleadoId, elementos, options = {}) {
             nombreElement.innerText = nombreOriginal;
             resultElement.style.backgroundColor = "white";
             fotoElement.src = fotoOriginal;
-            // contResult.style.backgroundColor = "white";
 
             try {
                 if (options.resumeQr) options.resumeQr();

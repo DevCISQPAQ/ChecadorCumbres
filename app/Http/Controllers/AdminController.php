@@ -37,7 +37,7 @@ class AdminController extends Controller
         }
     }
 
-    public function listarAsistencias(Request $request)
+    public function listarAsistencias(Request $request, $paginado = true)
     {
         $query = Asistencia::with('empleado');
 
@@ -51,7 +51,11 @@ class AdminController extends Controller
 
         $query->orderByDesc('created_at');
 
-        return $query->paginate(10)->withQueryString();
+        if ($paginado) {
+            return $query->paginate(10)->withQueryString();
+        }
+
+        return $query->get(); // Obtener todos sin paginar
     }
 
     public function obtenerConteosdeAsistencia()
@@ -168,7 +172,7 @@ class AdminController extends Controller
     {
         try {
             // Reutilizar la lógica para obtener asistencias según filtro o por defecto del día
-            $asistencias = $this->listarAsistencias($request);
+            $asistencias = $this->listarAsistencias($request, false);
 
             // Llamar a la nueva función para calcular horas trabajadas
             $horasDecimales = $this->calcularHorasTrabajadas($asistencias);
