@@ -14,7 +14,7 @@
     </div>
     @endif
 
-    <form method="POST" action="{{ route('admin.empleados.actualizar', $empleado->id) }}" enctype="multipart/form-data">
+    <form id="editar-empleado-form" method="POST" action="{{ route('admin.empleados.actualizar', $empleado->id) }}" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 

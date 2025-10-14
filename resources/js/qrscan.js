@@ -1,6 +1,7 @@
 // qrscan.js
 import { Html5Qrcode } from "html5-qrcode";
 import { manejarAsistencia } from './utils.js';
+import { showLoader, hideLoader } from './loader.js';
 
 const qrRegionId = "reader";
 export let html5QrCode = null;
@@ -28,9 +29,16 @@ if (document.getElementById(qrRegionId)) {
             fotoElement: document.getElementById("foto-empleado")
         };
 
-        await manejarAsistencia(decodedText, elementos, {
-            resumeQr: () => html5QrCode.resume()
-        });
+        showLoader(); // <-- Mostrar loader antes de la llamada
+        try {
+            await manejarAsistencia(decodedText, elementos, {
+                resumeQr: () => html5QrCode.resume()
+            });
+        } catch (error) {
+            console.error("Error en manejo de asistencia con QR:", error);
+        } finally {
+            hideLoader(); // <-- Ocultar loader después que termina
+        }
     }
 
     Html5Qrcode.getCameras()

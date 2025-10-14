@@ -13,7 +13,7 @@
     </div>
     @endif
 
-    <form method="POST" action="{{ route('admin.empleados.guardar') }}" enctype="multipart/form-data">
+    <form id="crear-empleado-form" method="POST" action="{{ route('admin.empleados.guardar') }}" enctype="multipart/form-data">
         @csrf
 
         <div class="flex justify-between gap-4">
@@ -102,4 +102,5 @@
         </div>
     </form>
 </div>
+
 @endsection

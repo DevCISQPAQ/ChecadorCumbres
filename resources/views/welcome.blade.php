@@ -33,7 +33,11 @@
             <div class="content-scanResult">
                 <!-- Div lector QR -->
                 <div class="content-QR">
-                    <div id="reader" class="w-full h-auto scale-x-neg-100"></div>
+                    <div id="reader" class="w-full h-auto"></div>
+                    <p class="text-center text-xs font-bold text-[#FF5900] 
+                    bg-gray-100 rounded-b-md px-4 py-0.5 mt-0 ">
+                        ESCANEA AQUÍ TU CÓDIGO QR
+                    </p>
                 </div>
                 <!-- Div de resultado -->
                 <div id="cont_result" class="content-Result">
@@ -83,6 +87,12 @@
             <button id="btnConfirmarSalida" class="px-6 py-2 bg-green-600 text-white rounded mr-4 hover:bg-green-700 transition">Sí</button>
             <button id="btnCancelarSalida" class="px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition">No</button>
         </div>
+    </div>
+
+    <!-- Loader Spinner -->
+    <div id="loader" style="display: none; position: fixed; top: 50%; left: 50%;
+transform: translate(-50%, -50%); z-index: 9999;">
+        <div class="w-16 h-16 border-4 border-blue-500 border-dashed rounded-full animate-spin"></div>
     </div>
 
 </body>

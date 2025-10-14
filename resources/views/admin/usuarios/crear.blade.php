@@ -14,7 +14,7 @@
     </div>
     @endif
 
-    <form method="POST" action="{{ route('admin.usuarios.guardar') }}">
+    <form id="crear-user-form" method="POST" action="{{ route('admin.usuarios.guardar') }}">
         @csrf
 
         <div class="mb-4">

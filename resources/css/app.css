@@ -6,8 +6,8 @@
 @source '../**/*.js';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
 
@@ -16,6 +16,11 @@
   --secondary: #5E7B96;
   --accent: #FF6B6B;
 }
+
+#reader video {
+    transform: scaleX(-1) !important;
+    /* quitar efecto espejo */
+  }
 
 
 @layer base {
@@ -55,56 +60,54 @@
     @apply bg-[#00205C] m-0 h-auto flex items-center justify-center;
   }
 
-   .banner-time {
+  .banner-time {
     @apply p-2 rounded shadow-lg/50 shadow-cyan-500/50 bg-gray-100;
   }
 
-  .text-date{
+  .text-date {
     @apply text-center font-bold capitalize text-base 2xl:text-xl text-[#5E7B96];
   }
 
-   .text-time{
+  .text-time {
     @apply text-center font-bold text-base 2xl:text-xl font-bold text-[#5E7B96];
   }
 
-  .titleHome{
+  .titleHome {
     @apply text-base md:text-2xl 2xl:text-3xl font-bold text-center text-[#FF5900] uppercase pt-4;
   }
 
-  .content-scanResult{
+  .content-scanResult {
     @apply flex flex-col md:flex-row justify-center gap-6 2xl:gap-30 px-6;
   }
 
-  .content-QR{
+  .content-QR {
     @apply w-110 2xl:w-180 shadow-md shadow-cyan-500/50 rounded-xl;
   }
 
-  .content-Result{
+  .content-Result {
     @apply flex flex-col items-center p-4 w-120 2xl:w-180 shadow-md shadow-cyan-500/50 rounded-xl;
   }
 
-  .text-result{
+  .text-result {
     @apply text-base sm:text-2xl font-bold text-center text-[#00205C];
   }
 
-  .content-numEmpl{
+  .content-numEmpl {
     @apply pt-6 w-full flex justify-center;
   }
 
-  .text-numEmpl{
-    @apply text-center font-bold text-base 2xl:text-2xl  font-bold text-[#5E7B96];
+  .text-numEmpl {
+    @apply text-center font-bold text-base 2xl:text-2xl font-bold text-[#5E7B96];
   }
 
-  .imput-numEmp{
+  .imput-numEmp {
     @apply w-full border border-gray-300 rounded p-2 shadow-md shadow-cyan-500/50 focus:outline-none focus:ring-2 focus:ring-orange-500;
   }
 
-  .btn-numEmp{
+  .btn-numEmp {
     @apply bg-[#5E7B96] hover:bg-[#e65a2c] text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out;
   }
 
+  
+
 }
-
-
-
-

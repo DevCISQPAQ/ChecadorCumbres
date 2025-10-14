@@ -1,4 +1,5 @@
 import { html5QrCode } from './qrscan.js';  // importa la instancia del scanner
+import { showLoader, hideLoader } from './loader.js';
 
 export function obtenerSaludoPorHora() {
     const ahora = new Date();
@@ -21,7 +22,7 @@ export function actualizarEmpleadoConSaludo(empleado, nombreElement, fotoElement
 
 export function mostrarModalConfirmacion(mensaje) {
     return new Promise((resolve) => {
-
+ hideLoader();
         const modal = document.getElementById('modalConfirmSalida');
         const mensajeElem = document.getElementById('mensajeConfirmSalida');
         const btnConfirmar = document.getElementById('btnConfirmarSalida');
@@ -42,11 +43,13 @@ export function mostrarModalConfirmacion(mensaje) {
             modal.classList.add('hidden');
             modal.classList.remove('flex');
             resolve(confirmacion);
+            
         }
 
 
         function onConfirmar() {
             finalizar(true);
+             showLoader();
         }
 
         function onCancelar() {
@@ -60,6 +63,7 @@ export function mostrarModalConfirmacion(mensaje) {
 
 // Maneja lógica común para registrar asistencia y mostrar resultados
 export async function manejarAsistencia(empleadoId, elementos, options = {}) {
+    showLoader();
     const { resultElement, pResult, nombreElement, fotoElement } = elementos;
     const textoOriginal = pResult.innerText;
     const nombreOriginal = nombreElement.innerText;
@@ -126,6 +130,7 @@ export async function manejarAsistencia(empleadoId, elementos, options = {}) {
         nombreElement.innerText = "No identificado";
         fotoElement.src = `/img/escudo-gris.png`;
     } finally {
+         hideLoader();
         setTimeout(() => {
             pResult.innerText = textoOriginal;
             pResult.style.color = "black";

@@ -70,6 +70,11 @@
         </main>
     </div>
 
+    <!-- Loader general -->
+    <div id="loader" style="display:none; position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(255,255,255,0.7); z-index:9999; align-items:center;justify-content:center;">
+        <div class="w-16 h-16 border-4 border-blue-500 border-dashed rounded-full animate-spin"></div>
+    </div>
+
 </body>
 
 </html>

@@ -62,7 +62,7 @@
     <div class="flex flex-col md:flex-row md:flex-wrap md:items-end md:gap-4 space-y-4 md:space-y-0 mb-4 pt-10">
         <!-- Campo de búsqueda -->
         <div class="w-full md:flex-1 flex">
-            <form method="GET" action="{{ route('admin.empleados') }}" class="w-full">
+            <form id="buscar-empleado-form" method="GET" action="{{ route('admin.empleados') }}" class="w-full">
                 <input type="text" name="buscar" x-model="buscar" placeholder="Buscar empleado..."
                     class="px-4 py-2 border rounded  w-1/2 focus:outline-none focus:ring focus:border-blue-300"
                     value="{{ request('buscar') }}" />
