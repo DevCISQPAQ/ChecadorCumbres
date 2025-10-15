@@ -5,12 +5,13 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\Configuracion;
 use Illuminate\Support\Facades\Hash;
 
 class UsuarioController extends Controller
 {
-    
-     public function listarUsuarios()
+
+    public function listarUsuarios()
     {
         try {
 
@@ -54,7 +55,7 @@ class UsuarioController extends Controller
                 'yes_notifications' => $request->yes_notifications ?? false, // 👉 guardar campo
             ]);
 
-            return redirect()->route('admin.usuarios')->with('success', 'Usuario creado correctamente.');
+            return redirect()->route('admin.preferencias')->with('success', 'Usuario creado correctamente.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error al guardar usuario ' . $e->getMessage());
         }
@@ -88,7 +89,7 @@ class UsuarioController extends Controller
 
             $data = [
                 'name' => $request->name,
-                'last_name' => $request->last_name, 
+                'last_name' => $request->last_name,
                 'email' => $request->email,
                 'level_user' => $request->level_user,
                 'yes_notifications' => $request->yes_notifications ?? false,
@@ -101,7 +102,7 @@ class UsuarioController extends Controller
 
             $usuario->update($data);
 
-            return redirect()->route('admin.usuarios')->with('success', 'Usuario actualizado.');
+            return redirect()->route('admin.preferencias')->with('success', 'Usuario actualizado.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error al actualizar usuario ' . $e->getMessage());
         }
@@ -113,9 +114,44 @@ class UsuarioController extends Controller
             $usuario = User::findOrFail($id);
             $usuario->delete();
 
-            return redirect()->route('admin.usuarios')->with('success', 'Usuario eliminado.');
+            return redirect()->route('admin.preferencias')->with('success', 'Usuario eliminado.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error al eliminar usuario ' . $e->getMessage());
+        }
+    }
+
+    public function configurarData()
+    {
+
+        $configuraciones = Configuracion::pluck('valor', 'clave');
+
+        return view('admin.usuarios.configurar', [
+            'config' => $configuraciones
+        ]);
+    }
+
+    public function actualizarData(Request $request)
+    {
+        $request->validate([
+            'hora_limite_entrada' => 'required|date_format:H:i',
+            'hora_limite_salida' => 'required|date_format:H:i',
+        ]);
+
+        try {
+            Configuracion::updateOrCreate(
+                ['clave' => 'hora_limite_entrada'],
+                ['valor' => $request->hora_limite_entrada]
+            );
+
+            Configuracion::updateOrCreate(
+                ['clave' => 'hora_limite_salida'],
+                ['valor' => $request->hora_limite_salida]
+            );
+
+
+            return redirect()->route('admin.preferencias')->with('success', 'Configuraciones actualizadas correctamente.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error al actualizar usuario ' . $e->getMessage());
         }
     }
 }

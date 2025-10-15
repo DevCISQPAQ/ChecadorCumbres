@@ -19,12 +19,17 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/asistencias', [AdminController::class, 'asistencias'])->name('asistencias');
     Route::get('/asistencias/reporte', [AdminController::class, 'generarReporte'])->name('asistencias.reporte');
     // Usuarios
-    Route::get('/usuarios', [UsuarioController::class, 'listarUsuarios'])->name('usuarios');
+    Route::get('/preferencias', [UsuarioController::class, 'listarUsuarios'])->name('preferencias');
     Route::get('/usuarios/crear', [UsuarioController::class, 'crearUsuario'])->name('usuarios.crear');
     Route::post('/usuarios', [UsuarioController::class, 'guardarUsuario'])->name('usuarios.guardar');
     Route::get('/usuarios/{id}/editar', [UsuarioController::class, 'editarUsuario'])->name('usuarios.editar');
     Route::put('/usuarios/{id}', [UsuarioController::class, 'actualizarUsuario'])->name('usuarios.actualizar');
     Route::delete('/usuarios/{id}', [UsuarioController::class, 'eliminarUsuario'])->name('usuarios.eliminar');
+    Route::get('/preferencias/configurar', [UsuarioController::class, 'configurarData'])->name('usuarios.configurar');
+    Route::post('/preferencias/configuracion', [UsuarioController::class, 'actualizarData'])->name('usuarios.data');
+
+
+
     // Empleados
     Route::get('/empleados', [EmpleadoController::class, 'listarEmpleados'])->name('empleados');
     Route::get('/empleados/crear', [EmpleadoController::class, 'crearEmpleado'])->name('empleados.crear');

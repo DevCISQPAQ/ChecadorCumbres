@@ -7,10 +7,19 @@ $roles = [
 2 => 'Súper Administrador',
 ];
 @endphp
+<div class="p-6 bg-white rounded shadow mb-4">
+   <h2 class="text-xl font-bold mb-5" >Configuraciones</h2> 
+    <!-- <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-2 sm:gap-0"> -->
+        <a href="{{ route('admin.usuarios.configurar') }}" class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700">Editar Horario</a>
+    <!-- </div> -->
+</div>
+
 <div class="p-6 bg-white rounded shadow">
-    <div class="flex justify-between mb-4">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-2 sm:gap-0">
         <h2 class="text-xl font-bold">Usuarios</h2>
-        <a href="{{ route('admin.usuarios.crear') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Crear Usuario</a>
+        <div class="flex  gap-2 sm:gap-3.5">
+            <a href="{{ route('admin.usuarios.crear') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Crear Usuario</a>
+        </div>
     </div>
 
     <div class="overflow-x-auto">
