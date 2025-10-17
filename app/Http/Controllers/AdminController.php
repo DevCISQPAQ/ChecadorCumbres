@@ -101,7 +101,8 @@ class AdminController extends Controller
             $query->whereHas('empleado', function ($q) use ($buscar) {
                 $q->whereRaw('LOWER(nombres) LIKE ?', ["%{$buscar}%"])
                     ->orWhereRaw('LOWER(apellido_paterno) LIKE ?', ["%{$buscar}%"])
-                    ->orWhereRaw('LOWER(apellido_materno) LIKE ?', ["%{$buscar}%"]);
+                    ->orWhereRaw('LOWER(apellido_materno) LIKE ?', ["%{$buscar}%"])
+                    ->orWhereRaw('LOWER(id) LIKE ?', ["%{$buscar}%"]);
             });
         }
 

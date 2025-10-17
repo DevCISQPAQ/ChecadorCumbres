@@ -28,21 +28,15 @@ class EmpleadoController extends Controller
 
     private function obtenerEmpleados(Request $request)
     {
-        $query = Empleado::query();  // <-- Aquí no usas all(), sino query()
-
-        // $periodo = $this->obtenerPeriodoEscolar();
+        $query = Empleado::query();  
 
         if ($request->filled('buscar')) {
             $buscar = strtolower($request->buscar);
-
-            // Cuando hay búsqueda, quitamos el filtro por periodo para buscar en toda la tabla
             $query->whereRaw('LOWER(nombres) LIKE ?', ["%{$buscar}%"])
                 ->orWhereRaw('LOWER(apellido_paterno) LIKE ?', ["%{$buscar}%"])
-                ->orWhereRaw('LOWER(apellido_materno) LIKE ?', ["%{$buscar}%"]);
-            // } else {
-            //     // Solo si NO hay búsqueda, filtramos por periodo
-            //     $query->whereBetween('created_at', [$periodo['inicio'], $periodo['fin']]);
-            // }
+                ->orWhereRaw('LOWER(apellido_materno) LIKE ?', ["%{$buscar}%"])
+                ->orWhereRaw('LOWER(departamento) LIKE ?', ["%{$buscar}%"])
+                ->orWhereRaw('LOWER(id) LIKE ?', ["%{$buscar}%"]);
         }
 
         // Ordenar los resultados
