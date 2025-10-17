@@ -39,6 +39,33 @@ class AdminController extends Controller
 
     public function listarAsistencias(Request $request, $paginado = true)
     {
+
+        // ⚠️ Si se seleccionó SIN HORA DE ENTRADA y SIN HORA DE SALIDA
+        if ((string)$request->hora_entrada === '0' && (string)$request->hora_salida === '0') {
+            // Filtrar empleados sin asistencia para la fecha específica (hoy o filtrada)
+            $fecha = Carbon::today(); // por defecto
+
+            if ($request->filled('fecha_inicio')) {
+                $fecha = Carbon::parse($request->fecha_inicio);
+            }
+
+            $query = Empleado::whereDoesntHave('asistencias', function ($q) use ($fecha) {
+                $q->whereDate('created_at', $fecha);
+            });
+
+            if ($request->filled('departamento')) {
+                $query->where('departamento', $request->departamento);
+            }
+
+            if ($paginado) {
+                return $query->paginate(10)->withQueryString();
+            }
+
+            return $query->get();
+        }
+
+
+
         $query = Asistencia::with('empleado');
 
         $query = $this->aplicarFiltroPorDefecto($query, $request);

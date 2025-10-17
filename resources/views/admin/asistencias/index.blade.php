@@ -59,7 +59,7 @@
                 <option value="">Todos</option>
                 <option value="academia" {{ request('departamento') == 'academia' ? 'selected' : '' }}>Academia</option>
                 <option value="administracion" {{ request('departamento') == 'administracion' ? 'selected' : '' }}>Administración</option>
-                 <option value="direccion" {{ request('departamento') == 'direccion' ? 'selected' : '' }}>Dirección</option>
+                <option value="direccion" {{ request('departamento') == 'direccion' ? 'selected' : '' }}>Dirección</option>
                 <option value="preescolar" {{ request('departamento') == 'preescolar' ? 'selected' : '' }}>Preescolar</option>
                 <option value="primaria" {{ request('departamento') == 'primaria' ? 'selected' : '' }}>Primaria</option>
                 <option value="promocion" {{ request('departamento') == 'promocion' ? 'selected' : '' }}>Promoción</option>
@@ -135,6 +135,22 @@
                     </tr>
                 </thead>
                 <tbody>
+                    @if(isset($asistencias[0]) && $asistencias[0] instanceof \App\Models\Empleado)
+                    @forelse($asistencias as $empleado)
+                    <tr class="border border-gray-300 hover:bg-gray-50">
+                        <td class="p-3 text-center">{{ $empleado->id }}</td>
+                        <td class="p-3 text-center">{{ $empleado->nombres . ' ' . $empleado->apellido_paterno . ' ' . $empleado->apellido_materno }}</td>
+                        <td class="p-3 text-center">{{ $empleado->departamento }}</td>
+                        <td class="p-3 text-center text-red-600 font-semibold">Sin registro</td>
+                        <td class="p-3 text-center text-red-600 font-semibold">Sin registro</td>
+                        <td class="p-3 text-center text-red-600 font-semibold">Sin registro</td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="6" class="text-center p-4">No se encontraron registros.</td>
+                    </tr>
+                    @endforelse
+                    @else
                     @forelse ($asistencias as $asistencia)
                     @php $empleado = $asistencia->empleado; @endphp
                     <tr class="border border-gray-300 hover:bg-gray-50">
@@ -149,10 +165,13 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="text-center p-4">No se encontraron registros.</td>
+                        <td colspan="6" class="text-center p-4">No se encontraron registros.</td>
                     </tr>
                     @endforelse
+                    @endif
+
                 </tbody>
+
             </table>
         </div>
     </div>
