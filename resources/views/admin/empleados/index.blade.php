@@ -103,11 +103,11 @@
             <table class="min-w-full text-left bg-white">
                 <thead class="sticky top-0 bg-blue-100 z-10 shadow">
                     <tr>
-                        <th class="p-3">N. Empleado</th>
-                        <th class="p-3">Nombre</th>
-                        <th class="p-3">Departamento</th>
-                        <th class="p-3">Puesto</th>
-                        <th class="p-3">Email</th>
+                        <th class="p-3 text-center">N. Empleado</th>
+                        <th class="p-3 text-center">Nombre</th>
+                        <th class="p-3 text-center">Departamento</th>
+                        <th class="p-3 text-center">Puesto</th>
+                        <th class="p-3 text-center">Email</th>
                         <template x-if="editarActivo">
                             <th class="p-3">Acciones</th>
                         </template>
@@ -116,11 +116,11 @@
                 <tbody>
                     @foreach($empleados as $empleado)
                     <tr class="border border-gray-300 rounded-lg hover:bg-gray-50">
-                        <td class="p-3">{{ $empleado->id }}</td>
-                        <td class="p-3">{{ $empleado ? $empleado->nombres . ' ' . $empleado->apellido_paterno . ' ' . $empleado->apellido_materno : 'N/A' }}</td>
-                        <td class="p-3">{{ $empleado->departamento }}</td>
-                        <td class="p-3">{{ $empleado->puesto }}</td>
-                        <td class="p-3">{{ $empleado->email }}</td>
+                        <td class="p-3 text-center">{{ $empleado->id }}</td>
+                        <td class="p-3 text-center">{{ $empleado ? $empleado->nombres . ' ' . $empleado->apellido_paterno . ' ' . $empleado->apellido_materno : 'N/A' }}</td>
+                        <td class="p-3 text-center">{{ $empleado->departamento }}</td>
+                        <td class="p-3 text-center">{{ $empleado->puesto }}</td>
+                        <td class="p-3 text-center max-w-[200px] truncate">{{ $empleado->email }}</td>
                         <template x-if="editarActivo">
                             <td class="p-3 flex gap-2">
                                 <div class="flex gap-2">

@@ -27,20 +27,20 @@ $roles = [
             <table class="w-full table-auto">
                 <thead>
                     <tr class="bg-gray-200 text-left">
-                        <th class="px-4 py-2">Nombre</th>
-                        <th class="px-4 py-2">Correo</th>
-                        <th class="px-4 py-2">Rol</th>
-                        <th class="px-4 py-2 text-left">Notificaciones</th> <!-- Nueva columna -->
-                        <th class="px-4 py-2">Acciones</th>
+                        <th class="px-4 text-center py-2">Nombre</th>
+                        <th class="px-4 text-center py-2">Correo</th>
+                        <th class="px-4 text-center py-2">Rol</th>
+                        <th class="px-4 text-center py-2">Notificaciones</th> <!-- Nueva columna -->
+                        <th class="px-4 text-center py-2">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($usuarios as $usuario)
                     <tr class="border-b">
-                        <td class="px-4 py-2">{{ $usuario->name }}</td>
-                        <td class="px-4 py-2">{{ $usuario->email }}</td>
-                        <td class="px-4 py-2">{{ $roles[$usuario->level_user] ?? 'Desconocido' }}</td>
-                        <td class="px-4 py-2">
+                        <td class="px-4 text-center py-2">{{ $usuario->name }}</td>
+                        <td class="px-4 text-center py-2 max-w-[200px] truncate">{{ $usuario->email }}</td>
+                        <td class="px-4 text-center py-2">{{ $roles[$usuario->level_user] ?? 'Desconocido' }}</td>
+                        <td class="px-4 text-center py-2">
                             {{ $usuario->yes_notifications ? 'Sí' : 'No' }}
                         </td>
                         <td class="px-4 py-2 space-x-2">
