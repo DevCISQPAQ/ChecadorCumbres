@@ -42,6 +42,9 @@
             <select name="level_user" class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
                 <option value="0">Usuario</option>
                 <option value="1">Administrador</option>
+                @if(auth()->user()->level_user >1)
+                <option value="2">Super Administrador</option>
+                @endif
             </select>
         </div>
 
