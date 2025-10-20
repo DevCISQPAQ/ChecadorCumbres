@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\User;
 use App\Models\Asistencia;
 use App\Mail\ReporteRetardosMail;
@@ -54,8 +55,11 @@ class EnviarReporteRetardosSemanales extends Command
 
         $usuarios = \App\Models\User::where('yes_notifications', true)->get();
 
+        $pdf = PDF::loadView('emails.reporte_pdf', compact('retardos', 'empleadosSinAsistencia'));
+        $pdfContent = $pdf->output();
+
         foreach ($usuarios as $usuario) {
-            Mail::to($usuario->email)->send(new \App\Mail\ReporteRetardosMail($retardos, $empleadosSinAsistencia));
+            Mail::to($usuario->email)->send(new \App\Mail\ReporteRetardosMail($retardos, $empleadosSinAsistencia, $pdfContent));
         }
 
         Log::info('Reporte de retardos y asistencias enviado.');
