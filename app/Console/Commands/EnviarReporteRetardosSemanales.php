@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Models\User;
 use App\Models\Asistencia;
 use App\Mail\ReporteRetardosMail;
+use App\Models\Empleado;
 
 class EnviarReporteRetardosSemanales extends Command
 {
@@ -40,21 +41,23 @@ class EnviarReporteRetardosSemanales extends Command
             ->get()
             ->groupBy('empleado_id');
 
-        if ($retardos->isEmpty()) {
-            Log::info('No hay retardos esta semana.');
+        // Empleados sin asistencia en la semana
+        $empleadosSinAsistencia = \App\Models\Empleado::whereDoesntHave('asistencias', function ($query) use ($inicioSemana, $finSemana) {
+            $query->whereBetween('created_at', [$inicioSemana, $finSemana]);
+        })->get();
+
+
+        if ($retardos->isEmpty() && $empleadosSinAsistencia->isEmpty()) {
+            Log::info('No hay retardos ni empleados sin asistencia esta semana.');
             return;
         }
 
         $usuarios = \App\Models\User::where('yes_notifications', true)->get();
-        // Aquí puedes generar un PDF o preparar la info del reporte
-        // $reporte = view('emails.reporte_retardos', compact('retardos'))->render();
 
-        // Enviar el correo
-        // Mail::to('ajimenez@cumbresqueretaro.com')->send(new \App\Mail\ReporteRetardosMail($retardos));
         foreach ($usuarios as $usuario) {
-            Mail::to($usuario->email)->send(new \App\Mail\ReporteRetardosMail($retardos));
+            Mail::to($usuario->email)->send(new \App\Mail\ReporteRetardosMail($retardos, $empleadosSinAsistencia));
         }
 
-        Log::info('Reporte de retardos enviado.');
+        Log::info('Reporte de retardos y asistencias enviado.');
     }
 }

@@ -13,50 +13,19 @@ class ReporteRetardosMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    /**
-     * Create a new message instance.
-     */
 
     public $retardos;
+    public $empleadosSinAsistencia;
 
-    public function __construct($retardos)
+     public function __construct($retardos, $empleadosSinAsistencia)
     {
         $this->retardos = $retardos;
+        $this->empleadosSinAsistencia = $empleadosSinAsistencia;
     }
 
-    public function build()
+     public function build()
     {
-         return $this->subject('Reporte semanal de retardos')
-                    ->view('emails.reporte_retardos'); 
+        return $this->subject('Reporte Semanal de Retardos y Asistencias')
+                    ->view('emails.reporte_retardos');
     }
-
-    /**
-     * Get the message envelope.
-     */
-    // public function envelope(): Envelope
-    // {
-    //     return new Envelope(
-    //         subject: 'Reporte de Retardos',
-    //     );
-    // }
-
-    // /**
-    //  * Get the message content definition.
-    //  */
-    // public function content(): Content
-    // {
-    //     return new Content(
-    //         markdown: 'emails.reporte_retardos',
-    //     );
-    // }
-
-    // /**
-    //  * Get the attachments for the message.
-    //  *
-    //  * @return array<int, \Illuminate\Mail\Mailables\Attachment>
-    //  */
-    // public function attachments(): array
-    // {
-    //     return [];
-    // }
 }
