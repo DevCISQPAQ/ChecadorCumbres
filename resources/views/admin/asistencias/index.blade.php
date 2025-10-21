@@ -2,12 +2,13 @@
 
 @section('content')
 <div class="flex justify-between gap-4">
-    <h2 class="md:text-2xl text-xm font-semibold text-blue-800 mb-6">Bienvenido(a), {{ Auth::user()->name }}</h2>
-    <h2 class="md:text-xl text-xm font-semibold text-gray-800 mb-6">{{ \Carbon\Carbon::now()->locale('es')->isoFormat('dddd, D [de] MMMM [de] YYYY') }}</h2>
+    <h2 class="md:text-2xl text-xm font-semibold text-blue-800 mb-6 text-center">Bienvenido(a), {{ Auth::user()->name }}</h2>
+    <h2 class="md:text-xl text-xm font-semibold text-gray-800 mb-6 text-center">{{ \Carbon\Carbon::now()->locale('es')->isoFormat('dddd, D [de] MMMM [de] YYYY') }}</h2>
 </div>
 
 {{-- Tarjetas resumen --}}
-<div class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-1 sm:gap-2 md:gap-4 md:space-y-0 space-y-2">
+<!-- grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-2 md:gap-4 md:space-y-0 space-y-2 -->
+<div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-4 md:space-y-0 space-y-2">
     <div class="bg-white p-3 rounded-lg shadow">
         <h3 class="text-sm text-center font-semibold text-gray-700">Asistencias del dia</h3>
         <p class="text-3xl mt-2 text-center font-bold text-green-600 ">{{ $asistenciaE ?? 0 }}</p>
@@ -20,9 +21,9 @@
         <h3 class="text-sm text-center font-semibold text-gray-700">Salidas del dia</h3>
         <p class="text-3xl mt-2 text-center font-bold text-blue-400">{{ $asistenciaS ?? 0}}</p>
     </div>
-    <div class="bg-white p-3 rounded-lg shadow">
+    <div class="mb-2 md:mb-0 bg-white p-3 rounded-lg shadow">
         <h3 class="text-sm text-center font-semibold text-gray-700">Faltantes del dia</h3>
-        <p class="text-3xl text-center mt-2 font-bold text-red-600">{{ $cantidadSinAsistencia ?? 0}}</p>
+        <p class="text-xl text-center mt-2 font-bold text-red-600">{{ $cantidadSinAsistencia ?? 0}}</p>
     </div>
 </div>
 {{-- Sección adicional --}}
@@ -37,70 +38,94 @@
     hora_salida: '{{ request('hora_salida', '') }}'
 }" class="pt-10">
     <!-- Formulario de filtros -->
-    <form id="filtrosForm" method="GET" action="{{ route('admin.asistencias') }}" class="flex flex-col md:flex-row flex-wrap md:items-end md:gap-4 space-y-4 md:space-y-0">
-        <div>
+    <form id="filtrosForm" method="GET" action="{{ route('admin.asistencias') }}"
+        class="flex flex-col md:flex-row flex-wrap md:items-end md:gap-4 space-y-4 md:space-y-0">
+
+        <div class="w-full md:w-auto">
             <label class="block mb-1 font-semibold">Buscar nombre o apellido</label>
-            <input type="text" name="buscar" x-model="buscar" placeholder="Buscar..." class="border rounded px-3 py-2 w-full md:w-64" />
+            <input type="text" name="buscar" x-model="buscar" placeholder="Buscar..."
+                class="border rounded px-3 py-2 w-full md:w-64" />
         </div>
 
-        <div>
+        <div class="w-full sm:w-1/2 md:w-auto">
             <label class="block mb-1 font-semibold">Fecha inicio</label>
-            <input type="date" name="fecha_inicio" x-model="fecha_inicio" class="border rounded px-3 py-2" />
+            <input type="date" name="fecha_inicio" x-model="fecha_inicio"
+                class="border rounded px-3 py-2 w-full" />
         </div>
 
-        <div>
+        <div class="w-full sm:w-1/2 md:w-auto">
             <label class="block mb-1 font-semibold">Fecha fin</label>
-            <input type="date" name="fecha_fin" x-model="fecha_fin" class="border rounded px-3 py-2" />
+            <input type="date" name="fecha_fin" x-model="fecha_fin"
+                class="border rounded px-3 py-2 w-full" />
         </div>
 
-        <div>
-            <label class="block mb-1 font-semibold">Departamento</label>
-            <select name="departamento" x-model="departamento" class="border rounded px-3 py-2">
-                <option value="">Todos</option>
-                <option value="academia" {{ request('departamento') == 'academia' ? 'selected' : '' }}>Academia</option>
-                <option value="administracion" {{ request('departamento') == 'administracion' ? 'selected' : '' }}>Administración</option>
-                <option value="direccion" {{ request('departamento') == 'direccion' ? 'selected' : '' }}>Dirección</option>
-                <option value="preescolar" {{ request('departamento') == 'preescolar' ? 'selected' : '' }}>Preescolar</option>
-                <option value="primaria" {{ request('departamento') == 'primaria' ? 'selected' : '' }}>Primaria</option>
-                <option value="promocion" {{ request('departamento') == 'promocion' ? 'selected' : '' }}>Promoción</option>
-                <option value="secundaria" {{ request('departamento') == 'secundaria' ? 'selected' : '' }}>Secundaria</option>
-                <option value="mantenimiento" {{ request('departamento') == 'mantenimiento' ? 'selected' : '' }}>Mantenimiento</option>
-            </select>
+        <!-- grupo de select filtrar -->
+        <div class=" flex flex-col md:flex-row gap-4">
+            <!-- 2 columnas SOLO en móvil -->
+            <div class="w-full flex flex-row gap-4">
+                <!-- Departamento -->
+                <div class="w-1/2 md:w-32">
+                    <label class="block mb-1 font-semibold">Departamento</label>
+                    <select name="departamento" x-model="departamento" class="border rounded px-3 py-2 w-full">
+                        <option value="">Todos</option>
+                        <option value="academia" {{ request('departamento') == 'academia' ? 'selected' : '' }}>Academia</option>
+                        <option value="administracion" {{ request('departamento') == 'administracion' ? 'selected' : '' }}>Administración</option>
+                        <option value="direccion" {{ request('departamento') == 'direccion' ? 'selected' : '' }}>Dirección</option>
+                        <option value="preescolar" {{ request('departamento') == 'preescolar' ? 'selected' : '' }}>Preescolar</option>
+                        <option value="primaria" {{ request('departamento') == 'primaria' ? 'selected' : '' }}>Primaria</option>
+                        <option value="promocion" {{ request('departamento') == 'promocion' ? 'selected' : '' }}>Promoción</option>
+                        <option value="secundaria" {{ request('departamento') == 'secundaria' ? 'selected' : '' }}>Secundaria</option>
+                        <option value="mantenimiento" {{ request('departamento') == 'mantenimiento' ? 'selected' : '' }}>Mantenimiento</option>
+                    </select>
+                </div>
+                <!-- Retardo -->
+                <div class="w-1/2 md:w-32">
+                    <label class="block mb-1 font-semibold">Retardo</label>
+                    <select name="retardo" x-model="retardo" class="border rounded px-3 py-2 w-full">
+                        <option value="">Todos</option>
+                        <option value="1">Sí</option>
+                        <option value="0">No</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Hora entrada + salida (solo se agrupan en móviles) -->
+            <div class="w-full flex flex-row gap-4 md:w-auto">
+                <!-- Hora de entrada -->
+                <div class="w-1/2 md:w-32">
+                    <label class="block mb-1 font-semibold">Hora de entrada</label>
+                    <select name="hora_entrada" x-model="hora_entrada" class="border rounded px-3 py-2 w-full">
+                        <option value="">Todos</option>
+                        <option value="1">Con hora</option>
+                        <option value="0">Sin hora</option>
+                    </select>
+                </div>
+                <!-- Hora de salida -->
+                <div class="w-1/2 md:w-32">
+                    <label class="block mb-1 font-semibold">Hora de salida</label>
+                    <select name="hora_salida" x-model="hora_salida" class="border rounded px-3 py-2 w-full">
+                        <option value="">Todos</option>
+                        <option value="1">Con hora</option>
+                        <option value="0">Sin hora</option>
+                    </select>
+                </div>
+            </div>
         </div>
 
-        <div>
-            <label class="block mb-1 font-semibold">Retardo</label>
-            <select name="retardo" x-model="retardo" class="border rounded px-3 py-2">
-                <option value="">Todos</option>
-                <option value="1">Sí</option>
-                <option value="0">No</option>
-            </select>
+        <!-- Boton filtrar -->
+        <div class="w-full sm:w-1/2 md:w-auto">
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full">
+                Filtrar
+            </button>
         </div>
 
-        <div>
-            <label class="block mb-1 font-semibold">Hora de entrada</label>
-            <select name="hora_entrada" x-model="hora_entrada" class="border rounded px-3 py-2">
-                <option value="">Todos</option>
-                <option value="1">Con hora</option>
-                <option value="0">Sin hora</option>
-            </select>
-        </div>
-
-        <div>
-            <label class="block mb-1 font-semibold">Hora de salida</label>
-            <select name="hora_salida" x-model="hora_salida" class="border rounded px-3 py-2">
-                <option value="">Todos</option>
-                <option value="1">Con hora</option>
-                <option value="0">Sin hora</option>
-            </select>
-        </div>
-
-        <div>
-            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Filtrar</button>
-        </div>
         @if(request()->hasAny(['buscar', 'fecha_inicio', 'fecha_fin', 'departamento', 'retardo', 'hora_entrada', 'hora_salida']) && collect(request()->only(['buscar', 'fecha_inicio', 'fecha_fin','departamento', 'retardo', 'hora_entrada', 'hora_salida']))->filter(fn($v) => $v !== null && $v !== '')->isNotEmpty())
-        <a href="{{ route('admin.asistencias') }}"
-            class="ml-2 px-4 py-2 bg-red-600 rounded hover:bg-red-400 text-white">Borrar filtros</a>
+        <div class="w-full sm:w-1/2 md:w-auto">
+            <a href="{{ route('admin.asistencias') }}"
+                class="block text-center px-4 py-2 bg-red-600 hover:bg-red-400 text-white rounded w-full">
+                Borrar filtros
+            </a>
+        </div>
         @endif
     </form>
 
