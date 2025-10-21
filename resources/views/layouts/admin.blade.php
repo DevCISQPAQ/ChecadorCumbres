@@ -17,11 +17,11 @@
             this.sidebarOpen = !this.sidebarOpen;
         }
     }"
-    class="bg-gray-100 min-h-screen flex relative overflow-x-hidden transition-all duration-300">
+    class="bg-gray-100 h-screen flex relative overflow-x-hidden transition-all duration-300">
 
     {{-- Sidebar responsivo --}}
     <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-        class="fixed inset-y-0 left-0 w-64 bg-white shadow-md z-40 transform transition-transform duration-300 ease-in-out md:static md:translate-x-0">
+        class="fixed inset-y-0 left-0 w-64 h-screen flex flex-col bg-white shadow-md z-40 transform transition-transform duration-300 ease-in-out md:static md:translate-x-0">
         <x-admin-sidebar />
     </aside>
 
@@ -60,7 +60,7 @@
 
 
         {{-- Contenido dinámico --}}
-        <main class="p-6">
+        <main class="p-6 flex-1 overflow-y-auto">
             @if(session('success') || session('error'))
             <div class="{{ session('success') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }} p-3 rounded mb-4">
                 {{ session('success') ?? session('error') }}
