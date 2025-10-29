@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     btn.addEventListener('click', async () => {
         btn.disabled = true;
-        showLoader();  // <-- Mostrar loader al inicio
+        showLoader();  // Mostrar loader al inicio
 
         const input = document.getElementById('numEmpleadoInput');
         const empleadoId = input.value.trim();
@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const pResult = resultElement.querySelector('p');
             const textoOriginal = pResult.innerText;
             pResult.innerText = 'Por favor ingresa un número de empleado válido.';
-            hideLoader(); // <-- Ocultar loader si hay error
+            hideLoader(); // Oculta loader si hay error
             setTimeout(() => {
                 pResult.innerText = textoOriginal;
                 btn.disabled = false;
@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Error al agregar asistencia:', error);
         } finally {
-            hideLoader(); // <-- Ocultar loader si hay error
+            hideLoader(); // Ocultar loader si hay error
             setTimeout(() => {
                 btn.disabled = false;
             }, 2500);

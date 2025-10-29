@@ -7,7 +7,6 @@
 </div>
 
 {{-- Tarjetas resumen --}}
-<!-- grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-2 md:gap-4 md:space-y-0 space-y-2 -->
 <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-4 md:space-y-0 space-y-2">
     <div class="bg-white p-3 rounded-lg shadow">
         <h3 class="text-sm text-center font-semibold text-gray-700">Asistencias del dia</h3>

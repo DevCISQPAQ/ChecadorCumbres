@@ -52,7 +52,6 @@
                     </div>
 
                     <h2 class="text-result" id="nombre-empleado">
-                        <!-- Bienvenido <span id="nombre-empleado">Lalo</span> -->
                     </h2>
                     <div id="result" class="mt-auto w-full rounded-xl">
                         <p class="text-center font-bold text-lg text-gray-700"> </p>
@@ -67,7 +66,7 @@
                     </h1>
                     <div class="flex gap-3 pt-4">
                         <input id="numEmpleadoInput" type="number" class="imput-numEmp" placeholder="Escribe tu numero de empleado" />
-                        <button id="btnNumEmp" class="btn-numEmp" type="button"> <!-- type="button" evita submit -->
+                        <button id="btnNumEmp" class="btn-numEmp" type="button">
                             Ingresar
                         </button>
                     </div>

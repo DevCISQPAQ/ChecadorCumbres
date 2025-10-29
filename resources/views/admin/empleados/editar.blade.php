@@ -68,7 +68,6 @@
 
         </div>
 
-
         <div class="flex gap-4">
             <div class="mb-4 w-1/2">
                 <label class="block text-sm font-semibold text-gray-700">Tipo de horario</label>
@@ -99,8 +98,6 @@
            hover:file:bg-blue-200
            cursor-pointer">
         </div>
-
-
 
         <div class="flex justify-end">
             <a href="{{ route('admin.empleados') }}" class="px-4 py-2 text-gray-600 hover:underline">Cancelar</a>

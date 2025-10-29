@@ -4,7 +4,6 @@
 <h2 class="text-2xl font-semibold text-gray-800 mb-6">Lista de Empleados</h2>
 
 <!-- Tarjetas de conteo de empleados por secciones -->
-<!-- <div class="flex flex-wrap gap-4 mb-2"> -->
 <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-2 md:gap-4 md:space-y-0 space-y-2">
     <!-- Tarjeta para Academia -->
     <div class="bg-blue-100 p-2 rounded shadow-lg text-center flex-1 min-w-[100px] sm:basis-[calc(15%-1rem)]">

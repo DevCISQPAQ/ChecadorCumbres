@@ -15,7 +15,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Login y logout
     Route::get('/', [AuthController::class, 'showLoginForm'])->name('login.form');
     Route::post('/', [AuthController::class, 'login'])->name('login');
-    // Dashboard
+    // Dashboard de asistencias
     Route::get('/asistencias', [AdminController::class, 'asistencias'])->name('asistencias');
     Route::get('/asistencias/reporte', [AdminController::class, 'generarReporte'])->name('asistencias.reporte');
     // Usuarios

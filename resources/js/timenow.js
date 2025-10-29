@@ -14,7 +14,7 @@ function updateDateTime() {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
-        hour12: false  // Nota: es hour12, no hour24
+        hour12: false  
     };
 
     // Formatear fecha y hora
@@ -36,4 +36,3 @@ function updateDateTime() {
 // Actualiza la fecha y hora cada segundo
 setInterval(updateDateTime, 1000);
 updateDateTime();
-// Actualiza la fecha y hora cada segundo

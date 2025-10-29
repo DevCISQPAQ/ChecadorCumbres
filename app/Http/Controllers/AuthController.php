@@ -36,20 +36,5 @@ class AuthController extends Controller
         return redirect('/admin');
     }
 
-    public function dashboard()
-    {
-        // if (!Auth::check() || !Auth::user()->is_admin) {
-        //     abort(403, 'Acceso no autorizado');
-        // }
-
-        if (!Auth::check()) {
-            abort(403, 'Acceso no autorizado');
-        }
-
-        $usuarios = User::count();
-        $activosHoy = User::whereDate('updated_at', now()->toDateString())->count();
-        $pendientes = 8; // Aquí podrías usar algún modelo real
-
-        return view('admin.dashboard', compact('usuarios', 'activosHoy', 'pendientes'));
-    }
+   
 }

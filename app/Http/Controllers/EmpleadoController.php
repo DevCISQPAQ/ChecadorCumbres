@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Empleado;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\File; // Asegúrate de importar esto arriba
+use Illuminate\Support\Facades\File; 
 use Illuminate\Support\Str;
 
 class EmpleadoController extends Controller
@@ -42,7 +42,7 @@ class EmpleadoController extends Controller
         // Ordenar los resultados
         $query->orderByDesc('created_at');
 
-        // Finalmente paginar
+        // paginar
         $empleados = $query->paginate(10)->withQueryString();
 
         return $empleados;
@@ -50,43 +50,31 @@ class EmpleadoController extends Controller
 
     private function obtenerConteosPorDepartamento()
     {
-        // $periodo = $this->obtenerPeriodoEscolar();
-
         $preescolarCount = Empleado::where(function ($query) {
             $query->where('departamento', 'LIKE', '%preescolar%');
-        })
-            // ->whereBetween('created_at', [$periodo['inicio'], $periodo['fin']])
-            ->count();
+        })->count();
 
         $primariaCount = Empleado::where('departamento', 'LIKE', '%primaria%')
-            // ->whereBetween('created_at', [$periodo['inicio'], $periodo['fin']])
             ->count();
 
         $secundariaCount = Empleado::where('departamento', 'LIKE', '%secundaria%')
-            // ->whereBetween('created_at', [$periodo['inicio'], $periodo['fin']])
             ->count();
 
         $administrativosCount = Empleado::where('departamento', 'LIKE', '%administracion%')
-            // ->whereBetween('created_at', [$periodo['inicio'], $periodo['fin']])
             ->count();
 
         $academiasCount = Empleado::where('departamento', 'LIKE', '%academia%')
-            // ->whereBetween('created_at', [$periodo['inicio'], $periodo['fin']])
             ->count();
 
         $promocionCount = Empleado::where('departamento', 'LIKE', '%promocion%')
-            // ->whereBetween('created_at', [$periodo['inicio'], $periodo['fin']])
             ->count();
 
         $mantenimientoCount = Empleado::where('departamento', 'LIKE', '%mantenimiento%')
-            // ->whereBetween('created_at', [$periodo['inicio'], $periodo['fin']])
             ->count();
 
         $direccionCount = Empleado::where('departamento', 'LIKE', '%direccion%')
-            // ->whereBetween('created_at', [$periodo['inicio'], $periodo['fin']])
             ->count();
 
-        // $totales_empleados = Empleado::whereBetween('created_at', [$periodo['inicio'], $periodo['fin']])->count();
         $totales_empleados = Empleado::query()->count();
 
         return compact('preescolarCount', 'primariaCount', 'secundariaCount', 'administrativosCount', 'academiasCount','promocionCount', 'mantenimientoCount','direccionCount', 'totales_empleados');
@@ -209,16 +197,9 @@ class EmpleadoController extends Controller
         }
     }
 
-
     public function destroy($id)
     {
         try {
-
-            // $deleted = Empleado::destroy($id);
-
-            // if (!$deleted) {
-            //     return redirect()->back()->with('error', 'No se pudo eliminar el empleado. El registro no existe.');
-            // }
 
             // Buscar al empleado primero
             $empleado = Empleado::findOrFail($id);

@@ -41,12 +41,10 @@ class HomeController extends Controller
         ]);
     }
 
-
     public function agregarAsistencia($empleado)
     {
         $ahora = now();
         $fechaHoy = $ahora->format('Y-m-d');
-        // $horaLimiteSalida = \Carbon\Carbon::parse("$fechaHoy 11:30:00");
         $horaLimiteSalida = \Carbon\Carbon::parse($fechaHoy . ' ' . Configuracion::getValor('hora_limite_salida', '11:30:00'));
 
         if ($this->esHorarioLibre($empleado)) {
@@ -120,7 +118,6 @@ class HomeController extends Controller
                 }
             }
 
-            // $horaLimiteCompleta = \Carbon\Carbon::parse("$fechaHoy 07:35:00");
             $horaLimiteCompleta = \Carbon\Carbon::parse($fechaHoy . ' ' . Configuracion::getValor('hora_limite_entrada', '07:35:00'));
             return $this->registrarEntrada($empleado, $ahora, $horaLimiteCompleta);
         }
@@ -172,7 +169,6 @@ class HomeController extends Controller
         ];
     }
 
-
     private function yaTieneSalidaHoy($asistencia)
     {
         return !is_null($asistencia->hora_salida);
@@ -197,12 +193,12 @@ class HomeController extends Controller
 
         if (strtolower($empleado->tipo_horario) === 'horario base') {
             $horaE = null;
-            $retardo = true; // o aplica otra lógica si lo deseas
+            $retardo = true; 
         }
 
         Asistencia::create([
             'empleado_id' => $empleado->id,
-            'hora_entrada' => $horaE, // puedes usar null si prefieres
+            'hora_entrada' => $horaE, 
             'hora_salida' => $ahora,
             'retardo' => $retardo,
         ]);

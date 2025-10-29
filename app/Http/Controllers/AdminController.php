@@ -65,7 +65,6 @@ class AdminController extends Controller
         }
 
 
-
         $query = Asistencia::with('empleado');
 
         $query = $this->aplicarFiltroPorDefecto($query, $request);
@@ -101,7 +100,7 @@ class AdminController extends Controller
             ->count();
 
         $cantidadSinAsistencia = Empleado::whereDoesntHave('asistencias', function ($query) {
-            $query->whereDate('created_at', Carbon::today()); // Asumo que en asistencias hay un campo 'fecha'
+            $query->whereDate('created_at', Carbon::today()); 
         })->count();
 
         return compact('asistenciaE', 'asistenciaS', 'retardosHoy', 'cantidadSinAsistencia');
@@ -206,7 +205,7 @@ class AdminController extends Controller
             $horasDecimales = $this->calcularHorasTrabajadas($asistencias);
             $horasFormateadas = $this->formatearHoras($horasDecimales);
 
-            // Cargar vista para PDF (puede ser similar a la vista web, pero más sencilla para PDF)
+            // Cargar vista para PDF 
             $pdf = PDF::loadView('admin.asistencias.reporte', compact('asistencias', 'horasFormateadas'));
 
             // Descargar o mostrar el PDF
@@ -253,7 +252,6 @@ class AdminController extends Controller
 
         return $horasTotales;
     }
-
 
     private function formatearHoras($horasDecimales)
     {

@@ -41,7 +41,7 @@ class UsuarioController extends Controller
 
             'password' => 'required|min:6',
             'level_user' => 'required|integer|in:0,1,2',
-            'yes_notifications' => 'nullable|boolean', // 👉 validación del nuevo campo
+            'yes_notifications' => 'nullable|boolean', 
         ]);
 
         try {
@@ -52,7 +52,7 @@ class UsuarioController extends Controller
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'level_user' => $request->level_user,
-                'yes_notifications' => $request->yes_notifications ?? false, // 👉 guardar campo
+                'yes_notifications' => $request->yes_notifications ?? false, 
             ]);
 
             return redirect()->route('admin.preferencias')->with('success', 'Usuario creado correctamente.');
@@ -78,9 +78,9 @@ class UsuarioController extends Controller
             'name' => 'required',
             'last_name' => 'required',
             'email' => 'required|email|unique:users,email,' . $id,
-            'password' => 'nullable|min:6', // 👉 ahora es opcional
+            'password' => 'nullable|min:6', 
             'level_user' => 'required|integer|in:0,1,2',
-            'yes_notifications' => 'nullable|boolean', // 👉 validación
+            'yes_notifications' => 'nullable|boolean', 
         ]);
 
         try {

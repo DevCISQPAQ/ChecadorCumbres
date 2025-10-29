@@ -36,14 +36,14 @@ class EnviarReporteRetardosSemanales extends Command
         $finSemana = now()->endOfWeek();     // domingo
 
         // Solo obtener empleados con retardos entre lunes y viernes
-        $retardos = \App\Models\Asistencia::with('empleado')
+        $retardos = Asistencia::with('empleado')
             ->where('retardo', 1)
             ->whereBetween('created_at', [$inicioSemana, $finSemana])
             ->get()
             ->groupBy('empleado_id');
 
         // Empleados sin asistencia en la semana
-        $empleadosSinAsistencia = \App\Models\Empleado::whereDoesntHave('asistencias', function ($query) use ($inicioSemana, $finSemana) {
+        $empleadosSinAsistencia = Empleado::whereDoesntHave('asistencias', function ($query) use ($inicioSemana, $finSemana) {
             $query->whereBetween('created_at', [$inicioSemana, $finSemana]);
         })->get();
 
@@ -53,13 +53,13 @@ class EnviarReporteRetardosSemanales extends Command
             return;
         }
 
-        $usuarios = \App\Models\User::where('yes_notifications', true)->get();
+        $usuarios = User::where('yes_notifications', true)->get();
 
         $pdf = PDF::loadView('emails.reporte_pdf', compact('retardos', 'empleadosSinAsistencia'));
         $pdfContent = $pdf->output();
 
         foreach ($usuarios as $usuario) {
-            Mail::to($usuario->email)->send(new \App\Mail\ReporteRetardosMail($retardos, $empleadosSinAsistencia, $pdfContent));
+            Mail::to($usuario->email)->send(new ReporteRetardosMail($retardos, $empleadosSinAsistencia, $pdfContent));
         }
 
         Log::info('Reporte de retardos y asistencias enviado.');

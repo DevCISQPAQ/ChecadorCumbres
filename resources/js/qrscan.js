@@ -29,7 +29,7 @@ if (document.getElementById(qrRegionId)) {
             fotoElement: document.getElementById("foto-empleado")
         };
 
-        showLoader(); // <-- Mostrar loader antes de la llamada
+        showLoader(); // Mostrar loader antes de la llamada
         try {
             await manejarAsistencia(decodedText, elementos, {
                 resumeQr: () => html5QrCode.resume()
@@ -37,7 +37,7 @@ if (document.getElementById(qrRegionId)) {
         } catch (error) {
             console.error("Error en manejo de asistencia con QR:", error);
         } finally {
-            hideLoader(); // <-- Ocultar loader después que termina
+            hideLoader(); // Ocultar loader después que termina
         }
     }
 
