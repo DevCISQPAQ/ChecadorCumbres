@@ -9,6 +9,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+
 
 class AdminController extends Controller
 {
@@ -100,7 +109,7 @@ class AdminController extends Controller
             ->count();
 
         $cantidadSinAsistencia = Empleado::whereDoesntHave('asistencias', function ($query) {
-            $query->whereDate('created_at', Carbon::today()); 
+            $query->whereDate('created_at', Carbon::today());
         })->count();
 
         return compact('asistenciaE', 'asistenciaS', 'retardosHoy', 'cantidadSinAsistencia');
@@ -263,5 +272,108 @@ class AdminController extends Controller
         $minutos = round((abs($horasDecimales) - $horas) * 60);
 
         return "{$horas}h {$minutos}min";
+    }
+
+    public function generarReporteExcel(Request $request)
+    {
+        try {
+            // Reutiliza tu lógica para obtener asistencias filtradas
+            $asistencias = $this->listarAsistencias($request, false);
+
+            // Calcula horas trabajadas
+            $horasDecimales = $this->calcularHorasTrabajadas($asistencias);
+            $horasFormateadas = $this->formatearHoras($horasDecimales);
+
+            // Exportación de Excel
+            return Excel::download(
+                new class($asistencias, $horasFormateadas) implements FromArray, WithHeadings, WithStyles {
+                    private $asistencias;
+                    private $horasFormateadas;
+
+                    public function __construct($asistencias, $horasFormateadas)
+                    {
+                        $this->asistencias = $asistencias;
+                        $this->horasFormateadas = $horasFormateadas;
+                    }
+
+                    // Contenido del Excel
+                    public function array(): array
+                    {
+                        $data = [];
+                        foreach ($this->asistencias as $asistencia) {
+                            $empleado = $asistencia->empleado ?? $asistencia;
+
+                            $data[] = [
+                                $empleado->id ?? '-',
+                                $empleado->nombres . ' ' . ($empleado->apellido_paterno ?? '') . ' ' . ($empleado->apellido_materno ?? ''),
+                                $empleado->departamento ?? '-',
+                                $asistencia->created_at ? $asistencia->created_at->format('d/m/Y') : '-',
+                                $asistencia->hora_entrada ? $asistencia->hora_entrada->format('H:i') : 'Sin registro',
+                                $asistencia->hora_salida ? $asistencia->hora_salida->format('H:i') : 'Sin registro',
+                                isset($asistencia->retardo) ? ($asistencia->retardo ? 'Sí' : 'No') : 'Sin registro',
+
+                            ];
+                        }
+
+                        // Agregar fila de total de horas trabajadas al final
+                        if ($this->horasFormateadas) {
+                            $data[] = ['', '', '', '', 'Total de horas trabajadas', $this->horasFormateadas . ' horas', ''];
+                        }
+
+                        return $data;
+                    }
+
+                    // Encabezados
+                    public function headings(): array
+                    {
+                        return ['N. Empleado', 'Nombre', 'Departamento', 'Fecha', 'Hora de entrada', 'Hora de salida', 'Retardo'];
+                    }
+
+                    public function styles(Worksheet $sheet)
+                    {
+                        $highestRow = $sheet->getHighestRow();
+
+                        // Estilo encabezados: fondo gris, negrita, bordes
+                        $sheet->getStyle("A1:G1")->getFont()->setBold(true);
+                        $sheet->getStyle("A1:G1")->getFill()
+                            ->setFillType(Fill::FILL_SOLID)
+                            ->getStartColor()->setRGB('DDDDDD');
+                        $sheet->getStyle("A1:G1")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                        $sheet->getStyle("A1:G" . $highestRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+                        // Bordes para todo el contenido
+                        $sheet->getStyle("A2:G" . $highestRow)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+
+                        // Colores alternados por fila (tipo tabla)
+                        for ($row = 2; $row <= $highestRow; $row++) {
+                            if ($row % 2 == 0) {
+                                $sheet->getStyle("A{$row}:G{$row}")->getFill()
+                                    ->setFillType(Fill::FILL_SOLID)
+                                    ->getStartColor()->setRGB('F9F9F9');
+                            }
+                        }
+
+                        // Resaltar retardos en rojo y no retardos en verde
+                        for ($row = 2; $row < $highestRow; $row++) {
+                            $retardo = $sheet->getCell("F{$row}")->getValue();
+                            if ($retardo === 'Sí') {
+                                $sheet->getStyle("F{$row}")->getFont()->getColor()->setRGB('FF0000');
+                            } elseif ($retardo === 'No') {
+                                $sheet->getStyle("F{$row}")->getFont()->getColor()->setRGB('008000');
+                            }
+                        }
+
+                        // Fila de total de horas trabajadas en negrita
+                        $sheet->getStyle("E{$highestRow}:F{$highestRow}")->getFont()->setBold(true);
+                    }
+                },
+                'reporte_asistencias_' . now()->format('Y-m-d') . '.xlsx'
+            );
+        } catch (\Exception $e) {
+            return redirect()->back()->with(
+                'error',
+                'Error al generar Excel: ' . $e->getMessage()
+            );
+        }
     }
 }

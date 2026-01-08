@@ -128,8 +128,8 @@
         @endif
     </form>
 
-    <div class="flex justify-end mb-1 pr-4 pt-5">
-        <form method="GET" action="{{ route('admin.asistencias.reporte') }}" target="_blank">
+    <div class="flex justify-end gap-2 mb-1 pr-4 pt-5"">
+        <form method="GET" action="{{ route('admin.asistencias.reporte.pdf') }}" target="_blank">
             <!-- Envía los filtros actuales como inputs ocultos -->
             <input type="hidden" name="buscar" value="{{ request('buscar') }}">
             <input type="hidden" name="fecha_inicio" value="{{ request('fecha_inicio') }}">
@@ -143,7 +143,25 @@
                 Crear reporte
             </button>
         </form>
+    
+        <form method="GET" action="{{ route('admin.asistencias.reporte.excel') }}">
+            <!-- Envía los filtros actuales como inputs ocultos -->
+            <input type="hidden" name="buscar" value="{{ request('buscar') }}">
+            <input type="hidden" name="fecha_inicio" value="{{ request('fecha_inicio') }}">
+            <input type="hidden" name="fecha_fin" value="{{ request('fecha_fin') }}">
+            <input type="hidden" name="departamento" value="{{ request('departamento') }}">
+            <input type="hidden" name="retardo" value="{{ request('retardo') }}">
+            <input type="hidden" name="hora_entrada" value="{{ request('hora_entrada') }}">
+            <input type="hidden" name="hora_salida" value="{{ request('hora_salida') }}">
+
+            <button type="submit"
+                class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                Exportar Excel
+            </button>
+        </form>
     </div>
+
+
     <!-- Tabla de asistencias -->
     <div class="overflow-x-auto">
         <div class="max-h-[500px] overflow-y-auto border border-gray-300 rounded-lg">

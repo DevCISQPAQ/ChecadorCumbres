@@ -17,7 +17,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/', [AuthController::class, 'login'])->name('login');
     // Dashboard de asistencias
     Route::get('/asistencias', [AdminController::class, 'asistencias'])->name('asistencias');
-    Route::get('/asistencias/reporte', [AdminController::class, 'generarReporte'])->name('asistencias.reporte');
+    // Route::get('/asistencias/reporte', [AdminController::class, 'generarReporte'])->name('asistencias.reporte');
+    // Route::get('/asistencias/reporte', [AdminController::class, 'generarReporteExcel'])->name('asistencias.reporte.excel');
+    Route::get('/asistencias/reporte/pdf', [AdminController::class, 'generarReporte'])
+        ->name('asistencias.reporte.pdf');
+
+    Route::get('/asistencias/reporte/excel', [AdminController::class, 'generarReporteExcel'])
+        ->name('asistencias.reporte.excel');
+
     // Usuarios
     Route::get('/preferencias', [UsuarioController::class, 'listarUsuarios'])->name('preferencias');
     Route::get('/usuarios/crear', [UsuarioController::class, 'crearUsuario'])->name('usuarios.crear');
