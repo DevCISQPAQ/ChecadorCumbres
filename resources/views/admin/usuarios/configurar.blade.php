@@ -28,7 +28,7 @@
                 class="mt-2 py-3 text-xl block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
         </div>
 
-        @if(auth()->user()->level_user >= 2)
+        <!-- @if(auth()->user()->level_user >= 2)
         <div class="mb-5">
             <label for="hora_limite_salida" class="block text-xl font-medium text-gray-700">
                 Hora de marcado como salida
@@ -38,7 +38,7 @@
                 value="{{ old('hora_limite_salida', $config['hora_limite_salida'] ?? '') }}"
                 class="mt-2 py-3 text-xl block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
         </div>
-        @endif
+        @endif -->
 
         <div class="flex justify-end">
             <a href="{{ route('admin.preferencias') }}" class="px-4 py-2 text-gray-600 hover:underline">Cancelar</a>
