@@ -3,29 +3,29 @@ $empleadoUnico = null;
 $todosMismoEmpleado = true;
 
 if(isset($asistencias[0]) && $asistencias[0] instanceof \App\Models\Empleado) {
-    // Si es colección de empleados
-    $primerEmpleado = $asistencias[0] ?? null;
-    foreach ($asistencias as $empleado) {
-        if (is_null($empleadoUnico)) {
-            $empleadoUnico = $empleado;
-        } elseif ($empleadoUnico->id !== $empleado->id) {
-            $todosMismoEmpleado = false;
-            break;
-        }
-    }
+// Si es colección de empleados
+$primerEmpleado = $asistencias[0] ?? null;
+foreach ($asistencias as $empleado) {
+if (is_null($empleadoUnico)) {
+$empleadoUnico = $empleado;
+} elseif ($empleadoUnico->id !== $empleado->id) {
+$todosMismoEmpleado = false;
+break;
+}
+}
 } elseif(isset($asistencias[0]) && $asistencias[0] instanceof \App\Models\Asistencia) {
-    // Si es colección de asistencias
-    $primerEmpleado = $asistencias[0]->empleado ?? null;
-    foreach ($asistencias as $asistencia) {
-        if (is_null($empleadoUnico)) {
-            $empleadoUnico = $asistencia->empleado;
-        } elseif ($empleadoUnico->id !== $asistencia->empleado->id) {
-            $todosMismoEmpleado = false;
-            break;
-        }
-    }
+// Si es colección de asistencias
+$primerEmpleado = $asistencias[0]->empleado ?? null;
+foreach ($asistencias as $asistencia) {
+if (is_null($empleadoUnico)) {
+$empleadoUnico = $asistencia->empleado;
+} elseif ($empleadoUnico->id !== $asistencia->empleado->id) {
+$todosMismoEmpleado = false;
+break;
+}
+}
 } else {
-    $primerEmpleado = null;
+$primerEmpleado = null;
 }
 @endphp
 
@@ -58,7 +58,7 @@ if(isset($asistencias[0]) && $asistencias[0] instanceof \App\Models\Empleado) {
                         <h4>Reporte de Asistencias</h4>
                     </div>
                     @if($todosMismoEmpleado && $empleadoUnico)
-                        <p>De: {{ $empleadoUnico->nombres }} {{ $empleadoUnico->apellido_paterno }} {{ $empleadoUnico->apellido_materno }}</p>
+                    <p>De: {{ $empleadoUnico->nombres }} {{ $empleadoUnico->apellido_paterno }} {{ $empleadoUnico->apellido_materno }}</p>
                     @endif
                 </td>
                 <td class="w-half" style="text-align: right;">
@@ -75,6 +75,7 @@ if(isset($asistencias[0]) && $asistencias[0] instanceof \App\Models\Empleado) {
                     <th>N. Empleado</th>
                     <th>Nombre</th>
                     <th>Departamento</th>
+                    <th>Fecha</th>
                     <th>Hora de entrada</th>
                     <th>Hora de salida</th>
                     <th>Retardo</th>
@@ -82,61 +83,55 @@ if(isset($asistencias[0]) && $asistencias[0] instanceof \App\Models\Empleado) {
             </thead>
             <tbody>
                 @php
-                    $totalRetardos = 0;
+                $totalRetardos = 0;
                 @endphp
 
-                @if(isset($asistencias[0]) && $asistencias[0] instanceof \App\Models\Empleado)
-                    @forelse($asistencias as $empleado)
-                        <tr class="items">
-                            <td>{{ $empleado->id }}</td>
-                            <td>{{ $empleado->nombres . ' ' . $empleado->apellido_paterno . ' ' . $empleado->apellido_materno }}</td>
-                            <td>{{ $empleado->departamento }}</td>
-                            <td style="color: red;">Sin registro</td>
-                            <td style="color: red;">Sin registro</td>
-                            <td style="color: red;">Sin registro</td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="6">No se encontraron registros.</td></tr>
-                    @endforelse
-                @elseif(isset($asistencias[0]) && $asistencias[0] instanceof \App\Models\Asistencia)
-                    @forelse($asistencias as $asistencia)
-                        @php
-                            $empleado = $asistencia->empleado;
-                            if ($asistencia->retardo) {
-                                $totalRetardos++;
-                            }
-                        @endphp
-                        <tr class="items">
-                            <td>{{ $asistencia->empleado_id ?? 0 }}</td>
-                            <td>{{ $empleado ? $empleado->nombres . ' ' . $empleado->apellido_paterno . ' ' . $empleado->apellido_materno : 'N/A' }}</td>
-                            <td>{{ $empleado->departamento ?? 'N/A' }}</td>
-                            <td @if(!$asistencia->hora_entrada) style="color: red;" @endif>
-                                {{ $asistencia->hora_entrada ? $asistencia->hora_entrada->format('Y/m/d H:i') : 'N/A' }}
-                            </td>
-                            <td @if(!$asistencia->hora_salida) style="color: red;" @endif>
-                                {{ $asistencia->hora_salida ? $asistencia->hora_salida->format('Y/m/d H:i') : 'N/A' }}
-                            </td>
-                            <td @if($asistencia->retardo) style="color: red;" @else style="color: green;" @endif>
-                                {{ $asistencia->retardo ? 'Sí' : 'No' }}
-                            </td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="6">No se encontraron registros.</td></tr>
-                    @endforelse
-                @else
-                    <tr><td colspan="6">No se encontraron registros.</td></tr>
-                @endif
+                @forelse($asistencias as $asistencia)
+                @php
+                $empleado = $asistencia->empleado;
+                if ($asistencia->retardo) {
+                $totalRetardos++;
+                }
+                @endphp
+                <tr class="items">
+                    <td>{{ $asistencia->empleado_id ?? ($empleado->id ?? '-') }}</td>
+                    <td>{{ $empleado ? $empleado->nombres . ' ' . $empleado->apellido_paterno . ' ' . $empleado->apellido_materno : 'N/A' }}</td>
+                    <td>{{ $empleado->departamento ?? 'N/A' }}</td>
+                    {{-- Columna de fecha --}}
+                    <td>{{ $asistencia->created_at ? $asistencia->created_at->format('d/m/Y') : '-' }}</td>
+                    {{-- Hora de entrada --}}
+                    <td @if(!$asistencia->hora_entrada) style="color: red;" @endif>
+                        {{ $asistencia->hora_entrada ? \Carbon\Carbon::parse($asistencia->hora_entrada)->format('H:i') : 'Sin registro' }}
+                    </td>
+                    {{-- Hora de salida --}}
+                    <td @if(!$asistencia->hora_salida) style="color: red;" @endif>
+                        {{ $asistencia->hora_salida ? \Carbon\Carbon::parse($asistencia->hora_salida)->format('H:i') : 'Sin registro' }}
+                    </td>
+                    {{-- Retardo --}}
+                    <td @if(is_null($asistencia->retardo)) style="color: red;"
+                        @elseif($asistencia->retardo) style="color: red;"
+                        @else style="color: green;"
+                        @endif>
+                        {{ is_null($asistencia->retardo) ? 'Sin registro' : ($asistencia->retardo ? 'Sí' : 'No') }}
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="7">No se encontraron registros.</td>
+                </tr>
+                @endforelse
             </tbody>
+
             <tfoot>
                 <tr>
-                    <td colspan="6" style="text-align: right; font-weight: bold; padding-right: 1rem;">Total de retardos: {{ $totalRetardos }}</td>
+                    <td colspan="7" style="text-align: right; font-weight: bold; padding-right: 1rem;">Total de retardos: {{ $totalRetardos }}</td>
                 </tr>
                 @if(isset($horasFormateadas))
-                    <tr>
-                        <td colspan="6" style="text-align: right; font-weight: bold; padding-right: 1rem;">
-                            <strong> Total de horas trabajadas:</strong> {{ $horasFormateadas }} horas
-                        </td>
-                    </tr>
+                <tr>
+                    <td colspan="7" style="text-align: right; font-weight: bold; padding-right: 1rem;">
+                        <strong> Total de horas trabajadas:</strong> {{ $horasFormateadas }} horas
+                    </td>
+                </tr>
                 @endif
             </tfoot>
         </table>
