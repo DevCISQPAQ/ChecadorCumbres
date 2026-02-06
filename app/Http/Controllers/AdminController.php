@@ -37,10 +37,15 @@ class AdminController extends Controller
             // }
 
             $conteosAsistencias = $this->obtenerConteosdeAsistencia();
-            $asistencias = $this->listarAsistencias($request);
-            //$asistencias = $this->obtenerAsistenciasConDiasFaltantes($request);
+            $hayFiltros = $this->hayFiltros($request);
 
-            return view('admin.asistencias.index', array_merge($conteosAsistencias, compact('asistencias')));
+            if ($this->hayFiltros($request)) {
+                $asistencias = $this->obtenerAsistenciasConDiasFaltantes($request);
+            } else {
+                $asistencias = $this->listarAsistencias($request);
+            }
+
+            return view('admin.asistencias.index', array_merge($conteosAsistencias, compact('asistencias', 'hayFiltros')));
 
             // return view('admin.asistencias.index', compact('asistencias'));
         } catch (\Exception $e) {
@@ -473,62 +478,48 @@ class AdminController extends Controller
             }
         }
 
+        // 🔹 Filtrar por retardo (si viene en request)
+        if ($request->filled('retardo')) {
+            $retardo = (string) $request->retardo; // "1" o "0"
+
+            $resultado = $resultado->filter(function ($item) use ($retardo) {
+                // excluir registros virtuales
+                if ($item->retardo === null) {
+                    return false;
+                }
+                return (string) $item->retardo === $retardo;
+            })->values();
+        }
+
+        // FILTRO HORA DE ENTRADA
+        if ($request->filled('hora_entrada')) {
+            $horaEntradaFiltro = $request->hora_entrada;
+            $resultado = $resultado->filter(function ($item) use ($horaEntradaFiltro) {
+                return $horaEntradaFiltro === "1" ? $item->hora_entrada !== null : $item->hora_entrada === null;
+            })->values();
+        }
+
+        // FILTRO HORA DE SALIDA
+        if ($request->filled('hora_salida')) {
+            $horaSalidaFiltro = $request->hora_salida;
+            $resultado = $resultado->filter(function ($item) use ($horaSalidaFiltro) {
+                return $horaSalidaFiltro === "1" ? $item->hora_salida !== null : $item->hora_salida === null;
+            })->values();
+        }
+
         return $resultado;
     }
 
-    // public function obtenerAsistenciasConDiasFaltantes(Request $request)
-    // {
-    //     $fecha_inicio = $request->filled('fecha_inicio') ? Carbon::parse($request->fecha_inicio) : Carbon::today();
-    //     $fecha_fin = $request->filled('fecha_fin') ? Carbon::parse($request->fecha_fin) : Carbon::today();
 
-    //     // Obtener empleados filtrados por búsqueda
-    //     $empleados = Empleado::query();
+    private function hayFiltros(Request $request): bool
+    {
+        return $request->filled('buscar')
+            || $request->filled('fecha_inicio')
+            || $request->filled('fecha_fin')
+            || $request->filled('departamento')
+            || $request->filled('hora_entrada')
+            || $request->filled('hora_salida')
+            || $request->filled('retardo');
+    }
 
-    //     if ($request->filled('buscar')) {
-    //         $buscar = strtolower($request->buscar);
-    //         $empleados->whereRaw("LOWER(nombres) LIKE ?", ["%{$buscar}%"])
-    //             ->orWhereRaw("LOWER(apellido_paterno) LIKE ?", ["%{$buscar}%"])
-    //             ->orWhereRaw("LOWER(apellido_materno) LIKE ?", ["%{$buscar}%"])
-    //             ->orWhereRaw("LOWER(id) LIKE ?", ["%{$buscar}%"]);
-    //     }
-
-    //     if ($request->filled('departamento')) {
-    //         $empleados->where('departamento', $request->departamento);
-    //     }
-
-    //     $empleados = $empleados->get();
-
-    //     // Generar rango de fechas
-    //     $period = new \DatePeriod(
-    //         $fecha_inicio,
-    //         new \DateInterval('P1D'),
-    //         $fecha_fin->addDay() // añadir un día para incluir el último
-    //     );
-
-    //     $resultados = collect();
-
-    //     foreach ($empleados as $empleado) {
-    //         foreach ($period as $fecha) {
-    //             $asistencia = Asistencia::where('empleado_id', $empleado->id)
-    //                 ->whereDate('created_at', $fecha)
-    //                 ->first();
-
-    //             if ($asistencia) {
-    //                 $resultados->push($asistencia);
-    //             } else {
-    //                 // Crear un objeto "ficticio" para días sin registro
-    //                 $resultados->push((object)[
-    //                     'empleado' => $empleado,
-    //                     'empleado_id' => $empleado->id,
-    //                     'created_at' => $fecha,
-    //                     'hora_entrada' => null,
-    //                     'hora_salida' => null,
-    //                     'retardo' => null
-    //                 ]);
-    //             }
-    //         }
-    //     }
-
-    //     return $resultados;
-    // }
 }
