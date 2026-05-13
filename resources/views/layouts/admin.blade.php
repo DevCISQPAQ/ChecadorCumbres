@@ -28,7 +28,7 @@
     <div class="flex-1 flex flex-col w-full">
 
         {{-- Header superior --}}
-        <header class="bg-white shadow px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <header class="bg-white shadow px-6 py-2 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div class="flex items-center gap-4">
                 {{-- Botón hamburguesa visible solo en móviles --}}
                 <button @click="toggleSidebar" class="md:hidden text-gray-700">
@@ -39,7 +39,7 @@
                     </svg>
                 </button>
 
-                <h1 class="text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold text-gray-800">
+                <h1 class="text-lg sm:text-xl md:text-2xl lg:text-xl font-semibold text-gray-800">
                     Control de Asistencias
                 </h1>
             </div>
@@ -51,7 +51,7 @@
                 </form>
 
                 <button onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
-                    class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
+                    class="bg-red-500 hover:bg-red-600 text-white px-4 py-1 rounded">
                     Cerrar sesión
                 </button>
             </div>

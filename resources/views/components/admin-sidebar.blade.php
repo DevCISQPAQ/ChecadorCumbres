@@ -1,6 +1,6 @@
 <div class="h-screen flex flex-col" x-data="{ sidebarOpen: false }" @click.away="sidebarOpen = false">
     {{-- Título del panel --}}
-    <div class="p-6 font-bold text-dm text-[#5D7E8D] border-b border-gray-300 ">
+    <div class="p-6 font-bold text-dm text-[#5D7E8D] border-b border-gray-300 text-center">
         <div class="flex justify-center mb-3">
             <img src="/img/sello-cumbres.svg" alt="Logo" class="h-24">
         </div>

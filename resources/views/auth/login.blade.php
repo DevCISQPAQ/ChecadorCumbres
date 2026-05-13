@@ -9,7 +9,7 @@
     <link rel="shortcut icon" sizes="192x192" href="{{ asset('/img/sello-cumbres-en-blanco-01.png') }}">
 </head>
 
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+<body class="bg-gradient-to-br from-blue-900 via-gray-600 to-blue-400 min-h-screen flex items-center justify-center">
     <div class="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
         @if(session('success') || session('error'))
         <div class="{{ session('success') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }} p-3 rounded mb-4">

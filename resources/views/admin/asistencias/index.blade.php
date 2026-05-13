@@ -2,27 +2,27 @@
 
 @section('content')
 <div class="flex justify-between gap-4">
-    <h2 class="md:text-2xl text-xm font-semibold text-blue-800 mb-6 text-center">Bienvenido(a), {{ Auth::user()->name }}</h2>
+    <h2 class="md:text-xl text-xm font-semibold text-blue-800 mb-6 text-center">Bienvenido(a), {{ Auth::user()->name }}</h2>
     <h2 class="md:text-xl text-xm font-semibold text-gray-800 mb-6 text-center">{{ \Carbon\Carbon::now()->locale('es')->isoFormat('dddd, D [de] MMMM [de] YYYY') }}</h2>
 </div>
 
 {{-- Tarjetas resumen --}}
-<div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-4 md:space-y-0 space-y-2">
-    <div class="bg-white p-3 rounded-lg shadow">
+<div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-6 md:space-y-0 space-y-2">
+    <div class="bg-white p-1 rounded-lg shadow">
         <h3 class="text-sm text-center font-semibold text-gray-700">Asistencias del dia</h3>
-        <p class="text-3xl mt-2 text-center font-bold text-green-600 ">{{ $asistenciaE ?? 0 }}</p>
+        <p class="text-xl mt-1 text-center font-bold text-green-600 ">{{ $asistenciaE ?? 0 }}</p>
     </div>
-    <div class="bg-white p-3 rounded-lg shadow">
+    <div class="bg-white p-1 rounded-lg shadow">
         <h3 class="text-sm text-center font-semibold text-gray-700">Retardos del dia</h3>
-        <p class="text-3xl mt-2 text-center font-bold  text-yellow-500">{{$retardosHoy ?? 0}}</p>
+        <p class="text-xl mt-1 text-center font-bold  text-yellow-500">{{$retardosHoy ?? 0}}</p>
     </div>
-    <div class="bg-white p-3 rounded-lg shadow">
+    <div class="bg-white p-1 rounded-lg shadow">
         <h3 class="text-sm text-center font-semibold text-gray-700">Salidas del dia</h3>
-        <p class="text-3xl mt-2 text-center font-bold text-blue-400">{{ $asistenciaS ?? 0}}</p>
+        <p class="text-xl mt-1 text-center font-bold text-blue-400">{{ $asistenciaS ?? 0}}</p>
     </div>
-    <div class="mb-2 md:mb-0 bg-white p-3 rounded-lg shadow">
+    <div class="mb-2 md:mb-0 bg-white p-1 rounded-lg shadow">
         <h3 class="text-sm text-center font-semibold text-gray-700">Faltantes del dia</h3>
-        <p class="text-3xl text-center mt-2 font-bold text-red-600">{{ $cantidadSinAsistencia ?? 0}}</p>
+        <p class="text-xl text-center mt-1 font-bold text-red-600">{{ $cantidadSinAsistencia ?? 0}}</p>
     </div>
 </div>
 {{-- Sección adicional --}}
@@ -35,37 +35,37 @@
     retardo: '{{ request('retardo', '') }}',
     hora_entrada: '{{ request('hora_entrada', '') }}',
     hora_salida: '{{ request('hora_salida', '') }}'
-}" class="pt-10">
+}" class="pt-5">
     <!-- Formulario de filtros -->
     <form id="filtrosForm" method="GET" action="{{ route('admin.asistencias') }}"
-        class="flex flex-col md:flex-row flex-wrap md:items-end md:gap-4 space-y-4 md:space-y-0">
+        class="flex flex-col md:flex-row flex-wrap md:items-end md:gap-4 space-y-2 md:space-y-0">
 
         <div class="w-full md:w-auto">
-            <label class="block mb-1 font-semibold">Buscar nombre o apellido</label>
+            <label class="block mb-1 font-semibold text-sm">Buscar nombre o apellido</label>
             <input type="text" name="buscar" x-model="buscar" placeholder="Buscar..."
-                class="border rounded px-3 py-2 w-full md:w-64" />
+                class="border rounded px-3 py-1 w-full md:w-64 text-sm" />
         </div>
 
         <div class="w-full sm:w-1/2 md:w-auto">
-            <label class="block mb-1 font-semibold">Fecha inicio</label>
+            <label class="block mb-1 font-semibold text-sm">Fecha inicio</label>
             <input type="date" name="fecha_inicio" x-model="fecha_inicio"
-                class="border rounded px-3 py-2 w-full" />
+                class="border rounded px-3 py-1 w-full text-sm" />
         </div>
 
         <div class="w-full sm:w-1/2 md:w-auto">
-            <label class="block mb-1 font-semibold">Fecha fin</label>
+            <label class="block mb-1 font-semibold text-sm">Fecha fin</label>
             <input type="date" name="fecha_fin" x-model="fecha_fin"
-                class="border rounded px-3 py-2 w-full" />
+                class="border rounded px-3 py-1 w-full text-sm" />
         </div>
 
         <!-- grupo de select filtrar -->
         <div class=" flex flex-col md:flex-row gap-4">
             <!-- 2 columnas SOLO en móvil -->
-            <div class="w-full flex flex-row gap-4">
+            <div class="w-full flex flex-row gap-2">
                 <!-- Departamento -->
                 <div class="w-1/2 md:w-32">
-                    <label class="block mb-1 font-semibold">Departamento</label>
-                    <select name="departamento" x-model="departamento" class="border rounded px-3 py-2 w-full">
+                    <label class="block mb-1 font-semibold text-sm">Departamento</label>
+                    <select name="departamento" x-model="departamento" class="border rounded px-3 py-1 w-full text-sm">
                         <option value="">Todos</option>
                         <option value="academia" {{ request('departamento') == 'academia' ? 'selected' : '' }}>Academia</option>
                         <option value="administracion" {{ request('departamento') == 'administracion' ? 'selected' : '' }}>Administración</option>
@@ -79,8 +79,8 @@
                 </div>
                 <!-- Retardo -->
                 <div class="w-1/2 md:w-32">
-                    <label class="block mb-1 font-semibold">Retardo</label>
-                    <select name="retardo" x-model="retardo" class="border rounded px-3 py-2 w-full">
+                    <label class="block mb-1 font-semibold text-sm">Retardo</label>
+                    <select name="retardo" x-model="retardo" class="border rounded px-3 py-1 w-full text-sm">
                         <option value="">Todos</option>
                         <option value="1">Sí</option>
                         <option value="0">No</option>
@@ -89,11 +89,11 @@
             </div>
 
             <!-- Hora entrada + salida (solo se agrupan en móviles) -->
-            <div class="w-full flex flex-row gap-4 md:w-auto">
+            <div class="w-full flex flex-row gap-2 md:w-auto">
                 <!-- Hora de entrada -->
                 <div class="w-1/2 md:w-32">
-                    <label class="block mb-1 font-semibold">Hora de entrada</label>
-                    <select name="hora_entrada" x-model="hora_entrada" class="border rounded px-3 py-2 w-full">
+                    <label class="block mb-1 font-semibold text-sm">Hora de entrada</label>
+                    <select name="hora_entrada" x-model="hora_entrada" class="border rounded px-3 py-1 w-full text-sm">
                         <option value="">Todos</option>
                         <option value="1">Con hora</option>
                         <option value="0">Sin hora</option>
@@ -101,8 +101,8 @@
                 </div>
                 <!-- Hora de salida -->
                 <div class="w-1/2 md:w-32">
-                    <label class="block mb-1 font-semibold">Hora de salida</label>
-                    <select name="hora_salida" x-model="hora_salida" class="border rounded px-3 py-2 w-full">
+                    <label class="block mb-1 font-semibold text-sm">Hora de salida</label>
+                    <select name="hora_salida" x-model="hora_salida" class="border rounded px-3 py-1 w-full text-sm">
                         <option value="">Todos</option>
                         <option value="1">Con hora</option>
                         <option value="0">Sin hora</option>
@@ -113,7 +113,7 @@
 
         <!-- Boton filtrar -->
         <div class="w-full sm:w-1/2 md:w-auto">
-            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full">
+            <button type="submit" class="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700 w-full">
                 Filtrar
             </button>
         </div>
@@ -139,7 +139,7 @@
         <input type="hidden" name="hora_entrada" value="{{ request('hora_entrada') }}">
         <input type="hidden" name="hora_salida" value="{{ request('hora_salida') }}">
 
-        <button type="submit" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        <button type="submit" class="bg-gray-600 text-white px-4 py-1 rounded hover:bg-blue-700">
             Crear reporte
         </button>
         </form>
@@ -155,7 +155,7 @@
             <input type="hidden" name="hora_salida" value="{{ request('hora_salida') }}">
 
             <button type="submit"
-                class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                class="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700">
                 Exportar Excel
             </button>
         </form>
@@ -167,19 +167,19 @@
         <div class="max-h-[500px] overflow-y-auto border border-gray-300 rounded-lg">
             <table class="min-w-full bg-white">
                 <thead class="sticky top-0 bg-gray-700 text-white">
-                    <tr>
-                        <th class="p-3 text-center">N. Empleado</th>
-                        <th class="p-3 text-center">Nombre</th>
-                        <th class="p-3 text-center">Departamento</th>
+                    <tr class="text-xs">
+                        <th class="p-2 text-center ">N. Empleado</th>
+                        <th class="p-2 text-center">Nombre</th>
+                        <th class="p-2 text-center">Departamento</th>
                         @if($hayFiltros)
-                        <th class="p-3 text-center">Fecha</th>
+                        <th class="p-2 text-center">Fecha</th>
                         @endif
-                        <th class="p-3 text-center">Hora de entrada</th>
-                        <th class="p-3 text-center">Hora de salida</th>
-                        <th class="p-3 text-center">Retardo</th>
+                        <th class="p-2 text-center">Hora de entrada</th>
+                        <th class="p-2 text-center">Hora de salida</th>
+                        <th class="p-2 text-center">Retardo</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="text-xs">
                     @if(isset($asistencias[0]) && $asistencias[0] instanceof \App\Models\Empleado)
                     @forelse($asistencias as $empleado)
                     <tr class="border border-gray-300 hover:bg-gray-50">
