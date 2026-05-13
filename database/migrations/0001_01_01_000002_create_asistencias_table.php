@@ -13,14 +13,15 @@ return new class extends Migration
     {
         Schema::create('asistencias', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('empleado_id'); // FK a empleados.id
+            //$table->unsignedBigInteger('empleado_id'); // FK a empleados.id
+            $table->foreignId('empleado_id')->constrained('empleados')->cascadeOnDelete();
             $table->timestamp('hora_entrada')->nullable();
             $table->timestamp('hora_salida')->nullable();
             $table->boolean('retardo')->default(false);
             $table->timestamps();
 
             // Llave foránea y restricción para integridad referencial
-            $table->foreign('empleado_id')->references('id')->on('empleados')->onDelete('cascade');
+            //$table->foreign('empleado_id')->references('id')->on('empleados')->onDelete('cascade');
         });
     }
 

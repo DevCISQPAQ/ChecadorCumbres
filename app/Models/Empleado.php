@@ -17,6 +17,7 @@ class Empleado extends Model
     // Campos que se pueden asignar masivamente
     protected $fillable = [
         'id',
+        'n_empleado',
         'nombres',
         'apellido_paterno',
         'apellido_materno',

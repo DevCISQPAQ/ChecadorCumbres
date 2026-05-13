@@ -10,7 +10,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('empleados', function (Blueprint $table) {
-            $table->unsignedBigInteger('id')->primary();
+           // $table->unsignedBigInteger('id')->primary();
+            $table->id();
+            $table->string('n_empleado')->unique();
             $table->string('nombres');
             $table->string('apellido_paterno');
             $table->string('apellido_materno');

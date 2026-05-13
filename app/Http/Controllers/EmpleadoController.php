@@ -88,7 +88,8 @@ class EmpleadoController extends Controller
     public function guardarEmpleado(Request $request)
     {
         $request->validate([
-            'id' => 'required|unique:empleados,id',
+            //'id' => 'required|unique:empleados,id',
+            'n_empleado' => 'required|unique:empleados,n_empleado',
             'nombres' => 'required',
             'apellido_paterno' => 'required',
             'apellido_materno' => 'required',
