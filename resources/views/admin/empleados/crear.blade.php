@@ -19,7 +19,7 @@
         <div class="flex justify-between gap-4">
             <div class="mb-4 w-1/2">
                 <label class="block text-sm font-semibold text-gray-700">Numeró de empleado</label>
-                <input type="number" name="id" required class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
+                <input type="text" maxlength="8" pattern="[0-9]*" inputmode="numeric" name="n_empleado" required class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
             </div>
 
             <div class="mb-4 w-1/2">
@@ -39,20 +39,23 @@
             </div>
         </div>
         <div class="flex justify-between gap-4">
-            <div class="mb-4  w-1/2">
-                <label class="block text-sm font-semibold text-gray-700">Departamento</label>
-                <select name="departamento" class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
-                    <option value="" disabled selected>Seleccione una opción</option>
-                    <option value="Academia">Academia</option>
-                    <option value="Administración">Administración</option>
-                    <option value="Dirección">Dirección</option>
-                    <option value="Preescolar">Preescolar</option>
-                    <option value="Primaria">Primaria</option>
-                    <option value="Promoción">Promoción</option>
-                    <option value="Secundaria">Secundaria</option>
-                    <option value="Mantenimiento">Mantenimiento</option>
+            <div class="mb-4 w-1/2">
+                <label class="block text-sm font-semibold text-gray-700">
+                    Departamento
+                </label>
+                <select
+                    name="departamento_id"
+                    required
+                    class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
+                    <option value="" disabled selected>
+                        Seleccione una opción
+                    </option>
 
-
+                    @foreach($departamentos as $departamento)
+                    <option value="{{ $departamento->id }}">
+                        {{ $departamento->nombre }}
+                    </option>
+                    @endforeach
                 </select>
             </div>
 

@@ -6,26 +6,49 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    
+
     public function up(): void
     {
         Schema::create('empleados', function (Blueprint $table) {
-           // $table->unsignedBigInteger('id')->primary();
+
             $table->id();
+
             $table->string('n_empleado')->unique();
+
             $table->string('nombres');
+
             $table->string('apellido_paterno');
+
             $table->string('apellido_materno');
-            $table->string('departamento');
+
+            $table->foreignId('departamento_id')
+                ->constrained('departamentos')
+                ->cascadeOnDelete();
+
             $table->string('puesto');
-            $table->string('email')->nullable();
-            $table->string('tipo_horario');
-            $table->text('foto')->nullable();
+
+            $table->string('email')
+                ->nullable();
+
+            $table->text('foto')
+                ->nullable();
+
+            $table->boolean('activo')
+                ->default(true);
+
             $table->timestamps();
+
+            // índices
+            $table->index('nombres');
+
+            $table->index([
+                'apellido_paterno',
+                'apellido_materno'
+            ]);
         });
     }
 
-    
+
     public function down(): void
     {
         Schema::dropIfExists('empleados');

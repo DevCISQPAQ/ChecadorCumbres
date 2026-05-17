@@ -8,6 +8,10 @@ use App\Models\Asistencia;
 use Illuminate\Http\Request;
 use App\Models\Configuracion;
 
+use App\Models\Checada;
+use App\Models\HorarioEmpleado;
+use Carbon\Carbon;
+
 class HomeController extends Controller
 {
     public function showWelcome()
@@ -15,9 +19,9 @@ class HomeController extends Controller
         return view('welcome');
     }
 
-    public function buscarEmpleado($id)
+    public function buscarEmpleado($n_empleado)
     {
-        $empleado = Empleado::find($id);
+        $empleado = Empleado::where('n_empleado', $n_empleado)->first();
 
         if (!$empleado) {
             return response()->json([
@@ -27,7 +31,8 @@ class HomeController extends Controller
         }
 
         try {
-            $respuesta = $this->agregarAsistencia($empleado);
+            //$respuesta = $this->agregarAsistencia($empleado);
+            $respuesta = $this->registrarChecada($empleado);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -41,199 +46,524 @@ class HomeController extends Controller
         ]);
     }
 
-    public function agregarAsistencia($empleado)
+    public function registrarChecada($empleado)
     {
         $ahora = now();
-        $fechaHoy = $ahora->format('Y-m-d');
-        $horaLimiteSalida = \Carbon\Carbon::parse($fechaHoy . ' ' . Configuracion::getValor('hora_limite_salida', '11:30:00'));
+        $hoy = $ahora->toDateString();
 
-        if ($this->esHorarioLibre($empleado)) {
-            return $this->agregarAsistenciaHorarioLibre($empleado, $ahora);
-        }
+        $tipo = $this->detectarTipoChecada($empleado, $ahora);
 
-        // Para horario base u otros
-        return $this->agregarAsistenciaHorarioBase($empleado, $ahora, $horaLimiteSalida, $fechaHoy);
-    }
-
-    private function esHorarioLibre($empleado)
-    {
-        return strtolower($empleado->tipo_horario) === 'horario libre';
-    }
-
-    private function agregarAsistenciaHorarioLibre($empleado, $ahora)
-    {
-
-        $asistencia = $this->obtenerAsistenciaHoy($empleado);
-
-        if (!$asistencia) {
-            return $this->registrarEntrada($empleado, $ahora);
-        }
-
-        if ($asistencia && is_null($asistencia->hora_salida)) {
-            return $this->validarSalidaHorarioLibre($asistencia, $ahora);
-        }
-
-        return [
-            'success' => false,
-            'message' => 'Ya tienes registrada la entrada y salida para hoy.',
-        ];
-    }
-
-    private function validarSalidaHorarioLibre($asistencia, $ahora)
-    {
-        $horaEntrada = \Carbon\Carbon::parse($asistencia->hora_entrada);
-        $minutosDesdeEntrada = $horaEntrada->diffInMinutes($ahora);
-
-        if ($minutosDesdeEntrada < 60) {
+        if (!$tipo) {
             return [
                 'success' => false,
-                'confirmar_salida' => true,
-                'message' => 'Ya has marcado tu entrada. ¿Quieres marcar tu salida?',
-                'asistencia_id' => $asistencia->id,
+                'message' => 'Ya completaste tus checadas del día.',
+                'tipo' => $tipo ?? null
             ];
         }
 
-        // Más de una hora, marcar salida automáticamente
-        return $this->registrarSalida($asistencia, $ahora);
-    }
 
-    private function agregarAsistenciaHorarioBase($empleado, $ahora, $horaLimiteSalida, $fechaHoy)
-    {
-        if ($ahora->lessThan($horaLimiteSalida)) {
-            $asistencia = $this->obtenerAsistenciaHoy($empleado);
-            if ($asistencia) {
-                if (!empty($asistencia->hora_entrada) && empty($asistencia->hora_salida)) {
-                    return [
-                        'success' => false,
-                        'confirmar_salida' => true,
-                        'message' => 'Ya has marcado tu entrada. ¿Quieres marcar tu salida?',
-                        'asistencia_id' => $asistencia->id,
-                    ];
-                }
-                if (!empty($asistencia->hora_entrada) && !empty($asistencia->hora_salida)) {
-                    return [
-                        'success' => false,
-                        'message' => 'Ya tienes tu entrada y salida marcadas para hoy.',
-                    ];
-                }
-            }
-
-            $horaLimiteCompleta = \Carbon\Carbon::parse($fechaHoy . ' ' . Configuracion::getValor('hora_limite_entrada', '07:35:00'));
-            return $this->registrarEntrada($empleado, $ahora, $horaLimiteCompleta);
+        if ($tipo === 'salida_temprana') {
+            return [
+                'success' => true,
+                'message' => 'Aún no es tu hora de salida. ¿Deseas registrar salida de todas formas?',
+                'tipo' => $tipo
+            ];
         }
 
-        $asistencia = $this->obtenerAsistenciaHoy($empleado);
+        //
+        // $ultimaChecada = Checada::where('empleado_id', $empleado->id)
+        //     ->whereDate('fecha_hora', $hoy)
+        //     ->latest()
+        //     ->first();
 
-        if ($asistencia) {
-            if ($this->yaTieneSalidaHoy($asistencia)) {
-                return [
-                    'success' => false,
-                    'message' => 'Ya has marcado la salida para hoy.',
-                ];
-            }
+        // // evitar duplicados seguidos
+        // if ($ultimaChecada && $ultimaChecada->tipo === $tipo) {
+        //     return [
+        //         'success' => false,
+        //         'message' => 'Ya registraste esta acción recientemente.'
+        //     ];
+        // }
 
-            return $this->registrarSalida($asistencia, $ahora);
-        }
+        //
 
-        return $this->crearSalidaSinEntrada($empleado, $ahora);
+
+        Checada::create([
+            'empleado_id' => $empleado->id,
+            'fecha_hora' => $ahora,
+            'tipo' => $tipo,
+        ]);
+
+        // recalcular asistencia del día (opcional pero recomendado)
+        $this->generarAsistenciaDelDia($empleado, $hoy);
+
+        return [
+            'success' => true,
+            'message' => "Checada registrada: {$tipo}",
+            'tipo' => $tipo
+        ];
     }
 
-    private function obtenerAsistenciaHoy($empleado)
+
+
+
+    private function detectarTipoChecada($empleado, $ahora)
     {
-        return Asistencia::where('empleado_id', $empleado->id)
-            ->where(function ($query) {
-                $query->whereDate('hora_entrada', today())
-                    ->orWhereDate('hora_salida', today());
-            })
+        $hoy = $ahora->dayOfWeekIso;
+
+        $horario = HorarioEmpleado::where('empleado_id', $empleado->id)
+            ->where('dia_semana', $hoy)
             ->first();
-    }
 
-    private function registrarEntrada($empleado, $ahora, $horaLimiteCompleta = null)
-    {
-        $retardo = false;
-
-        if ($horaLimiteCompleta) {
-            $retardo = $ahora->greaterThan($horaLimiteCompleta);
+        // si no tiene horario → sistema libre
+        if (!$horario) {
+            return $this->toggleEntradaSalidaLibre($empleado, $ahora);
         }
 
-        Asistencia::create([
-            'empleado_id' => $empleado->id,
-            'hora_entrada' => $ahora,
-            'hora_salida' => null,
-            'retardo' => $retardo,
-        ]);
+        $checadasHoy = Checada::where('empleado_id', $empleado->id)
+            ->whereDate('fecha_hora', $ahora->toDateString())
+            ->orderBy('fecha_hora')
+            ->get();
 
-        return [
-            'success' => true,
-            'message' => 'Entrada registrada correctamente.',
-        ];
-    }
+        $total = $checadasHoy->count();
 
-    private function yaTieneSalidaHoy($asistencia)
-    {
-        return !is_null($asistencia->hora_salida);
-    }
+        // 1️⃣ Entrada
+        if ($total === 0) {
 
-    private function registrarSalida($asistencia, $ahora)
-    {
-        $asistencia->hora_salida = $ahora;
-        $asistencia->save();
+            $horaSalida = $horario->hora_salida; // "HH:MM"
+            if ($ahora->format('H:i') > $horaSalida) {
+                return 'salida';
+            }
 
-        return [
-            'success' => true,
-            'message' => 'Salida registrada correctamente.',
-        ];
-    }
-
-    private function crearSalidaSinEntrada($empleado, $ahora)
-    {
-
-        $retardo = false;
-        $horaE = $ahora;
-
-        if (strtolower($empleado->tipo_horario) === 'horario base') {
-            $horaE = null;
-            $retardo = true; 
+            return 'entrada';
         }
 
-        Asistencia::create([
-            'empleado_id' => $empleado->id,
-            'hora_entrada' => $horaE, 
-            'hora_salida' => $ahora,
-            'retardo' => $retardo,
-        ]);
+        $ultimaChecada = $checadasHoy->last();
 
-        return [
-            'success' => true,
-            'message' => 'Salida registrada correctamente.',
-        ];
+        // 2️⃣ Salida (con validación de horario)
+        if ($total === 1) {
+
+            // si ya registró salida → no permitir otra
+            if ($ultimaChecada && $ultimaChecada->tipo === 'salida') {
+                return null;
+            }
+
+            $horaSalida = $horario->hora_salida;
+
+            // si aún no es hora de salida
+            if ($ahora->format('H:i') < $horaSalida) {
+                return 'salida_temprana';
+            }
+
+            return 'salida';
+        }
+
+        // 3️⃣ ya no permitir más de 2
+        return null;
     }
 
-    public function marcarSalidaConfirmada($id)
+
+
+    private function toggleEntradaSalidaLibre($empleado, $ahora)
     {
-        $asistencia = Asistencia::find($id);
+        $ultima = Checada::where('empleado_id', $empleado->id)
+            ->whereDate('fecha_hora', today())
+            ->latest()
+            ->first();
 
-        if (!$asistencia) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Registro de asistencia no encontrado.'
-            ], 404);
+        if (!$ultima) {
+            return 'entrada';
         }
 
-        if ($asistencia->hora_salida !== null) {
-            return response()->json([
-                'success' => false,
-                'message' => 'La salida ya fue registrada previamente.'
-            ], 400);
+        return match ($ultima->tipo) {
+            'entrada' => 'salida',
+            'salida' => 'entrada',
+            default => 'entrada'
+        };
+    }
+
+
+    private function generarAsistenciaDelDia($empleado, $fecha)
+    {
+
+        //1. VACACIONES
+
+        if ($this->estaEnVacaciones($empleado, $fecha)) {
+
+            \App\Models\Asistencia::updateOrCreate(
+                [
+                    'empleado_id' => $empleado->id,
+                    'fecha' => $fecha
+                ],
+                [
+                    'estado' => 'vacaciones',
+                    'horas_trabajadas' => 0,
+                    'minutos_retardo' => 0
+                ]
+            );
+
+            return;
         }
 
+
+        //2. FESTIVOS
+
+        if ($this->esDiaFestivo($fecha)) {
+
+            \App\Models\Asistencia::updateOrCreate(
+                [
+                    'empleado_id' => $empleado->id,
+                    'fecha' => $fecha
+                ],
+                [
+                    'estado' => 'festivo',
+                    'horas_trabajadas' => 0,
+                    'minutos_retardo' => 0
+                ]
+            );
+
+            return;
+        }
+
+
+        // 3. CHECADAS
+
+        $checadas = \App\Models\Checada::where('empleado_id', $empleado->id)
+            ->whereDate('fecha_hora', $fecha)
+            ->orderBy('fecha_hora')
+            ->get();
+
+        $horario = \App\Models\HorarioEmpleado::where('empleado_id', $empleado->id)
+            ->where('dia_semana', now()->dayOfWeekIso)
+            ->first();
+
+        $entrada = $checadas->where('tipo', 'entrada')->first();
+        $salida = $checadas->where('tipo', 'salida')->last();
+
+
+        // 4. FALTA
+
+        // SOLO tiene salida
+        if (!$entrada && $salida) {
+
+            \App\Models\Asistencia::updateOrCreate(
+                [
+                    'empleado_id' => $empleado->id,
+                    'fecha' => $fecha
+                ],
+                [
+                    'estado' => 'retardo',
+                    'horas_trabajadas' => 0,
+                    'minutos_retardo' => 0
+                ]
+            );
+
+            return;
+        }
+        // NO tiene entrada ni salida
+        if (!$entrada && !$salida && $horario) {
+
+            \App\Models\Asistencia::updateOrCreate(
+                [
+                    'empleado_id' => $empleado->id,
+                    'fecha' => $fecha
+                ],
+                [
+                    'estado' => 'falta',
+                    'horas_trabajadas' => 0,
+                    'minutos_retardo' => 0
+                ]
+            );
+
+            return;
+        }
+
+
+        // 5. RETARDO
+
+        $estado = 'presente';
+        $minutosRetardo = 0;
+
+        if ($horario && $entrada) {
+
+            $limite = \Carbon\Carbon::parse($horario->hora_entrada)
+                ->addMinutes($horario->tolerancia_minutos);
+
+            if ($entrada->fecha_hora->gt($limite)) {
+                $estado = 'retardo';
+                $minutosRetardo = $limite->diffInMinutes($entrada->fecha_hora);
+            }
+        }
+
+
+        // 6. HORAS
+
+        $horas = 0;
+
+        if ($entrada && $salida) {
+            $horas = abs(
+                $entrada->fecha_hora->diffInMinutes($salida->fecha_hora)
+            ) / 60;
+        }
+
+        \App\Models\Asistencia::updateOrCreate(
+            [
+                'empleado_id' => $empleado->id,
+                'fecha' => $fecha
+            ],
+            [
+                'estado' => $estado,
+                'horas_trabajadas' => $horas,
+                'minutos_retardo' => $minutosRetardo
+            ]
+        );
+    }
+
+
+    private function estaEnVacaciones($empleado, $fecha)
+    {
+        return \App\Models\Vacacion::where('empleado_id', $empleado->id)
+            ->whereDate('fecha_inicio', '<=', $fecha)
+            ->whereDate('fecha_fin', '>=', $fecha)
+            ->exists();
+    }
+
+
+    private function esDiaFestivo($fecha)
+    {
+        return \App\Models\DiaFestivo::whereDate('fecha', $fecha)->exists();
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | CONFIRMAR SALIDA (YA OPCIONAL)
+    |--------------------------------------------------------------------------
+    */
+    public function marcarSalidaConfirmada($n_empleado)
+    {
+        $empleado = Empleado::where('n_empleado', $n_empleado)->first();
         $ahora = now();
-        $asistencia->hora_salida = $ahora;
-        $asistencia->save();
+        $hoy = $ahora->toDateString();
 
+        // $checada = Checada::find($id);
+
+        // if (!$checada) {
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'Checada no encontrada.'
+        //     ], 404);
+        // }
+
+        // $checada->tipo = 'salida';
+        // $checada->save();
+
+        Checada::create([
+            'empleado_id' => $empleado->id,
+            'fecha_hora' => $ahora,
+            'tipo' => 'salida',
+        ]);
+
+        $this->generarAsistenciaDelDia($empleado, $hoy);
         return response()->json([
             'success' => true,
-            'message' => 'Salida registrada correctamente.',
+            'message' => 'Salida confirmada.'
         ]);
     }
+
+
+
+    // public function agregarAsistencia($empleado)
+    // {
+    //     $ahora = now();
+    //     $fechaHoy = $ahora->format('Y-m-d');
+    //     $horaLimiteSalida = \Carbon\Carbon::parse($fechaHoy . ' ' . Configuracion::getValor('hora_limite_salida', '11:30:00'));
+
+    //     if ($this->esHorarioLibre($empleado)) {
+    //         return $this->agregarAsistenciaHorarioLibre($empleado, $ahora);
+    //     }
+
+    //     // Para horario base u otros
+    //     return $this->agregarAsistenciaHorarioBase($empleado, $ahora, $horaLimiteSalida, $fechaHoy);
+    // }
+
+    // private function esHorarioLibre($empleado)
+    // {
+    //     return strtolower($empleado->tipo_horario) === 'horario libre';
+    // }
+
+    // private function agregarAsistenciaHorarioLibre($empleado, $ahora)
+    // {
+
+    //     $asistencia = $this->obtenerAsistenciaHoy($empleado);
+
+    //     if (!$asistencia) {
+    //         return $this->registrarEntrada($empleado, $ahora);
+    //     }
+
+    //     if ($asistencia && is_null($asistencia->hora_salida)) {
+    //         return $this->validarSalidaHorarioLibre($asistencia, $ahora);
+    //     }
+
+    //     return [
+    //         'success' => false,
+    //         'message' => 'Ya tienes registrada la entrada y salida para hoy.',
+    //     ];
+    // }
+
+    // private function validarSalidaHorarioLibre($asistencia, $ahora)
+    // {
+    //     $horaEntrada = \Carbon\Carbon::parse($asistencia->hora_entrada);
+    //     $minutosDesdeEntrada = $horaEntrada->diffInMinutes($ahora);
+
+    //     if ($minutosDesdeEntrada < 60) {
+    //         return [
+    //             'success' => false,
+    //             'confirmar_salida' => true,
+    //             'message' => 'Ya has marcado tu entrada. ¿Quieres marcar tu salida?',
+    //             'asistencia_id' => $asistencia->id,
+    //         ];
+    //     }
+
+    //     // Más de una hora, marcar salida automáticamente
+    //     return $this->registrarSalida($asistencia, $ahora);
+    // }
+
+    // private function agregarAsistenciaHorarioBase($empleado, $ahora, $horaLimiteSalida, $fechaHoy)
+    // {
+    //     if ($ahora->lessThan($horaLimiteSalida)) {
+    //         $asistencia = $this->obtenerAsistenciaHoy($empleado);
+    //         if ($asistencia) {
+    //             if (!empty($asistencia->hora_entrada) && empty($asistencia->hora_salida)) {
+    //                 return [
+    //                     'success' => false,
+    //                     'confirmar_salida' => true,
+    //                     'message' => 'Ya has marcado tu entrada. ¿Quieres marcar tu salida?',
+    //                     'asistencia_id' => $asistencia->id,
+    //                 ];
+    //             }
+    //             if (!empty($asistencia->hora_entrada) && !empty($asistencia->hora_salida)) {
+    //                 return [
+    //                     'success' => false,
+    //                     'message' => 'Ya tienes tu entrada y salida marcadas para hoy.',
+    //                 ];
+    //             }
+    //         }
+
+    //         $horaLimiteCompleta = \Carbon\Carbon::parse($fechaHoy . ' ' . Configuracion::getValor('hora_limite_entrada', '07:35:00'));
+    //         return $this->registrarEntrada($empleado, $ahora, $horaLimiteCompleta);
+    //     }
+
+    //     $asistencia = $this->obtenerAsistenciaHoy($empleado);
+
+    //     if ($asistencia) {
+    //         if ($this->yaTieneSalidaHoy($asistencia)) {
+    //             return [
+    //                 'success' => false,
+    //                 'message' => 'Ya has marcado la salida para hoy.',
+    //             ];
+    //         }
+
+    //         return $this->registrarSalida($asistencia, $ahora);
+    //     }
+
+    //     return $this->crearSalidaSinEntrada($empleado, $ahora);
+    // }
+
+    // private function obtenerAsistenciaHoy($empleado)
+    // {
+    //     return Asistencia::where('empleado_id', $empleado->id)
+    //         ->where(function ($query) {
+    //             $query->whereDate('hora_entrada', today())
+    //                 ->orWhereDate('hora_salida', today());
+    //         })
+    //         ->first();
+    // }
+
+    // private function registrarEntrada($empleado, $ahora, $horaLimiteCompleta = null)
+    // {
+    //     $retardo = false;
+
+    //     if ($horaLimiteCompleta) {
+    //         $retardo = $ahora->greaterThan($horaLimiteCompleta);
+    //     }
+
+    //     Asistencia::create([
+    //         'empleado_id' => $empleado->id,
+    //         'hora_entrada' => $ahora,
+    //         'hora_salida' => null,
+    //         'retardo' => $retardo,
+    //     ]);
+
+    //     return [
+    //         'success' => true,
+    //         'message' => 'Entrada registrada correctamente.',
+    //     ];
+    // }
+
+    // private function yaTieneSalidaHoy($asistencia)
+    // {
+    //     return !is_null($asistencia->hora_salida);
+    // }
+
+    // private function registrarSalida($asistencia, $ahora)
+    // {
+    //     $asistencia->hora_salida = $ahora;
+    //     $asistencia->save();
+
+    //     return [
+    //         'success' => true,
+    //         'message' => 'Salida registrada correctamente.',
+    //     ];
+    // }
+
+    // private function crearSalidaSinEntrada($empleado, $ahora)
+    // {
+
+    //     $retardo = false;
+    //     $horaE = $ahora;
+
+    //     if (strtolower($empleado->tipo_horario) === 'horario base') {
+    //         $horaE = null;
+    //         $retardo = true;
+    //     }
+
+    //     Asistencia::create([
+    //         'empleado_id' => $empleado->id,
+    //         'hora_entrada' => $horaE,
+    //         'hora_salida' => $ahora,
+    //         'retardo' => $retardo,
+    //     ]);
+
+    //     return [
+    //         'success' => true,
+    //         'message' => 'Salida registrada correctamente.',
+    //     ];
+    // }
+
+    // public function marcarSalidaConfirmada($id)
+    // {
+    //     $asistencia = Asistencia::find($id);
+
+    //     if (!$asistencia) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Registro de asistencia no encontrado.'
+    //         ], 404);
+    //     }
+
+    //     if ($asistencia->hora_salida !== null) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'La salida ya fue registrada previamente.'
+    //         ], 400);
+    //     }
+
+    //     $ahora = now();
+    //     $asistencia->hora_salida = $ahora;
+    //     $asistencia->save();
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Salida registrada correctamente.',
+    //     ]);
+    // }
 }

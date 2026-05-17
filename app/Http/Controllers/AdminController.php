@@ -39,11 +39,11 @@ class AdminController extends Controller
             $conteosAsistencias = $this->obtenerConteosdeAsistencia();
             $hayFiltros = $this->hayFiltros($request);
 
-            if ($this->hayFiltros($request)) {
-                $asistencias = $this->obtenerAsistenciasConDiasFaltantes($request);
-            } else {
+            // if ($this->hayFiltros($request)) {
+            //     $asistencias = $this->obtenerAsistenciasConDiasFaltantes($request);
+            // } else {
                 $asistencias = $this->listarAsistencias($request);
-            }
+            // }
 
             return view('admin.asistencias.index', array_merge($conteosAsistencias, compact('asistencias', 'hayFiltros')));
 
@@ -81,7 +81,10 @@ class AdminController extends Controller
         }
 
 
-        $query = Asistencia::with('empleado');
+        $query = Asistencia::with([
+            'empleado',
+            'checadas'
+        ]);
 
         $query = $this->aplicarFiltroPorDefecto($query, $request);
         $query = $this->aplicarFiltroBusqueda($query, $request);
@@ -91,7 +94,7 @@ class AdminController extends Controller
         $query = $this->aplicarFiltroHoraSalida($query, $request);
         $query = $this->aplicarFiltroDepartamento($query, $request);
 
-        $query->orderByDesc('created_at');
+        $query->orderByDesc('fecha');
 
         if ($paginado) {
             return $query->paginate(10)->withQueryString();
@@ -103,23 +106,32 @@ class AdminController extends Controller
     public function obtenerConteosdeAsistencia()
     {
 
-        $asistenciaE = Asistencia::whereNotNull('hora_entrada')
-            ->whereDate('created_at', Carbon::today())
+        $asistenciaE = Asistencia::whereDate('fecha', Carbon::today())
+            ->where('estado', 'presente')
             ->count();
 
-        $asistenciaS = Asistencia::whereNotNull('hora_salida')
-            ->whereDate('created_at', Carbon::today())
+        // $asistenciaS = Asistencia::whereDate('fecha', Carbon::today())
+        //     ->whereNotNull('hora_salida')
+        //     ->count();
+
+        $retardosHoy = Asistencia::whereDate('fecha', Carbon::today())
+            ->where('estado', 'retardo')
             ->count();
 
-        $retardosHoy = Asistencia::where('retardo', 1)
-            ->whereDate('created_at', Carbon::today())
+        $faltasHoy = Asistencia::whereDate('fecha', Carbon::today())
+            ->where('estado', 'falta')
             ->count();
 
-        $cantidadSinAsistencia = Empleado::whereDoesntHave('asistencias', function ($query) {
-            $query->whereDate('created_at', Carbon::today());
-        })->count();
+        $vacacionesHoy = Asistencia::whereDate('fecha', Carbon::today())
+            ->where('estado', 'vacaciones')
+            ->count();
 
-        return compact('asistenciaE', 'asistenciaS', 'retardosHoy', 'cantidadSinAsistencia');
+        return compact(
+            'asistenciaE',
+            'retardosHoy',
+            'faltasHoy',
+            'vacacionesHoy'
+        );
     }
 
     private function aplicarFiltroPorDefecto($query, Request $request)
@@ -211,28 +223,7 @@ class AdminController extends Controller
         return $query;
     }
 
-    // public function generarReporte(Request $request)
-    // {
-    //     try {
-    //         // Reutilizar la lógica para obtener asistencias según filtro o por defecto del día
-    //         // $asistencias = $this->listarAsistencias($request, false);
-    //         $asistencias = $this->obtenerAsistenciasConDiasFaltantes($request);
-    //         // $asistencias = $this->obtenerAsistenciasConDiasFaltantes($request);
 
-    //         // Llamar a la nueva función para calcular horas trabajadas
-    //         $horasDecimales = $this->calcularHorasTrabajadas($asistencias);
-    //         $horasFormateadas = $this->formatearHoras($horasDecimales);
-
-    //         // Cargar vista para PDF 
-    //         $pdf = PDF::loadView('admin.asistencias.reporte', compact('asistencias', 'horasFormateadas'));
-
-    //         // Descargar o mostrar el PDF
-    //         //  return $pdf->download('reporte_asistencias_' . now()->format('Y-m-d') . '.pdf');
-    //         return $pdf->stream('reporte_asistencias_' . now()->format('Y-m-d') . '.pdf');
-    //     } catch (\Exception $e) {
-    //         return redirect()->back()->with('error', 'Error al ver el PDF: ' . $e->getMessage());
-    //     }
-    // }
 
     public function generarReporte(Request $request)
     {
@@ -350,7 +341,7 @@ class AdminController extends Controller
                                 $asistencia->created_at ? $asistencia->created_at->format('d/m/Y') : '-',
                                 $asistencia->hora_entrada ? $asistencia->hora_entrada->format('H:i') : 'Sin registro',
                                 $asistencia->hora_salida ? $asistencia->hora_salida->format('H:i') : 'Sin registro',
-                                isset($asistencia->retardo) ? ($asistencia->retardo ? 'Sí' : 'No') : 'Sin registro',
+                                $asistencia->estado ?? 'falta'
                             ];
                         }
 
@@ -450,9 +441,11 @@ class AdminController extends Controller
 
         // 2️⃣ Obtener todas las asistencias en el rango
         $asistencias = Asistencia::with('empleado')
-            ->whereBetween('created_at', [$fechaInicio->startOfDay(), $fechaFin->endOfDay()])
+            // ->whereBetween('created_at', [$fechaInicio->startOfDay(), $fechaFin->endOfDay()])
+            ->whereBetween('fecha', [$fechaInicio->toDateString(), $fechaFin->toDateString()])
             ->get()
-            ->groupBy(fn($a) => $a->empleado_id . '_' . $a->created_at->format('Y-m-d'));
+            //->groupBy(fn($a) => $a->empleado_id . '_' . $a->created_at->format('Y-m-d'));
+            ->groupBy(fn($a) => $a->empleado_id . '_' . $a->fecha);
 
         $periodo = CarbonPeriod::create($fechaInicio, $fechaFin);
         $resultado = collect();
@@ -462,7 +455,10 @@ class AdminController extends Controller
             foreach ($periodo as $fecha) {
                 $key = $empleado->id . '_' . $fecha->format('Y-m-d');
 
-                if (isset($asistencias[$key])) {
+                if (
+                    isset($asistencias[$key]) &&
+                    in_array($asistencias[$key]->first()->estado, ['presente', 'retardo'])
+                ) {
                     $resultado->push($asistencias[$key]->first());
                 } else {
                     // Registro virtual sin asistencia
@@ -521,5 +517,4 @@ class AdminController extends Controller
             || $request->filled('hora_salida')
             || $request->filled('retardo');
     }
-
 }

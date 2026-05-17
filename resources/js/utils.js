@@ -22,7 +22,7 @@ export function actualizarEmpleadoConSaludo(empleado, nombreElement, fotoElement
 
 export function mostrarModalConfirmacion(mensaje) {
     return new Promise((resolve) => {
- hideLoader();
+        hideLoader();
         const modal = document.getElementById('modalConfirmSalida');
         const mensajeElem = document.getElementById('mensajeConfirmSalida');
         const btnConfirmar = document.getElementById('btnConfirmarSalida');
@@ -43,13 +43,13 @@ export function mostrarModalConfirmacion(mensaje) {
             modal.classList.add('hidden');
             modal.classList.remove('flex');
             resolve(confirmacion);
-            
+
         }
 
 
         function onConfirmar() {
             finalizar(true);
-             showLoader();
+            showLoader();
         }
 
         function onCancelar() {
@@ -70,7 +70,7 @@ export async function manejarAsistencia(empleadoId, elementos, options = {}) {
     const fotoOriginal = fotoElement.src;
 
     try {
-        const response = await fetch(`/empleado/${empleadoId}/buscar`, {
+        const response = await fetch(`/empleados/${empleadoId}/buscar`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
@@ -83,14 +83,19 @@ export async function manejarAsistencia(empleadoId, elementos, options = {}) {
         if (data.success === false) {
             throw new Error(data.error || 'Empleado no encontrado.');
         }
-        const empleado = data.empleado;
-        const asistencia = data.asistencia;
 
-        if (asistencia.confirmar_salida) {
+        const empleado = data.empleado ?? null;
+        const asistencia = data.asistencia ?? null;
+
+        if (!asistencia) {
+            throw new Error('Ya no puedes registrar mas checadas hoy');
+        }
+
+        if (asistencia.tipo === 'salida_temprana') {
             if (options.pauseQr) options.pauseQr();
             const confirmar = await mostrarModalConfirmacion(asistencia.message);
             if (confirmar) {
-                const respSalida = await fetch(`/asistencia/${asistencia.asistencia_id}/salida`, {
+                const respSalida = await fetch(`/asistencia/${empleadoId}/salida`, {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',
@@ -130,7 +135,7 @@ export async function manejarAsistencia(empleadoId, elementos, options = {}) {
         nombreElement.innerText = "No identificado";
         fotoElement.src = `/img/escudo-gris.png`;
     } finally {
-         hideLoader();
+        hideLoader();
         setTimeout(() => {
             pResult.innerText = textoOriginal;
             pResult.style.color = "black";

@@ -16,13 +16,13 @@
         <h3 class="text-sm text-center font-semibold text-gray-700">Retardos del dia</h3>
         <p class="text-xl mt-1 text-center font-bold  text-yellow-500">{{$retardosHoy ?? 0}}</p>
     </div>
-    <div class="bg-white p-1 rounded-lg shadow">
+    <!-- <div class="bg-white p-1 rounded-lg shadow">
         <h3 class="text-sm text-center font-semibold text-gray-700">Salidas del dia</h3>
         <p class="text-xl mt-1 text-center font-bold text-blue-400">{{ $asistenciaS ?? 0}}</p>
-    </div>
+    </div> -->
     <div class="mb-2 md:mb-0 bg-white p-1 rounded-lg shadow">
         <h3 class="text-sm text-center font-semibold text-gray-700">Faltantes del dia</h3>
-        <p class="text-xl text-center mt-1 font-bold text-red-600">{{ $cantidadSinAsistencia ?? 0}}</p>
+        <p class="text-xl text-center mt-1 font-bold text-red-600">{{ $faltasHoy ?? 0}}</p>
     </div>
 </div>
 {{-- Sección adicional --}}
@@ -168,7 +168,7 @@
             <table class="min-w-full bg-white">
                 <thead class="sticky top-0 bg-gray-700 text-white">
                     <tr class="text-xs">
-                        <th class="p-2 text-center ">N. Empleado</th>
+                        <th class="p-2 text-center">N. Empleado</th>
                         <th class="p-2 text-center">Nombre</th>
                         <th class="p-2 text-center">Departamento</th>
                         @if($hayFiltros)
@@ -180,55 +180,54 @@
                     </tr>
                 </thead>
                 <tbody class="text-xs">
-                    @if(isset($asistencias[0]) && $asistencias[0] instanceof \App\Models\Empleado)
-                    @forelse($asistencias as $empleado)
-                    <tr class="border border-gray-300 hover:bg-gray-50">
-                        <td class="p-3 text-center">{{ $empleado->id }}</td>
-                        <td class="p-3 text-center">{{ $empleado->nombres . ' ' . $empleado->apellido_paterno . ' ' . $empleado->apellido_materno }}</td>
-                        <td class="p-3 text-center">{{ $empleado->departamento }}</td>
-                        @if($hayFiltros)
-                        <td class="p-3 text-center">
-                            {{ $asistencia->created_at->format('d/m/Y') }}
-                        </td>
-                        @endif
-                        <td class="p-3 text-center text-red-600 font-semibold">Sin registro</td>
-                        <td class="p-3 text-center text-red-600 font-semibold">Sin registro</td>
-                        <td class="p-3 text-center text-red-600 font-semibold">Sin registro</td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="6" class="text-center p-4">No se encontraron registros.</td>
-                    </tr>
-                    @endforelse
-                    @else
                     @forelse ($asistencias as $asistencia)
-                    @php $empleado = $asistencia->empleado; @endphp
+                    @php
+                    $empleado = $asistencia->empleado;
+
+                    // Obtener checadas del día
+                    $checadas = $asistencia->checadas->filter(function ($checada) use ($asistencia) {
+                    return \Carbon\Carbon::parse($checada->fecha_hora)->toDateString()
+                    === \Carbon\Carbon::parse($asistencia->fecha)->toDateString();
+                    });
+                    $entrada = $checadas->where('tipo', 'entrada')->first();
+                    $salida = $checadas->where('tipo', 'salida')->last();
+                    @endphp
                     <tr class="border border-gray-300 hover:bg-gray-50">
-                        <td class="p-3 text-center">{{ $asistencia->empleado_id ?? 0}}</td>
+                        <td class="p-3 text-center">{{ $empleado->n_empleado ?? 0 }}</td>
                         <td class="p-3 text-center">{{ $empleado ? $empleado->nombres . ' ' . $empleado->apellido_paterno . ' ' . $empleado->apellido_materno : 'N/A' }}</td>
-                        <td class="p-3 text-center">{{ $empleado->departamento ?? 'N/A' }}</td>
+                        <td class="p-3 text-center">{{ $empleado->departamento->nombre ?? 'N/A' }}</td>
                         @if($hayFiltros)
                         <td class="p-3 text-center">
-                            {{ $asistencia->created_at->format('d/m/Y') }}
+                            {{ $entrada ? \Carbon\Carbon::parse($entrada->fecha_hora)->format('d/m/Y') : 'N/A' }}
                         </td>
                         @endif
-                        <td class="p-3 text-center {{ !$asistencia->hora_entrada ? 'text-red-600 font-semibold' : '' }}">{{ $asistencia->hora_entrada ? $asistencia->hora_entrada->format('H:i'): 'Sin registro'}}</td>
-                        <td class="p-3 text-center {{ !$asistencia->hora_salida ? 'text-red-600 font-semibold' : '' }}">{{ $asistencia->hora_salida? $asistencia->hora_salida->format('H:i') : 'Sin registro'}}</td>
-
-                        <td class="p-3 text-center font-semibold @if(is_null($asistencia->hora_entrada) && is_null($asistencia->hora_salida))  text-red-600 @elseif((int) $asistencia->retardo == 1) text-red-600  @else text-green-600 @endif">
-                            @if(is_null($asistencia->hora_entrada) && is_null($asistencia->hora_salida)) Sin registro @elseif((int) $asistencia->retardo == 1) Sí
-                            @elseif((int) $asistencia->retardo == 0) No @endif
+                        <td class="p-3 text-center {{ !$entrada ? 'text-red-600 font-semibold' : '' }}">
+                            {{ $entrada ? \Carbon\Carbon::parse($entrada->fecha_hora)->format('H:i') : 'Sin registro' }}
+                        </td>
+                        <td class="p-3 text-center {{ !$salida ? 'text-red-600 font-semibold' : '' }}">
+                            {{ $salida ? \Carbon\Carbon::parse($salida->fecha_hora)->format('H:i') : 'Sin registro' }}
+                        </td>
+                        <td class="p-3 text-center font-semibold
+                        @if(is_null($entrada) && is_null($salida)) text-red-600
+                        @elseif($asistencia->minutos_retardo > 0) text-red-600
+                        @else text-green-600
+                        @endif
+                    ">
+                            @if(is_null($entrada) && is_null($salida))
+                            Sin registro
+                            @elseif($asistencia->minutos_retardo > 0)
+                            Sí
+                            @else
+                            No
+                            @endif
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="text-center p-4">No se encontraron registros.</td>
+                        <td colspan="{{ $hayFiltros ? 7 : 6 }}" class="text-center p-4">No se encontraron registros.</td>
                     </tr>
                     @endforelse
-                    @endif
-
                 </tbody>
-
             </table>
         </div>
     </div>

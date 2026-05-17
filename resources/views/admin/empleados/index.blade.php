@@ -120,9 +120,9 @@
                 <tbody class="text-xs">
                     @foreach($empleados as $empleado)
                     <tr class="border border-gray-300 rounded-lg hover:bg-gray-50">
-                        <td class="p-3 text-center">{{ $empleado->id }}</td>
+                        <td class="p-3 text-center">{{ $empleado->n_empleado }}</td>
                         <td class="p-3 text-center">{{ $empleado ? $empleado->nombres . ' ' . $empleado->apellido_paterno . ' ' . $empleado->apellido_materno : 'N/A' }}</td>
-                        <td class="p-3 text-center">{{ $empleado->departamento }}</td>
+                        <td class="p-3 text-center">{{ $empleado->departamento->nombre }}</td>
                         <td class="p-3 text-center">{{ $empleado->puesto }}</td>
                         <td class="p-3 text-center max-w-[200px] truncate">{{ $empleado->email }}</td>
                         <template x-if="editarActivo">

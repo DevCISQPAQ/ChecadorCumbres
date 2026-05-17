@@ -8,12 +8,7 @@ export let html5QrCode = null;
 
 if (document.getElementById(qrRegionId)) {
 
-    // navigator.permissions?.query({ name: 'camera' }).then(result => {
-    //     if (result.state === 'denied') {
-    //         console.warn("Permiso de cámara denegado");
-    //     }
-    // });
-
+   
     html5QrCode = new Html5Qrcode(qrRegionId);
 
     function getResponsiveQrbox() {
@@ -55,17 +50,6 @@ if (document.getElementById(qrRegionId)) {
             hideLoader(); // Ocultar loader después que termina
         }
     }
-
-    // Html5Qrcode.getCameras()
-    //     .then(devices => {
-    //         if (devices && devices.length) {
-    //             let cameraId = devices[0].id;
-    //             html5QrCode.start(cameraId, config, onScanSuccess);
-    //         }
-    //     })
-    //     .catch(err => {
-    //         console.error("No se pudo acceder a la cámara:", err);
-    //     });
 
     Html5Qrcode.getCameras()
         .then(devices => {

@@ -7,31 +7,57 @@ use Illuminate\Database\Eloquent\Model;
 class Empleado extends Model
 {
 
-    // La clave primaria personalizada (número de empleado)
-    protected $primaryKey = 'id';
-    // La clave primaria NO es autoincremental
-    public $incrementing = false;
-    // El tipo de la clave primaria (int, porque usas unsignedBigInteger)
-    protected $keyType = 'int';
-
     // Campos que se pueden asignar masivamente
     protected $fillable = [
-        'id',
         'n_empleado',
         'nombres',
         'apellido_paterno',
         'apellido_materno',
-        'departamento',
+        'departamento_id',
         'puesto',
         'email',
-        'tipo_horario',
         'foto',
-
-
+        'activo'
     ];
+
+     protected $casts = [
+        'activo' => 'boolean'
+    ];
+
     // Relación uno a muchos con asistencias
+       public function departamento()
+    {
+        return $this->belongsTo(Departamento::class);
+    }
+
+    public function horarios()
+    {
+        return $this->hasMany(HorarioEmpleado::class);
+    }
+
+    public function checadas()
+    {
+        return $this->hasMany(Checada::class);
+    }
+
     public function asistencias()
     {
-        return $this->hasMany(Asistencia::class, 'empleado_id', 'id');
+        return $this->hasMany(Asistencia::class);
+    }
+
+    public function vacaciones()
+    {
+        return $this->hasMany(Vacacion::class);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | ACCESSORS
+    |--------------------------------------------------------------------------
+    */
+
+    public function getNombreCompletoAttribute()
+    {
+        return "{$this->nombres} {$this->apellido_paterno} {$this->apellido_materno}";
     }
 }

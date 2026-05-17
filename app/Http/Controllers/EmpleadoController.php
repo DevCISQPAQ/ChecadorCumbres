@@ -6,8 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Empleado;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\File; 
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use App\Models\Departamento;
 
 class EmpleadoController extends Controller
 {
@@ -28,17 +29,21 @@ class EmpleadoController extends Controller
 
     private function obtenerEmpleados(Request $request)
     {
-        $query = Empleado::query();  
+        $query = Empleado::with('departamento');
 
         if ($request->filled('buscar')) {
             $buscar = strtolower($request->buscar);
-            $query->whereRaw('LOWER(nombres) LIKE ?', ["%{$buscar}%"])
-                ->orWhereRaw('LOWER(apellido_paterno) LIKE ?', ["%{$buscar}%"])
-                ->orWhereRaw('LOWER(apellido_materno) LIKE ?', ["%{$buscar}%"])
-                ->orWhereRaw('LOWER(departamento) LIKE ?', ["%{$buscar}%"])
-                ->orWhereRaw('LOWER(id) LIKE ?', ["%{$buscar}%"]);
-        }
 
+            $query->where(function ($q) use ($buscar) {
+                $q->whereRaw('LOWER(nombres) LIKE ?', ["%{$buscar}%"])
+                    ->orWhereRaw('LOWER(apellido_paterno) LIKE ?', ["%{$buscar}%"])
+                    ->orWhereRaw('LOWER(apellido_materno) LIKE ?', ["%{$buscar}%"])
+                    ->orWhereRaw('LOWER(id) LIKE ?', ["%{$buscar}%"])
+                    ->orWhereHas('departamento', function ($d) use ($buscar) {
+                        $d->whereRaw('LOWER(nombre) LIKE ?', ["%{$buscar}%"]);
+                    });
+            });
+        }
         // Ordenar los resultados
         $query->orderByDesc('created_at');
 
@@ -50,39 +55,61 @@ class EmpleadoController extends Controller
 
     private function obtenerConteosPorDepartamento()
     {
-        $preescolarCount = Empleado::where(function ($query) {
-            $query->where('departamento', 'LIKE', '%preescolar%');
+        $preescolarCount = Empleado::whereHas('departamento', function ($q) {
+            $q->where('nombre', 'preescolar');
         })->count();
 
-        $primariaCount = Empleado::where('departamento', 'LIKE', '%primaria%')
-            ->count();
+        $primariaCount = Empleado::whereHas('departamento', function ($q) {
+            $q->where('nombre', 'primaria');
+        })->count();
 
-        $secundariaCount = Empleado::where('departamento', 'LIKE', '%secundaria%')
-            ->count();
+        $secundariaCount = Empleado::whereHas('departamento', function ($q) {
+            $q->where('nombre', 'secundaria');
+        })->count();
 
-        $administrativosCount = Empleado::where('departamento', 'LIKE', '%administracion%')
-            ->count();
+        $administrativosCount = Empleado::whereHas('departamento', function ($q) {
+            $q->where('nombre', 'administracion');
+        })->count();
 
-        $academiasCount = Empleado::where('departamento', 'LIKE', '%academia%')
-            ->count();
+        $academiasCount = Empleado::whereHas('departamento', function ($q) {
+            $q->where('nombre', 'academia');
+        })->count();
 
-        $promocionCount = Empleado::where('departamento', 'LIKE', '%promocion%')
-            ->count();
+        $promocionCount = Empleado::whereHas('departamento', function ($q) {
+            $q->where('nombre', 'promocion');
+        })->count();
 
-        $mantenimientoCount = Empleado::where('departamento', 'LIKE', '%mantenimiento%')
-            ->count();
+        $mantenimientoCount = Empleado::whereHas('departamento', function ($q) {
+            $q->where('nombre', 'mantenimiento');
+        })->count();
 
-        $direccionCount = Empleado::where('departamento', 'LIKE', '%direccion%')
-            ->count();
+        $direccionCount = Empleado::whereHas('departamento', function ($q) {
+            $q->where('nombre', 'direccion');
+        })->count();
 
-        $totales_empleados = Empleado::query()->count();
+        $totales_empleados = Empleado::count();
 
-        return compact('preescolarCount', 'primariaCount', 'secundariaCount', 'administrativosCount', 'academiasCount','promocionCount', 'mantenimientoCount','direccionCount', 'totales_empleados');
+        return compact(
+            'preescolarCount',
+            'primariaCount',
+            'secundariaCount',
+            'administrativosCount',
+            'academiasCount',
+            'promocionCount',
+            'mantenimientoCount',
+            'direccionCount',
+            'totales_empleados'
+        );
     }
 
     public function crearEmpleado()
     {
-        return view('admin.empleados.crear');
+
+        $departamentos = Departamento::orderBy('nombre')->get();
+
+        return view('admin.empleados.crear', compact('departamentos'));
+
+        //return view('admin.empleados.crear');
     }
 
     public function guardarEmpleado(Request $request)
@@ -93,9 +120,9 @@ class EmpleadoController extends Controller
             'nombres' => 'required',
             'apellido_paterno' => 'required',
             'apellido_materno' => 'required',
-            'departamento' => 'required',
+            'departamento_id' => 'required',
             'puesto' => 'required',
-            'tipo_horario' => 'required',
+            // 'tipo_horario' => 'required',
             'email' => ['required', 'email', 'unique:empleados', function ($attribute, $value, $fail) {
                 $domain = substr(strrchr($value, "@"), 1);  // Obtener el dominio del correo
                 if (!checkdnsrr($domain, 'MX')) {  // Verificar registros MX para el dominio
@@ -117,14 +144,14 @@ class EmpleadoController extends Controller
             }
 
             Empleado::create([
-                'id' => $request->id,
+                'n_empleado' => $request->n_empleado,
                 'nombres' => $request->nombres,
                 'apellido_paterno' => $request->apellido_paterno,
                 'apellido_materno' => $request->apellido_materno,
-                'departamento' => $request->departamento,
+                'departamento_id' => $request->departamento_id,
                 'puesto' => $request->puesto,
                 'email' => $request->email,
-                'tipo_horario' => $request->tipo_horario,
+                //'tipo_horario' => $request->tipo_horario,
                 'foto' => $fotoNombre, // Guarda el nombre de la foto o null
 
             ]);
@@ -186,7 +213,7 @@ class EmpleadoController extends Controller
                 'departamento' => $request->departamento,
                 'puesto' => $request->puesto,
                 'email' => $request->email,
-                'tipo_horario' =>$request->tipo_horario,
+                'tipo_horario' => $request->tipo_horario,
                 'foto' => $fotoNombre, // Guarda el nombre de la foto o null
             ];
 

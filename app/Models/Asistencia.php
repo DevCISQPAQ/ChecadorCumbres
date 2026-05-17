@@ -8,23 +8,34 @@ class Asistencia extends Model
 {
     protected $table = 'asistencias';
 
-    
+
 
     protected $fillable = [
         'empleado_id',
-        'hora_entrada',
-        'hora_salida',
-        'retardo'
+        'fecha',
+        'estado',
+        'horas_trabajadas',
+        'minutos_retardo',
+        'observaciones'
     ];
 
-     protected $casts = [
-        'hora_entrada' => 'datetime',
-        'hora_salida' => 'datetime',
+    protected $casts = [
+        'fecha' => 'date',
+        'horas_trabajadas' => 'decimal:2'
     ];
 
     // Relación con empleado
     public function empleado()
     {
-        return $this->belongsTo(Empleado::class, 'empleado_id', 'id');
+        return $this->belongsTo(Empleado::class);
+    }
+
+    public function checadas()
+    {
+        return $this->hasMany(
+            \App\Models\Checada::class,
+            'empleado_id',
+            'empleado_id'
+        );
     }
 }
