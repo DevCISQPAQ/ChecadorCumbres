@@ -104,14 +104,13 @@ class HomeController extends Controller
     }
 
 
-
-
     private function detectarTipoChecada($empleado, $ahora)
     {
         $hoy = $ahora->dayOfWeekIso;
 
         $horario = HorarioEmpleado::where('empleado_id', $empleado->id)
             ->where('dia_semana', $hoy)
+            ->where('activo', true)
             ->first();
 
         // si no tiene horario → sistema libre
@@ -234,6 +233,7 @@ class HomeController extends Controller
 
         $horario = \App\Models\HorarioEmpleado::where('empleado_id', $empleado->id)
             ->where('dia_semana', now()->dayOfWeekIso)
+            ->where('activo', true)
             ->first();
 
         $entrada = $checadas->where('tipo', 'entrada')->first();

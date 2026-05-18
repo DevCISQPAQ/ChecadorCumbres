@@ -8,7 +8,9 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 use App\Models\Departamento;
+use App\Models\HorarioEmpleado;
 
 class EmpleadoController extends Controller
 {
@@ -112,118 +114,434 @@ class EmpleadoController extends Controller
         //return view('admin.empleados.crear');
     }
 
+
+
     public function guardarEmpleado(Request $request)
     {
         $request->validate([
-            //'id' => 'required|unique:empleados,id',
-            'n_empleado' => 'required|unique:empleados,n_empleado',
-            'nombres' => 'required',
-            'apellido_paterno' => 'required',
-            'apellido_materno' => 'required',
-            'departamento_id' => 'required',
-            'puesto' => 'required',
-            // 'tipo_horario' => 'required',
-            'email' => ['required', 'email', 'unique:empleados', function ($attribute, $value, $fail) {
-                $domain = substr(strrchr($value, "@"), 1);  // Obtener el dominio del correo
-                if (!checkdnsrr($domain, 'MX')) {  // Verificar registros MX para el dominio
-                    $fail('El dominio del correo electrónico no es válido.');
-                }
-            }],
 
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // validar la imagen
+            'n_empleado' => 'required|unique:empleados,n_empleado',
+
+            'nombres' => 'required',
+
+            'apellido_paterno' => 'required',
+
+            'apellido_materno' => 'required',
+
+            'departamento_id' => 'required|exists:departamentos,id',
+
+            'puesto' => 'required',
+
+            'email' => [
+                'required',
+                'email',
+                'unique:empleados,email',
+
+                function ($attribute, $value, $fail) {
+
+                    $domain = substr(strrchr($value, "@"), 1);
+
+                    if (!checkdnsrr($domain, 'MX')) {
+                        $fail('El dominio del correo electrónico no es válido.');
+                    }
+                }
+            ],
+
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+
+            // VALIDACIÓN HORARIOS
+            'horarios' => 'nullable|array',
+
+            'horarios.*.dia_semana' => 'required|integer|min:1|max:7',
+
+            'horarios.*.hora_entrada' => 'nullable|date_format:H:i',
+
+            'horarios.*.hora_salida' => 'nullable|date_format:H:i',
+
+            'horarios.*.hora_salida_comida' => 'nullable|date_format:H:i',
+
+            'horarios.*.hora_regreso_comida' => 'nullable|date_format:H:i',
+
+            'horarios.*.tolerancia_minutos' => 'nullable|integer|min:0|max:120',
         ]);
+
+        DB::beginTransaction();
 
         try {
 
             $fotoNombre = null;
 
+            // =========================================
+            // SUBIR FOTO
+            // =========================================
             if ($request->hasFile('foto')) {
+
                 $file = $request->file('foto');
+
                 $fotoNombre = Str::uuid() . '.' . $file->getClientOriginalExtension();
-                $file->move(public_path('img/empleados'), $fotoNombre);
+
+                $file->move(
+                    public_path('img/empleados'),
+                    $fotoNombre
+                );
             }
 
-            Empleado::create([
-                'n_empleado' => $request->n_empleado,
-                'nombres' => $request->nombres,
-                'apellido_paterno' => $request->apellido_paterno,
-                'apellido_materno' => $request->apellido_materno,
-                'departamento_id' => $request->departamento_id,
-                'puesto' => $request->puesto,
-                'email' => $request->email,
-                //'tipo_horario' => $request->tipo_horario,
-                'foto' => $fotoNombre, // Guarda el nombre de la foto o null
+            // =========================================
+            // CREAR EMPLEADO
+            // =========================================
+            $empleado = Empleado::create([
 
+                'n_empleado' => $request->n_empleado,
+
+                'nombres' => $request->nombres,
+
+                'apellido_paterno' => $request->apellido_paterno,
+
+                'apellido_materno' => $request->apellido_materno,
+
+                'departamento_id' => $request->departamento_id,
+
+                'puesto' => $request->puesto,
+
+                'email' => $request->email,
+
+                'foto' => $fotoNombre,
             ]);
 
-            return redirect()->route('admin.empleados')->with('success', 'Empleado creado correctamente.');
+            // =========================================
+            // GUARDAR HORARIOS
+            // =========================================
+            if ($request->has('horarios')) {
+
+                foreach ($request->horarios as $horario) {
+
+                    // si no tiene entrada/salida no guardar
+                    if (
+                        empty($horario['hora_entrada']) ||
+                        empty($horario['hora_salida'])
+                    ) {
+                        continue;
+                    }
+
+                    HorarioEmpleado::create([
+
+                        'empleado_id' => $empleado->id,
+
+                        'dia_semana' => $horario['dia_semana'],
+
+                        'hora_entrada' => $horario['hora_entrada'],
+
+                        'hora_salida' => $horario['hora_salida'],
+
+                        'hora_salida_comida' =>
+                        $horario['hora_salida_comida'] ?? null,
+
+                        'hora_regreso_comida' =>
+                        $horario['hora_regreso_comida'] ?? null,
+
+                        'tolerancia_minutos' =>
+                        $horario['tolerancia_minutos'] ?? 10,
+
+                        'activo' => isset($horario['activo']),
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            return redirect()
+                ->route('admin.empleados')
+                ->with(
+                    'success',
+                    'Empleado creado correctamente.'
+                );
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error al guardar empleado ' . $e->getMessage());
+
+            DB::rollBack();
+
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with(
+                    'error',
+                    'Error al guardar empleado: ' . $e->getMessage()
+                );
         }
     }
+
+
+
+
+    // public function editarEmpleado($id)
+    // {
+    //     try {
+
+    //         $empleado = Empleado::findOrFail($id);
+    //         return view('admin.empleados.editar', compact('empleado'));
+    //     } catch (\Exception $e) {
+    //         return redirect()->back()->with('error', 'Error al editar empleado ' . $e->getMessage());
+    //     }
+    // }
 
     public function editarEmpleado($id)
     {
         try {
 
-            $empleado = Empleado::findOrFail($id);
-            return view('admin.empleados.editar', compact('empleado'));
+            $empleado = Empleado::with('horarios')
+                ->findOrFail($id);
+
+            $departamentos = Departamento::all();
+
+            return view(
+                'admin.empleados.editar',
+                compact(
+                    'empleado',
+                    'departamentos'
+                )
+            );
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error al editar empleado ' . $e->getMessage());
+
+            return redirect()
+                ->back()
+                ->with(
+                    'error',
+                    'Error al editar empleado: ' . $e->getMessage()
+                );
         }
     }
 
     public function actualizarEmpleado(Request $request, $id)
     {
         $request->validate([
-            'id' => 'required',
-            'nombres' => 'required',
-            'apellido_paterno' => 'required',
-            'apellido_materno' => 'required',
-            'departamento' => 'required',
-            'puesto' => 'required',
-            'email' => 'required|email|unique:empleados,email,' . $id,
-            'tipo_horario' => 'required',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // validar la imagen
 
+            'n_empleado' =>
+            'required|unique:empleados,n_empleado,' . $id,
+
+            'nombres' => 'required',
+
+            'apellido_paterno' => 'required',
+
+            'apellido_materno' => 'required',
+
+            'departamento_id' =>
+            'required|exists:departamentos,id',
+
+            'puesto' => 'required',
+
+            'email' => [
+                'required',
+                'email',
+                'unique:empleados,email,' . $id,
+            ],
+
+            'foto' =>
+            'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+
+            // horarios
+            'horarios' => 'nullable|array',
+
+            'horarios.*.dia_semana' =>
+            'required|integer|min:1|max:7',
+
+            'horarios.*.hora_entrada' =>
+            'nullable|date_format:H:i',
+
+            'horarios.*.hora_salida' =>
+            'nullable|date_format:H:i',
         ]);
+
+        DB::beginTransaction();
 
         try {
 
             $empleado = Empleado::findOrFail($id);
 
+            // =====================================
+            // FOTO
+            // =====================================
             $fotoNombre = $empleado->foto;
+
             if ($request->hasFile('foto')) {
-                $file = $request->file('foto');
-                if ($empleado->foto && File::exists(public_path('img/empleados/' . $empleado->foto))) {
-                    File::delete(public_path('img/empleados/' . $empleado->foto));
+
+                // borrar foto anterior
+                if (
+                    $empleado->foto &&
+                    File::exists(
+                        public_path(
+                            'img/empleados/' . $empleado->foto
+                        )
+                    )
+                ) {
+
+                    File::delete(
+                        public_path(
+                            'img/empleados/' . $empleado->foto
+                        )
+                    );
                 }
 
-                // Guardar la nueva foto
+                // guardar nueva
                 $file = $request->file('foto');
-                $fotoNombre = Str::uuid() . '.' . $file->getClientOriginalExtension();
-                $file->move(public_path('img/empleados'), $fotoNombre);
+
+                $fotoNombre =
+                    Str::uuid() .
+                    '.' .
+                    $file->getClientOriginalExtension();
+
+                $file->move(
+                    public_path('img/empleados'),
+                    $fotoNombre
+                );
             }
 
-            $data = [
-                'id' => $request->id,
+            // =====================================
+            // ACTUALIZAR EMPLEADO
+            // =====================================
+            $empleado->update([
+
+                'n_empleado' => $request->n_empleado,
+
                 'nombres' => $request->nombres,
-                'apellido_paterno' => $request->apellido_paterno,
-                'apellido_materno' => $request->apellido_materno,
-                'departamento' => $request->departamento,
+
+                'apellido_paterno' =>
+                $request->apellido_paterno,
+
+                'apellido_materno' =>
+                $request->apellido_materno,
+
+                'departamento_id' =>
+                $request->departamento_id,
+
                 'puesto' => $request->puesto,
+
                 'email' => $request->email,
-                'tipo_horario' => $request->tipo_horario,
-                'foto' => $fotoNombre, // Guarda el nombre de la foto o null
-            ];
 
-            $empleado->update($data);
+                'foto' => $fotoNombre,
+            ]);
 
-            return redirect()->route('admin.empleados')->with('success', 'Empleado actualizado.');
+            // =====================================
+            // ACTUALIZAR HORARIOS
+            // =====================================
+
+            // borrar horarios anteriores
+            $empleado->horarios()->delete();
+
+            // insertar nuevos
+            if ($request->has('horarios')) {
+
+                foreach ($request->horarios as $horario) {
+
+                    // evitar días vacíos
+                    if (
+                        empty($horario['hora_entrada']) ||
+                        empty($horario['hora_salida'])
+                    ) {
+                        continue;
+                    }
+
+                    $empleado->horarios()->create([
+
+                        'dia_semana' =>
+                        $horario['dia_semana'],
+
+                        'hora_entrada' =>
+                        $horario['hora_entrada'],
+
+                        'hora_salida' =>
+                        $horario['hora_salida'],
+
+                        'hora_salida_comida' =>
+                        $horario['hora_salida_comida']
+                            ?? null,
+
+                        'hora_regreso_comida' =>
+                        $horario['hora_regreso_comida']
+                            ?? null,
+
+                        'tolerancia_minutos' =>
+                        $horario['tolerancia_minutos']
+                            ?? 10,
+
+                        'activo' =>
+                        isset($horario['activo']),
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            return redirect()
+                ->route('admin.empleados')
+                ->with(
+                    'success',
+                    'Empleado actualizado correctamente.'
+                );
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error al actualizar empleado ' . $e->getMessage());
+
+            DB::rollBack();
+
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with(
+                    'error',
+                    'Error al actualizar empleado: '
+                        . $e->getMessage()
+                );
         }
     }
+
+    // public function actualizarEmpleado(Request $request, $id)
+    // {
+    //     $request->validate([
+    //         'id' => 'required',
+    //         'nombres' => 'required',
+    //         'apellido_paterno' => 'required',
+    //         'apellido_materno' => 'required',
+    //         'departamento' => 'required',
+    //         'puesto' => 'required',
+    //         'email' => 'required|email|unique:empleados,email,' . $id,
+    //         'tipo_horario' => 'required',
+    //         'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // validar la imagen
+
+    //     ]);
+
+    //     try {
+
+    //         $empleado = Empleado::findOrFail($id);
+
+    //         $fotoNombre = $empleado->foto;
+    //         if ($request->hasFile('foto')) {
+    //             $file = $request->file('foto');
+    //             if ($empleado->foto && File::exists(public_path('img/empleados/' . $empleado->foto))) {
+    //                 File::delete(public_path('img/empleados/' . $empleado->foto));
+    //             }
+
+    //             // Guardar la nueva foto
+    //             $file = $request->file('foto');
+    //             $fotoNombre = Str::uuid() . '.' . $file->getClientOriginalExtension();
+    //             $file->move(public_path('img/empleados'), $fotoNombre);
+    //         }
+
+    //         $data = [
+    //             'id' => $request->id,
+    //             'nombres' => $request->nombres,
+    //             'apellido_paterno' => $request->apellido_paterno,
+    //             'apellido_materno' => $request->apellido_materno,
+    //             'departamento' => $request->departamento,
+    //             'puesto' => $request->puesto,
+    //             'email' => $request->email,
+    //             'tipo_horario' => $request->tipo_horario,
+    //             'foto' => $fotoNombre, // Guarda el nombre de la foto o null
+    //         ];
+
+    //         $empleado->update($data);
+
+    //         return redirect()->route('admin.empleados')->with('success', 'Empleado actualizado.');
+    //     } catch (\Exception $e) {
+    //         return redirect()->back()->with('error', 'Error al actualizar empleado ' . $e->getMessage());
+    //     }
+    // }
 
     public function destroy($id)
     {

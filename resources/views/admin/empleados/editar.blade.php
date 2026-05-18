@@ -1,110 +1,386 @@
 @extends('layouts.admin')
 
 @section('content')
-<div class="max-w-xl mx-auto bg-white p-6 rounded shadow">
-    <h2 class="text-2xl font-semibold mb-4 text-gray-800">Editar empleado</h2>
 
-    @if ($errors->any())
-    <div class="mb-4 bg-red-100 border border-red-400 text-red-700 p-3 rounded">
-        <ul class="list-disc pl-4 text-sm">
-            @foreach ($errors->all() as $error)
-            <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-    @endif
+<div class="max-w-8xl mx-auto">
 
-    <form id="editar-empleado-form" method="POST" action="{{ route('admin.empleados.actualizar', $empleado->id) }}" enctype="multipart/form-data">
+    <form
+        method="POST"
+        action="{{ route('admin.empleados.actualizar', $empleado->id) }}"
+        enctype="multipart/form-data">
+
         @csrf
         @method('PUT')
 
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        <div class="w-32 h-32 mx-auto my-4 flex items-center justify-center border rounded overflow-hidden bg-gray-100">
-            <img src="{{ asset('img/empleados/' . $empleado->foto) }}" alt="Foto del empleado" class="h-24 object-contain">
+            {{-- ================================================= --}}
+            {{-- DATOS EMPLEADO --}}
+            {{-- ================================================= --}}
+            <div class="bg-white rounded shadow p-6">
+
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6">
+                    Editar empleado
+                </h2>
+
+                {{-- ERRORES --}}
+                @if ($errors->any())
+                <div class="mb-4 bg-red-100 border border-red-400 text-red-700 p-3 rounded">
+                    <ul class="list-disc pl-4 text-sm">
+                        @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+                @endif
+
+                {{-- FOTO --}}
+                <div class="flex justify-center mb-6">
+
+                    <div class="w-32 h-32 rounded-full overflow-hidden border bg-gray-100 flex items-center justify-center">
+
+                        @if($empleado->foto)
+
+                        <img
+                            src="{{ asset('img/empleados/' . $empleado->foto) }}"
+                            alt="Foto empleado"
+                            class="w-full h-full object-cover">
+
+                        @else
+
+                        <span class="text-gray-400 text-sm">
+                            Sin foto
+                        </span>
+
+                        @endif
+
+                    </div>
+
+                </div>
+
+                {{-- NUMERO / NOMBRES --}}
+                <div class="flex gap-4">
+
+                    <div class="mb-4 w-1/2">
+
+                        <label class="block text-sm font-semibold text-gray-700">
+                            Número empleado
+                        </label>
+
+                        <input
+                            type="text"
+                            name="n_empleado"
+                            value="{{ old('n_empleado', $empleado->n_empleado) }}"
+                            required
+                            class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
+
+                    </div>
+
+                    <div class="mb-4 w-1/2">
+
+                        <label class="block text-sm font-semibold text-gray-700">
+                            Nombres
+                        </label>
+
+                        <input
+                            type="text"
+                            name="nombres"
+                            value="{{ old('nombres', $empleado->nombres) }}"
+                            required
+                            class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
+
+                    </div>
+
+                </div>
+
+                {{-- APELLIDOS --}}
+                <div class="flex gap-4">
+
+                    <div class="mb-4 w-1/2">
+
+                        <label class="block text-sm font-semibold text-gray-700">
+                            Apellido paterno
+                        </label>
+
+                        <input
+                            type="text"
+                            name="apellido_paterno"
+                            value="{{ old('apellido_paterno', $empleado->apellido_paterno) }}"
+                            required
+                            class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
+
+                    </div>
+
+                    <div class="mb-4 w-1/2">
+
+                        <label class="block text-sm font-semibold text-gray-700">
+                            Apellido materno
+                        </label>
+
+                        <input
+                            type="text"
+                            name="apellido_materno"
+                            value="{{ old('apellido_materno', $empleado->apellido_materno) }}"
+                            required
+                            class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
+
+                    </div>
+
+                </div>
+
+                {{-- DEPARTAMENTO / PUESTO --}}
+                <div class="flex gap-4">
+
+                    <div class="mb-4 w-1/2">
+
+                        <label class="block text-sm font-semibold text-gray-700">
+                            Departamento
+                        </label>
+
+                        <select
+                            name="departamento_id"
+                            required
+                            class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
+
+                            @foreach($departamentos as $departamento)
+
+                            <option
+                                value="{{ $departamento->id }}"
+                                {{ $empleado->departamento_id == $departamento->id ? 'selected' : '' }}>
+
+                                {{ $departamento->nombre }}
+
+                            </option>
+
+                            @endforeach
+
+                        </select>
+
+                    </div>
+
+                    <div class="mb-4 w-1/2">
+
+                        <label class="block text-sm font-semibold text-gray-700">
+                            Puesto
+                        </label>
+
+                        <input
+                            type="text"
+                            name="puesto"
+                            value="{{ old('puesto', $empleado->puesto) }}"
+                            required
+                            class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
+
+                    </div>
+
+                </div>
+
+                {{-- EMAIL --}}
+                <div class="mb-4">
+
+                    <label class="block text-sm font-semibold text-gray-700">
+                        Correo electrónico
+                    </label>
+
+                    <input
+                        type="email"
+                        name="email"
+                        value="{{ old('email', $empleado->email) }}"
+                        required
+                        class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
+
+                </div>
+
+                {{-- FOTO --}}
+                <div class="mb-4">
+
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                        Cambiar foto
+                    </label>
+
+                    <input
+                        type="file"
+                        name="foto"
+                        accept="image/*"
+                        class="block w-full text-sm text-gray-500
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-blue-100 file:text-blue-700
+                        hover:file:bg-blue-200
+                        cursor-pointer">
+
+                </div>
+
+            </div>
+
+            {{-- ================================================= --}}
+            {{-- HORARIOS --}}
+            {{-- ================================================= --}}
+            <div class="bg-white rounded shadow p-6">
+
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6">
+                    Horario semanal
+                </h2>
+
+                @php
+                $dias = [
+                1 => 'Lunes',
+                2 => 'Martes',
+                3 => 'Miércoles',
+                4 => 'Jueves',
+                5 => 'Viernes',
+                6 => 'Sábado',
+                7 => 'Domingo'
+                ];
+                @endphp
+
+                <div class="overflow-auto">
+
+                    <table class="w-full border border-gray-200 text-sm">
+
+                        <thead class="bg-gray-100">
+
+                            <tr>
+                                <th class="border p-2">Día</th>
+                                <th class="border p-2">Entrada</th>
+                                <th class="border p-2">Salida</th>
+                                <th class="border p-2">Salida comida</th>
+                                <th class="border p-2">Regreso comida</th>
+                                <th class="border p-2">Tol.</th>
+                                <th class="border p-2">Activo</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            @foreach($dias as $numero => $dia)
+
+                            @php
+                            $horario = $empleado->horarios
+                            ->where('dia_semana', $numero)
+                            ->first();
+                            @endphp
+
+                            <tr class="hover:bg-gray-50">
+
+                                <td class="border p-2 font-medium">
+
+                                    {{ $dia }}
+
+                                    <input
+                                        type="hidden"
+                                        name="horarios[{{ $numero }}][dia_semana]"
+                                        value="{{ $numero }}">
+
+                                </td>
+
+                                {{-- ENTRADA --}}
+                                <td class="border p-1">
+
+                                    <input
+                                        type="time"
+                                        name="horarios[{{ $numero }}][hora_entrada]"
+                                        value="{{ isset($horario) ? \Carbon\Carbon::parse($horario->hora_entrada)->format('H:i') : '' }}"
+                                        class="w-full border rounded px-2 py-1">
+
+                                </td>
+
+                                {{-- SALIDA --}}
+                                <td class="border p-1">
+
+                                    <input
+                                        type="time"
+                                        name="horarios[{{ $numero }}][hora_salida]"
+                                        value="{{ isset($horario) ? \Carbon\Carbon::parse($horario->hora_salida)->format('H:i') : '' }}"
+                                        class="w-full border rounded px-2 py-1">
+
+                                </td>
+
+                                {{-- SALIDA COMIDA --}}
+                                <td class="border p-1">
+
+                                    <input
+                                        type="time"
+                                        name="horarios[{{ $numero }}][hora_salida_comida]"
+                                        value="{{ $horario->hora_salida_comida ?? '' }}"
+                                        class="w-full border rounded px-2 py-1">
+
+                                </td>
+
+                                {{-- REGRESO COMIDA --}}
+                                <td class="border p-1">
+
+                                    <input
+                                        type="time"
+                                        name="horarios[{{ $numero }}][hora_regreso_comida]"
+                                        value="{{ $horario->hora_regreso_comida ?? '' }}"
+                                        class="w-full border rounded px-2 py-1">
+
+                                </td>
+
+                                {{-- TOLERANCIA --}}
+                                <td class="border p-1">
+
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        value="{{ $horario->tolerancia_minutos ?? 10 }}"
+                                        name="horarios[{{ $numero }}][tolerancia_minutos]"
+                                        class="w-16 border rounded px-2 py-1">
+
+                                </td>
+
+                                {{-- ACTIVO --}}
+                                <td class="border p-2 text-center">
+
+                                    <input
+                                        type="checkbox"
+                                        value="1"
+                                        name="horarios[{{ $numero }}][activo]"
+                                        {{ isset($horario) && $horario->activo ? 'checked' : '' }}
+                                        class="w-4 h-4">
+
+                                </td>
+
+                            </tr>
+
+                            @endforeach
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
         </div>
 
-        <div class="flex gap-4">
-            <div class="mb-4 w-1/2">
-                <label class="block text-sm font-semibold text-gray-700">Numero de empleado</label>
-                <input type="text" name="id" value="{{ old('id', $empleado->id) }}" required class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
-            </div>
+        {{-- BOTONES --}}
+        <div class="flex justify-end mt-6">
 
-            <div class="mb-4 w-1/2">
-                <label class="block text-sm font-semibold text-gray-700">Nombres</label>
-                <input type="text" name="nombres" value="{{ old('nombres', $empleado->nombres) }}" required class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
-            </div>
-        </div>
-        <div class="flex gap-4">
-            <div class="mb-4 w-1/2">
-                <label class="block text-sm font-semibold text-gray-700">Apellido paterno</label>
-                <input type="text" name="apellido_paterno" value="{{ old('apellido_paterno', $empleado->apellido_paterno) }}" required class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
-            </div>
+            <a
+                href="{{ route('admin.empleados') }}"
+                class="px-4 py-2 text-gray-600 hover:underline">
 
-            <div class="mb-4 w-1/2">
-                <label class="block text-sm font-semibold text-gray-700">Apellido materno</label>
-                <input type="text" name="apellido_materno" value="{{ old('apellido_materno', $empleado->apellido_materno) }}" required class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
-            </div>
-        </div>
+                Cancelar
 
-        <div class="flex gap-4">
-            <div class="mb-4 w-1/2">
-                <label class="block text-sm font-semibold text-gray-700">Departamento</label>
-                <select name="departamento" class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
-                    <option value="Academia" {{ $empleado->departamento === 'Academia' ? 'selected' : '' }}>Academia</option>
-                    <option value="Administración" {{ $empleado->departamento === 'Administración' ? 'selected' : '' }}>Administración</option>
-                    <option value="Dirección" {{ $empleado->departamento === 'Dirección' ? 'selected' : '' }}>Dirección</option>
-                    <option value="Preescolar" {{ $empleado->departamento === 'Preescolar' ? 'selected' : '' }}>Preescolar</option>
-                    <option value="Primaria" {{ $empleado->departamento === 'Primaria' ? 'selected' : '' }}>Primaria</option>
-                    <option value="Promoción" {{ $empleado->departamento === 'Promoción' ? 'selected' : '' }}>Promoción</option>
-                    <option value="Secundaria" {{ $empleado->departamento === 'Secundaria' ? 'selected' : '' }}>Secundaria</option>
-                    <option value="Mantenimiento" {{ $empleado->departamento === 'Mantenimiento' ? 'selected' : '' }}>Mantenimiento</option>
-                </select>
-            </div>
+            </a>
 
-            <div class="mb-4 w-1/2">
-                <label class="block text-sm font-semibold text-gray-700">Puesto</label>
-                <input type="text" name="puesto" value="{{ old('puesto', $empleado->puesto) }}" required class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
-            </div>
+            <button
+                type="submit"
+                class="ml-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded">
 
-        </div>
+                Actualizar empleado
 
-        <div class="flex gap-4">
-            <div class="mb-4 w-1/2">
-                <label class="block text-sm font-semibold text-gray-700">Tipo de horario</label>
-                <select name="tipo_horario" class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
-                    <option value="Horario Base" {{ $empleado->tipo_horario === 'Horario Base' ? 'selected' : '' }}>Horario Base</option>
-                    <option value="Horario Libre" {{ $empleado->tipo_horario === 'Horario Libre' ? 'selected' : '' }}>Horario Libre</option>
-                </select>
-            </div>
-
-            <div class="mb-4 w-1/2">
-                <label class="block text-sm font-semibold text-gray-700">Correo electrónico</label>
-                <input type="email" name="email" value="{{ old('email', $empleado->email) }}" required class="w-full mt-1 px-4 py-2 border rounded focus:ring focus:ring-blue-200">
-            </div>
-        </div>
-
-        <div class="mb-4">
-            <label class="block text-sm font-semibold text-gray-700 mb-1" for="foto">Subir foto</label>
-            <input
-                type="file"
-                id="foto"
-                name="foto"
-                accept="image/*"
-                class="block w-full text-sm text-gray-500
-           file:mr-4 file:py-2 file:px-4
-           file:rounded file:border-0
-           file:text-sm file:font-semibold
-           file:bg-blue-100 file:text-blue-700
-           hover:file:bg-blue-200
-           cursor-pointer">
-        </div>
-
-        <div class="flex justify-end">
-            <a href="{{ route('admin.empleados') }}" class="px-4 py-2 text-gray-600 hover:underline">Cancelar</a>
-            <button type="submit" class="ml-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
-                Actualizar
             </button>
+
         </div>
+
     </form>
+
 </div>
+
 @endsection
