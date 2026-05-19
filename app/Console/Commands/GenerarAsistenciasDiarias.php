@@ -20,9 +20,26 @@ class GenerarAsistenciasDiarias extends Command
     {
         $hoy = Carbon::today();
 
-        $empleados = Empleado::where('activo', 1)->get();
+        $empleados = Empleado::where('activo', true)->get();
 
         foreach ($empleados as $empleado) {
+
+            $horario = \App\Models\HorarioEmpleado::where('empleado_id', $empleado->id)
+                ->where('dia_semana', now()->dayOfWeekIso)
+                ->where('activo', true)
+                ->first();
+
+            $checadas = Checada::where('empleado_id', $empleado->id)
+                ->whereDate('fecha_hora', $hoy)
+                ->orderBy('fecha_hora')
+                ->get();
+
+            $entradaChecada = $checadas->firstWhere('tipo', 'entrada');
+            $salidaChecada  = $checadas->where('tipo', 'salida')->last();
+
+            $entrada = $entradaChecada?->fecha_hora;
+            $salida  = $salidaChecada?->fecha_hora;
+
 
             // 1. VACACIONES
             $enVacaciones = Vacacion::where('empleado_id', $empleado->id)
@@ -59,17 +76,9 @@ class GenerarAsistenciasDiarias extends Command
                 continue;
             }
 
-            // 3. CHECADAS DEL DÍA
-            $checadas = Checada::where('empleado_id', $empleado->id)
-                ->whereDate('fecha_hora', $hoy)
-                ->orderBy('fecha_hora')
-                ->get();
-
-            $entrada = $checadas->firstWhere('tipo', 'entrada')?->fecha_hora;
-            $salida  = $checadas->where('tipo', 'entrada')->last()?->fecha_hora;
 
             // 4. SIN ENTRADA = FALTA
-            if (!$entrada) {
+            if (!$entrada && $horario) {
                 Asistencia::updateOrCreate(
                     [
                         'empleado_id' => $empleado->id,
@@ -82,41 +91,48 @@ class GenerarAsistenciasDiarias extends Command
                 continue;
             }
 
-            // 5. HORARIO DEL EMPLEADO (EJEMPLO SIMPLE)
-            $horarioEntrada = Carbon::parse($hoy->format('Y-m-d') . ' 08:00:00');
-            $tolerancia = 10; // minutos
 
             // 6. RETARDO
             $minutosRetardo = 0;
-            $estado = 'presente';
+            $estado = 'libre';
 
-            if ($entrada->gt($horarioEntrada->copy()->addMinutes($tolerancia))) {
-                $estado = 'retardo';
-                $minutosRetardo = $horarioEntrada->diffInMinutes($entrada);
+            if ($horario && $entrada) {
+
+                $limite = \Carbon\Carbon::parse($horario->hora_entrada)
+                    ->addMinutes($horario->tolerancia_minutos);
+
+                if ($entrada->gt($limite)) {
+                    $estado = 'retardo';
+                    $minutosRetardo = $limite->diffInMinutes($entrada);
+                }
             }
+
 
             // 7. HORAS TRABAJADAS
             $horasTrabajadas = null;
 
-            if ($salida) {
-                $horasTrabajadas = Carbon::parse($entrada)
-                    ->diffInMinutes(Carbon::parse($salida)) / 60;
+            if ($entrada && $salida) {
+                $horasTrabajadas = abs(
+                    $entrada->diffInMinutes($salida)
+                ) / 60;
             }
 
-            // 8. GUARDAR ASISTENCIA
-            Asistencia::updateOrCreate(
-                [
-                    'empleado_id' => $empleado->id,
-                    'fecha' => $hoy
-                ],
-                [
-                    'estado' => $estado,
-                    'hora_entrada' => $entrada,
-                    'hora_salida' => $salida,
-                    'minutos_retardo' => $minutosRetardo,
-                    'horas_trabajadas' => $horasTrabajadas
-                ]
-            );
+            if ($estado != 'libre') {
+                // 8. GUARDAR ASISTENCIA
+                Asistencia::updateOrCreate(
+                    [
+                        'empleado_id' => $empleado->id,
+                        'fecha' => $hoy
+                    ],
+                    [
+                        'estado' => $estado,
+                        'hora_entrada' => $entrada,
+                        'hora_salida' => $salida,
+                        'minutos_retardo' => $minutosRetardo,
+                        'horas_trabajadas' => $horasTrabajadas
+                    ]
+                );
+            }
         }
 
         $this->info('Asistencias generadas correctamente');

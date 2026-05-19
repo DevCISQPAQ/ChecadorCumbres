@@ -27,7 +27,8 @@ return new class extends Migration
                 'falta',
                 'permiso',
                 'vacaciones',
-                'festivo'
+                'festivo',
+                'libre'
             ])->default('presente');
 
             $table->decimal('horas_trabajadas', 5, 2)

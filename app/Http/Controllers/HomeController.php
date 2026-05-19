@@ -114,9 +114,9 @@ class HomeController extends Controller
             ->first();
 
         // si no tiene horario → sistema libre
-        if (!$horario) {
-            return $this->toggleEntradaSalidaLibre($empleado, $ahora);
-        }
+        // if (!$horario) {
+        //     return $this->toggleEntradaSalidaLibre($empleado, $ahora);
+        // }
 
         $checadasHoy = Checada::where('empleado_id', $empleado->id)
             ->whereDate('fecha_hora', $ahora->toDateString())
@@ -124,6 +124,15 @@ class HomeController extends Controller
             ->get();
 
         $total = $checadasHoy->count();
+
+        $ultimaChecada = $checadasHoy->last();
+
+        if (!$horario) {
+            if ($ultimaChecada && $ultimaChecada->tipo === 'salida') {
+                return null;
+            }
+            return $this->toggleEntradaSalidaLibre($empleado, $ahora);
+        }
 
         // 1️⃣ Entrada
         if ($total === 0) {
@@ -136,7 +145,6 @@ class HomeController extends Controller
             return 'entrada';
         }
 
-        $ultimaChecada = $checadasHoy->last();
 
         // 2️⃣ Salida (con validación de horario)
         if ($total === 1) {
