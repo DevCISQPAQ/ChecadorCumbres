@@ -7,23 +7,50 @@
 </div>
 
 {{-- Tarjetas resumen --}}
-<div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-6 md:space-y-0 space-y-2">
-    <div class="bg-white p-1 rounded-lg shadow">
-        <h3 class="text-sm text-center font-semibold text-gray-700">Asistencias del dia</h3>
-        <p class="text-xl mt-1 text-center font-bold text-green-600 ">{{ $asistenciaE ?? 0 }}</p>
+<div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2 md:gap-6 md:space-y-0 space-y-2">
+
+    <div class="bg-white p-2 rounded-lg shadow">
+        <h3 class="text-sm text-center font-semibold text-gray-700">Asistencias</h3>
+        <p class="text-xl mt-1 text-center font-bold text-green-600">
+            {{ $asistenciaE ?? 0 }}
+        </p>
     </div>
-    <div class="bg-white p-1 rounded-lg shadow">
-        <h3 class="text-sm text-center font-semibold text-gray-700">Retardos del dia</h3>
-        <p class="text-xl mt-1 text-center font-bold  text-yellow-500">{{$retardosHoy ?? 0}}</p>
+
+    <div class="bg-white p-2 rounded-lg shadow">
+        <h3 class="text-sm text-center font-semibold text-gray-700">Retardos</h3>
+        <p class="text-xl mt-1 text-center font-bold text-yellow-500">
+            {{ $retardosHoy ?? 0 }}
+        </p>
     </div>
-    <!-- <div class="bg-white p-1 rounded-lg shadow">
-        <h3 class="text-sm text-center font-semibold text-gray-700">Salidas del dia</h3>
-        <p class="text-xl mt-1 text-center font-bold text-blue-400">{{ $asistenciaS ?? 0}}</p>
-    </div> -->
-    <div class="mb-2 md:mb-0 bg-white p-1 rounded-lg shadow">
-        <h3 class="text-sm text-center font-semibold text-gray-700">Faltantes del dia</h3>
-        <p class="text-xl text-center mt-1 font-bold text-red-600">{{ $faltasHoy ?? 0}}</p>
+
+    <div class="bg-white p-2 rounded-lg shadow">
+        <h3 class="text-sm text-center font-semibold text-gray-700">Faltas</h3>
+        <p class="text-xl mt-1 text-center font-bold text-red-600">
+            {{ $faltasHoy ?? 0 }}
+        </p>
     </div>
+
+    <div class="bg-white p-2 rounded-lg shadow">
+        <h3 class="text-sm text-center font-semibold text-gray-700">Vacaciones</h3>
+        <p class="text-xl mt-1 text-center font-bold text-blue-600">
+            {{ $vacacionesHoy ?? 0 }}
+        </p>
+    </div>
+
+    <div class="bg-white p-2 rounded-lg shadow">
+        <h3 class="text-sm text-center font-semibold text-gray-700">Permisos</h3>
+        <p class="text-xl mt-1 text-center font-bold text-purple-600">
+            {{ $permisosHoy ?? 0 }}
+        </p>
+    </div>
+
+    <div class="bg-white p-2 rounded-lg shadow">
+        <h3 class="text-sm text-center font-semibold text-gray-700">Libres</h3>
+        <p class="text-xl mt-1 text-center font-bold text-gray-600">
+            {{ $libresHoy ?? 0 }}
+        </p>
+    </div>
+
 </div>
 {{-- Sección adicional --}}
 
@@ -34,8 +61,8 @@
     departamento: '{{ request('departamento', '') }}',
     retardo: '{{ request('retardo', '') }}',
     hora_entrada: '{{ request('hora_entrada', '') }}',
-    hora_salida: '{{ request('hora_salida', '') }}'
-}" class="pt-5">
+    estado: '{{ request('estado', '') }}',
+    hora_salida: '{{ request('hora_salida', '') }}'}" class="pt-5">
     <!-- Formulario de filtros -->
     <form id="filtrosForm" method="GET" action="{{ route('admin.asistencias') }}"
         class="flex flex-col md:flex-row flex-wrap md:items-end md:gap-4 space-y-2 md:space-y-0">
@@ -65,27 +92,44 @@
                 <!-- Departamento -->
                 <div class="w-1/2 md:w-32">
                     <label class="block mb-1 font-semibold text-sm">Departamento</label>
-                    <select name="departamento" x-model="departamento" class="border rounded px-3 py-1 w-full text-sm">
+                    <select name="departamento"
+                        x-model="departamento"
+                        class="border rounded px-3 py-1 w-full text-sm">
+
                         <option value="">Todos</option>
-                        <option value="academia" {{ request('departamento') == 'academia' ? 'selected' : '' }}>Academia</option>
-                        <option value="administracion" {{ request('departamento') == 'administracion' ? 'selected' : '' }}>Administración</option>
-                        <option value="direccion" {{ request('departamento') == 'direccion' ? 'selected' : '' }}>Dirección</option>
-                        <option value="preescolar" {{ request('departamento') == 'preescolar' ? 'selected' : '' }}>Preescolar</option>
-                        <option value="primaria" {{ request('departamento') == 'primaria' ? 'selected' : '' }}>Primaria</option>
-                        <option value="promocion" {{ request('departamento') == 'promocion' ? 'selected' : '' }}>Promoción</option>
-                        <option value="secundaria" {{ request('departamento') == 'secundaria' ? 'selected' : '' }}>Secundaria</option>
-                        <option value="mantenimiento" {{ request('departamento') == 'mantenimiento' ? 'selected' : '' }}>Mantenimiento</option>
+
+                        @foreach ($departamentos as $departamento)
+
+                        <option value="{{ $departamento->id }}"
+                            {{ request('departamento') == $departamento->id ? 'selected' : '' }}>
+
+                            {{ $departamento->nombre }}
+
+                        </option>
+
+                        @endforeach
+
                     </select>
                 </div>
-                <!-- Retardo -->
-                <div class="w-1/2 md:w-32">
-                    <label class="block mb-1 font-semibold text-sm">Retardo</label>
-                    <select name="retardo" x-model="retardo" class="border rounded px-3 py-1 w-full text-sm">
+
+                <div class="w-full md:w-32">
+                    <label class="block mb-1 font-semibold text-sm">Estado</label>
+
+                    <select name="estado" x-model="estado"
+                        class="border rounded px-3 py-1 w-full text-sm">
+
                         <option value="">Todos</option>
-                        <option value="1">Sí</option>
-                        <option value="0">No</option>
+
+                        <option value="presente">Presente</option>
+                        <option value="retardo">Retardo</option>
+                        <option value="falta">Falta</option>
+                        <option value="vacaciones">Vacaciones</option>
+                        <option value="permiso">Permiso</option>
+                        <option value="libre">Libre</option>
+
                     </select>
                 </div>
+
             </div>
 
             <!-- Hora entrada + salida (solo se agrupan en móviles) -->
@@ -118,10 +162,22 @@
             </button>
         </div>
 
-        @if(request()->hasAny(['buscar', 'fecha_inicio', 'fecha_fin', 'departamento', 'retardo', 'hora_entrada', 'hora_salida']) && collect(request()->only(['buscar', 'fecha_inicio', 'fecha_fin','departamento', 'retardo', 'hora_entrada', 'hora_salida']))->filter(fn($v) => $v !== null && $v !== '')->isNotEmpty())
+        @php
+        $hayFiltros = collect(request()->only([
+        'buscar',
+        'fecha_inicio',
+        'fecha_fin',
+        'departamento',
+        'estado',
+        'hora_entrada',
+        'hora_salida'
+        ]))->filter()->isNotEmpty();
+        @endphp
+
+        @if(request()->query())
         <div class="w-full sm:w-1/2 md:w-auto">
             <a href="{{ route('admin.asistencias') }}"
-                class="block text-center px-4 py-2 bg-red-600 hover:bg-red-400 text-white rounded w-full">
+                class="block text-center px-4 py-1 bg-red-600 hover:bg-red-400 text-white rounded w-full">
                 Borrar filtros
             </a>
         </div>
@@ -138,6 +194,7 @@
         <input type="hidden" name="retardo" value="{{ request('retardo') }}">
         <input type="hidden" name="hora_entrada" value="{{ request('hora_entrada') }}">
         <input type="hidden" name="hora_salida" value="{{ request('hora_salida') }}">
+        <input type="hidden" name="estado" value="{{ request('estado') }}">
 
         <button type="submit" class="bg-gray-600 text-white px-4 py-1 rounded hover:bg-blue-700">
             Crear reporte
@@ -153,6 +210,7 @@
             <input type="hidden" name="retardo" value="{{ request('retardo') }}">
             <input type="hidden" name="hora_entrada" value="{{ request('hora_entrada') }}">
             <input type="hidden" name="hora_salida" value="{{ request('hora_salida') }}">
+            <input type="hidden" name="estado" value="{{ request('estado') }}">
 
             <button type="submit"
                 class="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700">
@@ -164,72 +222,218 @@
 
     <!-- Tabla de asistencias -->
     <div class="overflow-x-auto">
+
         <div class="max-h-[500px] overflow-y-auto border border-gray-300 rounded-lg">
+
             <table class="min-w-full bg-white">
+
                 <thead class="sticky top-0 bg-gray-700 text-white">
+
                     <tr class="text-xs">
+
                         <th class="p-2 text-center">N. Empleado</th>
+
                         <th class="p-2 text-center">Nombre</th>
+
                         <th class="p-2 text-center">Departamento</th>
+
                         @if($hayFiltros)
                         <th class="p-2 text-center">Fecha</th>
                         @endif
+
                         <th class="p-2 text-center">Hora de entrada</th>
+
                         <th class="p-2 text-center">Hora de salida</th>
-                        <th class="p-2 text-center">Retardo</th>
+
+                        <th class="p-2 text-center">Estado</th>
+
                     </tr>
+
                 </thead>
+
                 <tbody class="text-xs">
+
                     @forelse ($asistencias as $asistencia)
+
                     @php
+
                     $empleado = $asistencia->empleado;
 
                     // Obtener checadas del día
                     $checadas = $asistencia->checadas->filter(function ($checada) use ($asistencia) {
+
                     return \Carbon\Carbon::parse($checada->fecha_hora)->toDateString()
                     === \Carbon\Carbon::parse($asistencia->fecha)->toDateString();
+
                     });
-                    $entrada = $checadas->where('tipo', 'entrada')->first();
-                    $salida = $checadas->where('tipo', 'salida')->last();
+
+                    $entrada = $checadas
+                    ->where('tipo', 'entrada')
+                    ->first();
+
+                    $salida = $checadas
+                    ->where('tipo', 'salida')
+                    ->last();
+
                     @endphp
+
                     <tr class="border border-gray-300 hover:bg-gray-50">
-                        <td class="p-3 text-center">{{ $empleado->n_empleado ?? 0 }}</td>
-                        <td class="p-3 text-center">{{ $empleado ? $empleado->nombres . ' ' . $empleado->apellido_paterno . ' ' . $empleado->apellido_materno : 'N/A' }}</td>
-                        <td class="p-3 text-center">{{ $empleado->departamento->nombre ?? 'N/A' }}</td>
-                        @if($hayFiltros)
+
+                        <!-- NÚMERO EMPLEADO -->
                         <td class="p-3 text-center">
-                            {{ $entrada ? \Carbon\Carbon::parse($entrada->fecha_hora)->format('d/m/Y') : 'N/A' }}
+
+                            {{ $empleado->n_empleado ?? 'N/A' }}
+
                         </td>
+
+                        <!-- NOMBRE -->
+                        <td class="p-3 text-center">
+
+                            {{ $empleado
+                                ? $empleado->nombres . ' ' .
+                                  $empleado->apellido_paterno . ' ' .
+                                  $empleado->apellido_materno
+                                : 'N/A'
+                            }}
+
+                        </td>
+
+                        <!-- DEPARTAMENTO -->
+                        <td class="p-3 text-center">
+
+                            {{ $empleado->departamento->nombre ?? 'N/A' }}
+
+                        </td>
+
+                        <!-- FECHA -->
+                        @if($hayFiltros)
+
+                        <td class="p-3 text-center">
+
+                            {{ \Carbon\Carbon::parse($asistencia->fecha)->format('d/m/Y') }}
+
+                        </td>
+
                         @endif
+
+                        <!-- ENTRADA -->
                         <td class="p-3 text-center {{ !$entrada ? 'text-red-600 font-semibold' : '' }}">
-                            {{ $entrada ? \Carbon\Carbon::parse($entrada->fecha_hora)->format('H:i') : 'Sin registro' }}
+
+                            {{ $entrada
+                                ? \Carbon\Carbon::parse($entrada->fecha_hora)->format('H:i')
+                                : 'Sin registro'
+                            }}
+
                         </td>
+
+                        <!-- SALIDA -->
                         <td class="p-3 text-center {{ !$salida ? 'text-red-600 font-semibold' : '' }}">
-                            {{ $salida ? \Carbon\Carbon::parse($salida->fecha_hora)->format('H:i') : 'Sin registro' }}
+
+                            {{ $salida
+                                ? \Carbon\Carbon::parse($salida->fecha_hora)->format('H:i')
+                                : 'Sin registro'
+                            }}
+
                         </td>
+
+                        <!-- ESTADO -->
                         <td class="p-3 text-center font-semibold
-                        @if(is_null($entrada) && is_null($salida)) text-red-600
-                        @elseif($asistencia->minutos_retardo > 0) text-red-600
-                        @else text-green-600
-                        @endif
-                    ">
-                            @if(is_null($entrada) && is_null($salida))
+
+                            @switch($asistencia->estado)
+
+                                @case('presente')
+                                    text-green-600
+                                @break
+
+                                @case('retardo')
+                                    text-yellow-600
+                                @break
+
+                                @case('falta')
+                                    text-red-600
+                                @break
+
+                                @case('vacaciones')
+                                    text-blue-600
+                                @break
+
+                                @case('permiso')
+                                    text-purple-600
+                                @break
+
+                                @case('libre')
+                                    text-cyan-600
+                                @break
+
+                                @case('festivo')
+                                    text-gray-600
+                                @break
+
+                                @default
+                                    text-gray-500
+
+                            @endswitch
+                        ">
+
+                            @switch($asistencia->estado)
+
+                            @case('presente')
+                            Presente
+                            @break
+
+                            @case('retardo')
+                            Retardo
+                            @break
+
+                            @case('falta')
+                            Falta
+                            @break
+
+                            @case('vacaciones')
+                            Vacaciones
+                            @break
+
+                            @case('permiso')
+                            Permiso
+                            @break
+
+                            @case('festivo')
+                            Festivo
+                            @break
+
+                            @case('libre')
+                            Libre
+                            @break
+
+                            @default
                             Sin registro
-                            @elseif($asistencia->minutos_retardo > 0)
-                            Sí
-                            @else
-                            No
-                            @endif
+
+                            @endswitch
+
                         </td>
+
                     </tr>
+
                     @empty
+
                     <tr>
-                        <td colspan="{{ $hayFiltros ? 7 : 6 }}" class="text-center p-4">No se encontraron registros.</td>
+
+                        <td
+                            colspan="{{ $hayFiltros ? 7 : 6 }}"
+                            class="text-center p-4">
+                            No se encontraron registros.
+                        </td>
+
                     </tr>
+
                     @endforelse
+
                 </tbody>
+
             </table>
+
         </div>
+
     </div>
 
     <!-- Paginación -->

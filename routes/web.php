@@ -40,6 +40,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('/usuarios/{id}', [UsuarioController::class, 'eliminarUsuario'])->name('usuarios.eliminar');
         Route::get('/preferencias/configurar', [UsuarioController::class, 'configurarData'])->name('usuarios.configurar');
         Route::post('/preferencias/configuracion', [UsuarioController::class, 'actualizarData'])->name('usuarios.data');
+        // vacaciones
+        Route::post( '/vacaciones/store',[UsuarioController::class, 'store'])->name('vacaciones.store');
 
 
 

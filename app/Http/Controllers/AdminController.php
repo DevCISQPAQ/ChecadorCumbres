@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Asistencia;
 use App\Models\Empleado;
+use App\Models\Departamento;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
@@ -36,16 +37,17 @@ class AdminController extends Controller
             //     return redirect()->route('estudiantes.index');
             // }
 
+            $departamentos = Departamento::orderBy('nombre')->get();
             $conteosAsistencias = $this->obtenerConteosdeAsistencia();
             $hayFiltros = $this->hayFiltros($request);
 
             // if ($this->hayFiltros($request)) {
             //     $asistencias = $this->obtenerAsistenciasConDiasFaltantes($request);
             // } else {
-                $asistencias = $this->listarAsistencias($request);
+            $asistencias = $this->listarAsistencias($request);
             // }
 
-            return view('admin.asistencias.index', array_merge($conteosAsistencias, compact('asistencias', 'hayFiltros')));
+            return view('admin.asistencias.index', array_merge($conteosAsistencias, compact('asistencias', 'hayFiltros', 'departamentos')));
 
             // return view('admin.asistencias.index', compact('asistencias'));
         } catch (\Exception $e) {
@@ -93,6 +95,7 @@ class AdminController extends Controller
         $query = $this->aplicarFiltroHoraEntrada($query, $request);
         $query = $this->aplicarFiltroHoraSalida($query, $request);
         $query = $this->aplicarFiltroDepartamento($query, $request);
+        $query = $this->aplicarFiltroEstado($query, $request);
 
         $query->orderByDesc('fecha');
 
@@ -126,11 +129,20 @@ class AdminController extends Controller
             ->where('estado', 'vacaciones')
             ->count();
 
+        $permisosHoy = Asistencia::whereDate('fecha', Carbon::today())
+            ->where('estado', 'permiso')
+            ->count();
+        $libresHoy = Asistencia::whereDate('fecha', Carbon::today())
+            ->where('estado', 'libre')
+            ->count();
+
         return compact(
             'asistenciaE',
             'retardosHoy',
             'faltasHoy',
-            'vacacionesHoy'
+            'vacacionesHoy',
+            'permisosHoy',
+            'libresHoy'
         );
     }
 
@@ -143,6 +155,8 @@ class AdminController extends Controller
         ) {
             $query->whereDate('created_at', Carbon::today());
         }
+
+       // $query->whereHas('checadas');
 
         return $query;
     }
@@ -187,10 +201,21 @@ class AdminController extends Controller
     private function aplicarFiltroHoraEntrada($query, Request $request)
     {
         if ($request->filled('hora_entrada') && in_array($request->hora_entrada, ['0', '1'])) {
+
             if ($request->hora_entrada == '1') {
-                $query->whereNotNull('hora_entrada');
+
+                // Tiene entrada
+                $query->whereHas('checadas', function ($q) {
+                    $q->where('tipo', 'entrada');
+                    $q->where('fecha_hora', today());
+                });
             } else {
-                $query->whereNull('hora_entrada');
+
+                // No tiene entrada
+                $query->whereDoesntHave('checadas', function ($q) {
+                    $q->where('tipo', 'entrada');
+                    $q->where('fecha_hora', today());
+                });
             }
         }
 
@@ -200,30 +225,40 @@ class AdminController extends Controller
     private function aplicarFiltroHoraSalida($query, Request $request)
     {
         if ($request->filled('hora_salida') && in_array($request->hora_salida, ['0', '1'])) {
+
             if ($request->hora_salida == '1') {
-                $query->whereNotNull('hora_salida');
+
+                $query->whereHas('checadas', function ($q) {
+                    $q->where('tipo', 'salida');
+                    $q->where('fecha_hora', today());
+                });
             } else {
-                $query->whereNull('hora_salida');
+
+                $query->whereDoesntHave('checadas', function ($q) {
+                    $q->where('tipo', 'salida');
+                    $q->where('fecha_hora', today());
+                });
             }
         }
 
         return $query;
     }
 
+
     private function aplicarFiltroDepartamento($query, Request $request)
     {
         if ($request->filled('departamento')) {
+
             $departamento = $request->departamento;
 
             $query->whereHas('empleado', function ($q) use ($departamento) {
-                $q->where('departamento', $departamento);
+
+                $q->where('departamento_id', $departamento);
             });
         }
 
         return $query;
     }
-
-
 
     public function generarReporte(Request $request)
     {
@@ -506,6 +541,30 @@ class AdminController extends Controller
         return $resultado;
     }
 
+    private function aplicarFiltroEstado($query, $request)
+    {
+        if ($request->filled('estado')) {
+
+            $estado = $request->estado;
+
+            if ($estado === 'retardo') {
+
+                return $query->where('estado', 'retardo');
+            }
+
+            if ($estado === 'sin_registro') {
+
+                return $query->where(function ($q) {
+
+                    $q->whereNull('estado');
+                });
+            }
+
+            return $query->where('estado', $estado);
+        }
+
+        return $query;
+    }
 
     private function hayFiltros(Request $request): bool
     {
@@ -515,6 +574,7 @@ class AdminController extends Controller
             || $request->filled('departamento')
             || $request->filled('hora_entrada')
             || $request->filled('hora_salida')
-            || $request->filled('retardo');
+            || $request->filled('retardo')
+            || $request->filled('estado');
     }
 }

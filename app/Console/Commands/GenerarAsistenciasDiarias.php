@@ -117,7 +117,7 @@ class GenerarAsistenciasDiarias extends Command
                 ) / 60;
             }
 
-            if ($estado != 'libre') {
+           // if ($estado != 'libre') {
                 // 8. GUARDAR ASISTENCIA
                 Asistencia::updateOrCreate(
                     [
@@ -132,7 +132,7 @@ class GenerarAsistenciasDiarias extends Command
                         'horas_trabajadas' => $horasTrabajadas
                     ]
                 );
-            }
+           // }
         }
 
         $this->info('Asistencias generadas correctamente');
