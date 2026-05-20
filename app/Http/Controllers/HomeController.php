@@ -239,19 +239,23 @@ class HomeController extends Controller
             ->orderBy('fecha_hora')
             ->get();
 
+        //servia !!
+        // $horario = \App\Models\HorarioEmpleado::where('empleado_id', $empleado->id)
+        //     ->where('dia_semana', now()->dayOfWeekIso)
+        //     ->where('activo', true)
+        //     ->first();
+
         $horario = \App\Models\HorarioEmpleado::where('empleado_id', $empleado->id)
-            ->where('dia_semana', now()->dayOfWeekIso)
-            ->where('activo', true)
+            ->where('dia_semana', \Carbon\Carbon::parse($fecha)->dayOfWeekIso)
             ->first();
 
-        $entrada = $checadas->where('tipo', 'entrada')->first();
-        $salida = $checadas->where('tipo', 'salida')->last();
+
+        // $entrada = $checadas->where('tipo', 'entrada')->first();
+        // $salida = $checadas->where('tipo', 'salida')->last();
 
 
-        // 4. FALTA
-
-        // SOLO tiene salida
-        if (!$entrada && $salida) {
+        // NO tiene horario = libre
+        if (!$horario) {
 
             \App\Models\Asistencia::updateOrCreate(
                 [
@@ -259,7 +263,7 @@ class HomeController extends Controller
                     'fecha' => $fecha
                 ],
                 [
-                    'estado' => 'retardo',
+                    'estado' => 'libre',
                     'horas_trabajadas' => 0,
                     'minutos_retardo' => 0
                 ]
@@ -267,8 +271,37 @@ class HomeController extends Controller
 
             return;
         }
-        // NO tiene entrada ni salida
-        if (!$entrada && !$salida && $horario) {
+
+        // Tiene horario pero está desactivado = permiso
+        if (!$horario->activo) {
+
+            \App\Models\Asistencia::updateOrCreate(
+                [
+                    'empleado_id' => $empleado->id,
+                    'fecha' => $fecha
+                ],
+                [
+                    'estado' => 'permiso',
+                    'horas_trabajadas' => 0,
+                    'minutos_retardo' => 0
+                ]
+            );
+
+            return;
+        }
+
+
+        $checadas = \App\Models\Checada::where('empleado_id', $empleado->id)
+            ->whereDate('fecha_hora', $fecha)
+            ->orderBy('fecha_hora')
+            ->get();
+
+        $entrada = $checadas->where('tipo', 'entrada')->first();
+
+        $salida = $checadas->where('tipo', 'salida')->last();
+
+        //falta
+        if (!$entrada && !$salida) {
 
             \App\Models\Asistencia::updateOrCreate(
                 [
@@ -286,19 +319,93 @@ class HomeController extends Controller
         }
 
 
+
+        // SOLO tiene salida
+        // if (!$entrada && $salida) {
+
+        //     \App\Models\Asistencia::updateOrCreate(
+        //         [
+        //             'empleado_id' => $empleado->id,
+        //             'fecha' => $fecha
+        //         ],
+        //         [
+        //             'estado' => 'retardo',
+        //             'horas_trabajadas' => 0,
+        //             'minutos_retardo' => 0
+        //         ]
+        //     );
+
+        //     return;
+        // }
+
+
+        // tiene horario pero no esta activo checar!
+        // if (!$entrada && !$salida && $horario) {
+
+        //     \App\Models\Asistencia::updateOrCreate(
+        //         [
+        //             'empleado_id' => $empleado->id,
+        //             'fecha' => $fecha
+        //         ],
+        //         [
+        //             'estado' => 'falta',
+        //             'horas_trabajadas' => 0,
+        //             'minutos_retardo' => 0
+        //         ]
+        //     );
+
+        //     return;
+        // }
+
+
+
+        // // NO tiene entrada ni salida
+        // if (!$entrada && !$salida && $horario) {
+
+        //     \App\Models\Asistencia::updateOrCreate(
+        //         [
+        //             'empleado_id' => $empleado->id,
+        //             'fecha' => $fecha
+        //         ],
+        //         [
+        //             'estado' => 'falta',
+        //             'horas_trabajadas' => 0,
+        //             'minutos_retardo' => 0
+        //         ]
+        //     );
+
+        //     return;
+        // }
+
+
         // 5. RETARDO
 
         $estado = 'presente';
         $minutosRetardo = 0;
 
-        if ($horario && $entrada) {
+        // if ($horario && $entrada) {
+
+        //     $limite = \Carbon\Carbon::parse($horario->hora_entrada)
+        //         ->addMinutes($horario->tolerancia_minutos);
+
+        //     if ($entrada->fecha_hora->gt($limite)) {
+        //         $estado = 'retardo';
+        //         $minutosRetardo = $limite->diffInMinutes($entrada->fecha_hora);
+        //     }
+        // }
+
+        if ($entrada) {
 
             $limite = \Carbon\Carbon::parse($horario->hora_entrada)
                 ->addMinutes($horario->tolerancia_minutos);
 
             if ($entrada->fecha_hora->gt($limite)) {
+
                 $estado = 'retardo';
-                $minutosRetardo = $limite->diffInMinutes($entrada->fecha_hora);
+
+                $minutosRetardo = $limite->diffInMinutes(
+                    $entrada->fecha_hora
+                );
             }
         }
 
@@ -376,6 +483,4 @@ class HomeController extends Controller
             'message' => 'Salida confirmada.'
         ]);
     }
-
-
 }

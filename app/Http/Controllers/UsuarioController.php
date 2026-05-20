@@ -9,6 +9,7 @@ use App\Models\Configuracion;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Empleado;
 use App\Models\Vacacion;
+use App\Models\DiaFestivo;
 use Carbon\Carbon;
 
 class UsuarioController extends Controller
@@ -206,5 +207,23 @@ class UsuarioController extends Controller
         return redirect()
             ->route('admin.usuarios.configurar')
             ->with('success', 'Vacaciones registradas correctamente.');
+    }
+
+
+
+    public function storeDiaFestivo(Request $request)
+    {
+        $request->validate([
+            'nombre' => 'required|string|max:255',
+            'fecha' => 'required|date|unique:dias_festivos,fecha',
+        ]);
+
+        DiaFestivo::create([
+            'nombre' => $request->nombre,
+            'fecha' => $request->fecha,
+            'oficial' => $request->boolean('oficial'),
+        ]);
+
+        return back()->with('success', 'Día festivo agregado correctamente.');
     }
 }
