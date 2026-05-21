@@ -168,6 +168,140 @@
 
         </form>
 
+        <!-- TABLA VACACIONES -->
+        <div class="mt-8">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-800">
+                    Vacaciones registradas
+                </h2>
+                <span class="text-sm text-gray-500">
+                    Total: {{ $vacaciones->count() }}
+                </span>
+            </div>
+            <div class="overflow-x-auto border border-gray-200 rounded-xl">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <!-- HEADER -->
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                                Empleado
+                            </th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                                Inicio
+                            </th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                                Fin
+                            </th>
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">
+                                Días
+                            </th>
+                            <!-- <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                                Motivo
+                            </th> -->
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">
+                                Estado
+                            </th>
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">
+                                Acciones
+                            </th>
+                        </tr>
+                    </thead>
+                    <!-- BODY -->
+                    <tbody class="bg-white divide-y divide-gray-100">
+                        @forelse($vacaciones as $vacacion)
+                        @php
+                        $inicio = \Carbon\Carbon::parse($vacacion->fecha_inicio);
+                        $fin = \Carbon\Carbon::parse($vacacion->fecha_fin);
+                        $hoy = now();
+                        $dias = $inicio->diffInDays($fin) + 1;
+                        if($fin->lt($hoy)){
+                        $estado = 'Finalizadas';
+                        $color = 'bg-red-100 text-red-700';
+                        } elseif($inicio->lte($hoy) && $fin->gte($hoy)){
+                        $estado = 'En curso';
+                        $color = 'bg-yellow-100 text-yellow-700';
+                        } else {
+                        $estado = 'Próximas';
+                        $color = 'bg-green-100 text-green-700';
+                        }
+                        @endphp
+
+                        <tr class="hover:bg-gray-50 transition">
+                            <!-- EMPLEADO -->
+                            <td class="px-4 py-4">
+                                <div class="text-xs font-medium text-gray-800">
+                                    {{ $vacacion->empleado->nombres }}
+                                    {{ $vacacion->empleado->apellido_paterno }}
+                                    {{ $vacacion->empleado->apellido_materno }}
+                                </div>
+
+                                <div class="text-xs text-gray-500">
+                                    No. empleado:
+                                    {{ $vacacion->empleado->n_empleado }}
+                                </div>
+                            </td>
+                            <!-- INICIO -->
+                            <td class="px-4 py-4 text-xs text-gray-600">
+                                {{ $inicio->format('d/m/Y') }}
+                            </td>
+                            <!-- FIN -->
+                            <td class="px-4 py-4 text-xs text-gray-600">
+                                {{ $fin->format('d/m/Y') }}
+                            </td>
+                            <!-- DIAS -->
+                            <td class="px-4 py-4 text-center whitespace-nowrap">
+                                <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium">
+                                    {{ $dias }} días
+                                </span>
+                            </td>
+                            <!-- MOTIVO -->
+                            <!-- <td class="px-4 py-4 text-sm text-gray-600 max-w-xs">
+                                {{ $vacacion->motivo ?: '-' }}
+                            </td> -->
+                            <!-- ESTADO -->
+                            <td class="px-4 py-4 text-center">
+                                <span class="{{ $color }} px-3 py-1 rounded-full text-xs font-semibold">
+                                    {{ $estado }}
+                                </span>
+
+                            </td>
+                            <!-- ACCIONES -->
+                            <td class="px-4 py-4">
+                                <div class="flex items-center justify-center gap-2">
+                                    <!-- EDITAR -->
+                                    <a
+                                        href=""
+                                        class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded-lg text-xs font-medium transition">
+                                        Editar
+                                    </a>
+                                    <!-- ELIMINAR -->
+                                    <form
+                                        action=""
+                                        method="POST"
+                                        onsubmit="return confirm('¿Eliminar vacaciones?')">
+
+                                        @csrf
+                                        @method('DELETE')
+                                        <button
+                                            type="submit"
+                                            class="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1 rounded-lg text-xs font-medium transition">
+                                            Eliminar
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="7" class="px-4 py-8 text-center text-sm text-gray-500">
+                                No hay vacaciones registradas.
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <!-- ===================================================== -->
@@ -245,8 +379,102 @@
 
         </form>
 
-    </div>
+        <!-- TABLA DÍAS FESTIVOS -->
+        <div class="mt-8">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-800">
+                    Días festivos registrados
+                </h2>
+                <span class="text-sm text-gray-500">
+                    Total: {{ $diasFestivos->count() }}
+                </span>
+            </div>
+            <div class="overflow-x-auto border border-gray-200 rounded-xl">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <!-- HEADER -->
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                                Nombre
+                            </th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                                Fecha
+                            </th>
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">
+                                Tipo
+                            </th>
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">
+                                Acciones
+                            </th>
+                        </tr>
+                    </thead>
 
+                    <!-- BODY -->
+                    <tbody class="bg-white divide-y divide-gray-100">
+
+                        @forelse($diasFestivos as $dia)
+                        <tr class="hover:bg-gray-50 transition">
+                            <!-- NOMBRE -->
+                            <td class="px-4 py-4">
+                                <div class="font-medium text-gray-800 text-sm">
+                                    {{ $dia->nombre }}
+                                </div>
+                            </td>
+                            <!-- FECHA -->
+                            <td class="px-4 py-4 text-sm text-gray-600">
+                                {{ \Carbon\Carbon::parse($dia->fecha)->format('d/m/Y') }}
+                            </td>
+                            <!-- TIPO -->
+                            <td class="px-4 py-4 text-center">
+                                @if($dia->oficial)
+                                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">
+                                    Oficial
+                                </span>
+                                @else
+                                <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-semibold">
+                                    No oficial
+                                </span>
+                                @endif
+                            </td>
+
+                            <!-- ACCIONES -->
+                            <td class="px-4 py-4">
+                                <div class="flex items-center justify-center gap-2">
+                                    <!-- EDITAR -->
+                                    <a
+                                        href=""
+                                        class="bg-green-100 hover:bg-green-200 text-green-700 px-3 py-1 rounded-lg text-xs font-medium transition">
+                                        Editar
+                                    </a>
+
+                                    <!-- ELIMINAR -->
+                                    <form
+                                        action=""
+                                        method="POST"
+                                        onsubmit="return confirm('¿Eliminar día festivo?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button
+                                            type="submit"
+                                            class="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1 rounded-lg text-xs font-medium transition">
+                                            Eliminar
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="4" class="px-4 py-8 text-center text-sm text-gray-500">
+                                No hay días festivos registrados.
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 
 @endsection

@@ -127,17 +127,20 @@ class UsuarioController extends Controller
     public function configurarData()
     {
 
-
         $empleados = Empleado::orderBy('nombres')
             ->get();
 
-        return view('admin.usuarios.configurar', compact('empleados'));
+        $vacaciones = Vacacion::with('empleado')
+            ->latest()
+            ->get();
 
-        // $configuraciones = Configuracion::pluck('valor', 'clave');
+        $diasFestivos = DiaFestivo::latest()->get();
 
-        // return view('admin.usuarios.configurar', [
-        //     'config' => $configuraciones
-        // ]);
+        return view('admin.usuarios.configurar', compact(
+            'empleados',
+            'vacaciones',
+            'diasFestivos'
+        ));
     }
 
     public function actualizarData(Request $request)
