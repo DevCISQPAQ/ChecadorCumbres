@@ -9,7 +9,10 @@ $roles = [
 @endphp
 <div class="px-6 py-3 bg-white rounded shadow mb-4">
     <h2 class="text-xl font-bold mb-3">Configuraciones</h2>
-    <a href="{{ route('admin.usuarios.configurar') }}" class="bg-orange-600 text-white px-2 py-1 rounded hover:bg-orange-700">Editar Horario</a>
+    <div class="flex gap-5">
+        <a href="{{ route('admin.departamentos.list') }}" class="bg-orange-600 text-white px-2 py-1 rounded hover:bg-orange-700">
+            Departamentos</a>
+    </div>
 </div>
 
 <div class="p-6 bg-white rounded shadow">
@@ -28,7 +31,7 @@ $roles = [
                         <th class="px-4 text-center py-2">Nombre</th>
                         <th class="px-4 text-center py-2">Correo</th>
                         <th class="px-4 text-center py-2">Rol</th>
-                        <th class="px-4 text-center py-2">Notificaciones</th> 
+                        <th class="px-4 text-center py-2">Notificaciones</th>
                         <th class="px-4 text-center py-2">Acciones</th>
                     </tr>
                 </thead>

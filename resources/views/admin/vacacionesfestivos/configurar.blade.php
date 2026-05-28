@@ -276,7 +276,7 @@
                                     </a>
                                     <!-- ELIMINAR -->
                                     <form
-                                        action=""
+                                        action="{{ route('admin.vacaciones.destroyVacaciones', $vacacion->id) }}"
                                         method="POST"
                                         onsubmit="return confirm('¿Eliminar vacaciones?')">
 
@@ -449,7 +449,7 @@
 
                                     <!-- ELIMINAR -->
                                     <form
-                                        action=""
+                                        action="{{ route('admin.festivos.destroyFestivos', $dia->id) }}"
                                         method="POST"
                                         onsubmit="return confirm('¿Eliminar día festivo?')">
                                         @csrf

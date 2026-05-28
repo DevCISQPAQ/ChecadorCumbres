@@ -38,11 +38,26 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/usuarios/{id}/editar', [UsuarioController::class, 'editarUsuario'])->name('usuarios.editar');
         Route::put('/usuarios/{id}', [UsuarioController::class, 'actualizarUsuario'])->name('usuarios.actualizar');
         Route::delete('/usuarios/{id}', [UsuarioController::class, 'eliminarUsuario'])->name('usuarios.eliminar');
-        Route::get('/preferencias/configurar', [UsuarioController::class, 'configurarData'])->name('usuarios.configurar');
-        Route::post('/preferencias/configuracion', [UsuarioController::class, 'actualizarData'])->name('usuarios.data');
+
+
+
+        Route::get('/preferencias/departamentos', [UsuarioController::class, 'listarDepartamentos'])
+            ->name('departamentos.list');
+
+        Route::post('/preferencias/departamentos', [UsuarioController::class, 'storeDepartamento'])
+            ->name('departamentos.store');
+
+        Route::delete('/departamentos/{id}', [UsuarioController::class, 'destroyDepartamento'])
+            ->name('departamentos.destroy');
+
+
+        Route::get('/vacacionesfestivos/configurar', [UsuarioController::class, 'configurarVacacionesFestivos'])->name('vacacionesfestivos.configurar');
+        //Route::post('/preferencias/configuracion', [UsuarioController::class, 'actualizarData'])->name('usuarios.data');
         // vacaciones
         Route::post('/vacaciones/store', [UsuarioController::class, 'store'])->name('vacaciones.store');
         Route::post('/dias-festivos/store', [UsuarioController::class, 'storeDiaFestivo'])->name('diasfestivos.store');
+        Route::delete('/vacaciones/{id}', [UsuarioController::class, 'destroyVacaciones'])->name('vacaciones.destroyVacaciones');
+        Route::delete('/festivos/{id}', [UsuarioController::class, 'destroyFestivos'])->name('festivos.destroyFestivos');
 
 
         // Empleados

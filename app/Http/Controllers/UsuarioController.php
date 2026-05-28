@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\Empleado;
 use App\Models\Vacacion;
 use App\Models\DiaFestivo;
+use App\Models\Departamento;
 use Carbon\Carbon;
 
 class UsuarioController extends Controller
@@ -124,7 +125,7 @@ class UsuarioController extends Controller
         }
     }
 
-    public function configurarData()
+    public function configurarVacacionesFestivos()
     {
 
         $empleados = Empleado::orderBy('nombres')
@@ -136,37 +137,37 @@ class UsuarioController extends Controller
 
         $diasFestivos = DiaFestivo::latest()->get();
 
-        return view('admin.usuarios.configurar', compact(
+        return view('admin.vacacionesfestivos.configurar', compact(
             'empleados',
             'vacaciones',
             'diasFestivos'
         ));
     }
 
-    public function actualizarData(Request $request)
-    {
-        $request->validate([
-            'hora_limite_entrada' => 'required|date_format:H:i',
-            // 'hora_limite_salida' => 'required|date_format:H:i',
-        ]);
+    // public function actualizarData(Request $request)
+    // {
+    //     $request->validate([
+    //         'hora_limite_entrada' => 'required|date_format:H:i',
+    //         // 'hora_limite_salida' => 'required|date_format:H:i',
+    //     ]);
 
-        try {
-            Configuracion::updateOrCreate(
-                ['clave' => 'hora_limite_entrada'],
-                ['valor' => $request->hora_limite_entrada]
-            );
+    //     try {
+    //         Configuracion::updateOrCreate(
+    //             ['clave' => 'hora_limite_entrada'],
+    //             ['valor' => $request->hora_limite_entrada]
+    //         );
 
-            // Configuracion::updateOrCreate(
-            //     ['clave' => 'hora_limite_salida'],
-            //     ['valor' => $request->hora_limite_salida]
-            // );
+    //         // Configuracion::updateOrCreate(
+    //         //     ['clave' => 'hora_limite_salida'],
+    //         //     ['valor' => $request->hora_limite_salida]
+    //         // );
 
 
-            return redirect()->route('admin.preferencias')->with('success', 'Configuraciones actualizadas correctamente.');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error al actualizar usuario ' . $e->getMessage());
-        }
-    }
+    //         return redirect()->route('admin.preferencias')->with('success', 'Configuraciones actualizadas correctamente.');
+    //     } catch (\Exception $e) {
+    //         return redirect()->back()->with('error', 'Error al actualizar usuario ' . $e->getMessage());
+    //     }
+    // }
 
     public function store(Request $request)
     {
@@ -208,7 +209,7 @@ class UsuarioController extends Controller
         ]);
 
         return redirect()
-            ->route('admin.usuarios.configurar')
+            ->route('admin.vacacionesfestivos.configurar')
             ->with('success', 'Vacaciones registradas correctamente.');
     }
 
@@ -228,5 +229,84 @@ class UsuarioController extends Controller
         ]);
 
         return back()->with('success', 'Día festivo agregado correctamente.');
+    }
+
+
+    public function destroyVacaciones($id)
+    {
+        $vacacion = Vacacion::find($id);
+
+        if (!$vacacion) {
+            return redirect()
+                ->back()
+                ->with('error', 'El registro no existe');
+        }
+
+        $vacacion->delete();
+
+        return redirect()
+            ->back()
+            ->with('success', 'Registro eliminado correctamente');
+    }
+
+    public function destroyFestivos($id)
+    {
+        $diasFestivos = DiaFestivo::find($id);
+
+        if (!$diasFestivos) {
+            return redirect()
+                ->back()
+                ->with('error', 'El registro no existe');
+        }
+
+        $diasFestivos->delete();
+
+        return redirect()
+            ->back()
+            ->with('success', 'Registro eliminado correctamente');
+    }
+
+
+    public function storeDepartamento(Request $request)
+    {
+        $request->validate([
+            'nombre' => 'required|string|max:255|unique:departamentos,nombre'
+        ]);
+
+        Departamento::create([
+            'nombre' => $request->nombre
+        ]);
+
+        return redirect()
+            ->back()
+            ->with('success', 'Departamento creado correctamente');
+    }
+
+    public function listarDepartamentos()
+    {
+        try {
+
+            $departamentos = Departamento::all();
+            return view('admin.usuarios.departamento', compact('departamentos'));
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error al cargar la página de Usuarios ' . $e->getMessage());
+        }
+    }
+
+    public function destroyDepartamento($id)
+    {
+        $departamento = Departamento::find($id);
+
+        if (!$departamento) {
+            return redirect()
+                ->back()
+                ->with('error', 'El registro no existe');
+        }
+
+        $departamento->delete();
+
+        return redirect()
+            ->back()
+            ->with('success', 'Registro eliminado correctamente');
     }
 }
