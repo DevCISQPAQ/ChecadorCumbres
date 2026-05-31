@@ -4,58 +4,31 @@
 <h2 class="text-2xl font-semibold text-gray-800 mb-6">Lista de Empleados</h2>
 
 <!-- Tarjetas de conteo de empleados por secciones -->
-<div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-2 md:gap-4 md:space-y-0 space-y-2">
-    <!-- Tarjeta para Academia -->
-    <div class="bg-blue-100 p-1 rounded shadow-lg text-center flex-1 min-w-[100px] sm:basis-[calc(15%-1rem)]">
-        <h3 class="text-sm font-semibold text-blue-600">Academia</h3>
-        <p class="text-xl font-bold text-gray-800">{{ $academiasCount ?? 0 }}</p>
+<div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-2 md:gap-4">
+
+    @foreach($departamentos as $departamento)
+    <div class="bg-blue-100 p-1 rounded shadow-lg text-center">
+        <h3 class="text-sm font-semibold text-blue-600">
+            {{ ucfirst($departamento->nombre) }}
+        </h3>
+
+        <p class="text-xl font-bold text-gray-800">
+            {{ $departamento->empleados_count }}
+        </p>
     </div>
-    <!-- Tarjeta para Administrativo -->
-    <div class="bg-blue-100 p-1 rounded shadow-lg text-center flex-1 min-w-[100px] sm:basis-[calc(15%-1rem)]">
-        <h3 class="text-sm font-semibold text-blue-600">Administración</h3>
-        <p class="text-xl font-bold text-gray-800">{{ $administrativosCount ?? 0 }}</p>
-    </div>
-    <!-- Tarjeta para Direccion -->
-    <div class="bg-blue-100 p-1 rounded shadow-lg text-center flex-1 min-w-[100px] sm:basis-[calc(15%-1rem)]">
-        <h3 class="text-sm font-semibold text-blue-600">Dirección</h3>
-        <p class="text-xl font-bold text-gray-800">{{ $direccionCount ?? 0 }}</p>
+    @endforeach
+
+    <div class="bg-blue-100 p-1 rounded shadow-lg text-center">
+        <h3 class="text-sm font-semibold text-green-600">
+            Total de empleados
+        </h3>
+
+        <p class="text-xl font-bold text-gray-800">
+            {{ $totales_empleados }}
+        </p>
     </div>
 
-    <!-- Tarjeta para Prescolar -->
-    <div class="bg-blue-100 p-1 rounded shadow-lg text-center flex-1 min-w-[100px] sm:basis-[calc(15%-1rem)]">
-        <h3 class="text-sm font-semibold text-blue-600">Preescolar</h3>
-        <p class="text-xl font-bold text-gray-800">{{ $preescolarCount ?? 0}}</p>
-    </div>
-
-    <!-- Tarjeta para Primaria -->
-    <div class="bg-blue-100 p-1 rounded shadow-lg text-center flex-1 min-w-[100px] sm:basis-[calc(15%-1rem)]">
-        <h3 class="text-sm font-semibold text-blue-600">Primaria</h3>
-        <p class="text-xl font-bold text-gray-800">{{ $primariaCount ?? 0 }}</p>
-    </div>
-    <!-- Tarjeta para Promocion -->
-    <div class="bg-blue-100 p-1 rounded shadow-lg text-center flex-1 min-w-[100px] sm:basis-[calc(15%-1rem)]">
-        <h3 class="text-sm font-semibold text-blue-600">Promoción</h3>
-        <p class="text-xl font-bold text-gray-800">{{ $promocionCount ?? 0 }}</p>
-    </div>
-
-    <!-- Tarjeta para Secundaria -->
-    <div class="bg-blue-100 p-1 rounded shadow-lg text-center flex-1 min-w-[100px] sm:basis-[calc(15%-1rem)]">
-        <h3 class="text-sm font-semibold text-blue-600">Secundaria</h3>
-        <p class="text-xl font-bold text-gray-800">{{ $secundariaCount ?? 0 }}</p>
-    </div>
-    <!-- Tarjeta para Secundaria -->
-    <div class="bg-blue-100 p-1 rounded shadow-lg text-center flex-1 min-w-[100px] sm:basis-[calc(15%-1rem)]">
-        <h3 class="text-sm font-semibold text-blue-600">Mantenimiento</h3>
-        <p class="text-xl font-bold text-gray-800">{{ $mantenimientoCount ?? 0 }}</p>
-    </div>
-
-    <!-- totales -->
-    <div class="bg-blue-100 p-1 rounded shadow-lg text-center flex-1 min-w-[200px] sm:basis-[calc(15%-1rem)]">
-        <h3 class="text-sm font-semibold text-green-600">Total de empleados</h3>
-        <p class="text-xl font-bold text-gray-800">{{ $totales_empleados ?? 0 }}</p>
-    </div>
 </div>
-
 
 <div x-data="{ buscar: '{{ request('buscar', '') }}', editarActivo: false  }">
     <!-- Formulario de búsqueda -->

@@ -57,49 +57,14 @@ class EmpleadoController extends Controller
 
     private function obtenerConteosPorDepartamento()
     {
-        $preescolarCount = Empleado::whereHas('departamento', function ($q) {
-            $q->where('nombre', 'preescolar');
-        })->count();
-
-        $primariaCount = Empleado::whereHas('departamento', function ($q) {
-            $q->where('nombre', 'primaria');
-        })->count();
-
-        $secundariaCount = Empleado::whereHas('departamento', function ($q) {
-            $q->where('nombre', 'secundaria');
-        })->count();
-
-        $administrativosCount = Empleado::whereHas('departamento', function ($q) {
-            $q->where('nombre', 'administracion');
-        })->count();
-
-        $academiasCount = Empleado::whereHas('departamento', function ($q) {
-            $q->where('nombre', 'academia');
-        })->count();
-
-        $promocionCount = Empleado::whereHas('departamento', function ($q) {
-            $q->where('nombre', 'promocion');
-        })->count();
-
-        $mantenimientoCount = Empleado::whereHas('departamento', function ($q) {
-            $q->where('nombre', 'mantenimiento');
-        })->count();
-
-        $direccionCount = Empleado::whereHas('departamento', function ($q) {
-            $q->where('nombre', 'direccion');
-        })->count();
+        $departamentos = Departamento::withCount('empleados')
+            ->orderBy('nombre')
+            ->get();
 
         $totales_empleados = Empleado::count();
 
         return compact(
-            'preescolarCount',
-            'primariaCount',
-            'secundariaCount',
-            'administrativosCount',
-            'academiasCount',
-            'promocionCount',
-            'mantenimientoCount',
-            'direccionCount',
+            'departamentos',
             'totales_empleados'
         );
     }
@@ -113,8 +78,6 @@ class EmpleadoController extends Controller
 
         //return view('admin.empleados.crear');
     }
-
-
 
     public function guardarEmpleado(Request $request)
     {
@@ -268,20 +231,6 @@ class EmpleadoController extends Controller
                 );
         }
     }
-
-
-
-
-    // public function editarEmpleado($id)
-    // {
-    //     try {
-
-    //         $empleado = Empleado::findOrFail($id);
-    //         return view('admin.empleados.editar', compact('empleado'));
-    //     } catch (\Exception $e) {
-    //         return redirect()->back()->with('error', 'Error al editar empleado ' . $e->getMessage());
-    //     }
-    // }
 
     public function editarEmpleado($id)
     {
@@ -491,57 +440,6 @@ class EmpleadoController extends Controller
         }
     }
 
-    // public function actualizarEmpleado(Request $request, $id)
-    // {
-    //     $request->validate([
-    //         'id' => 'required',
-    //         'nombres' => 'required',
-    //         'apellido_paterno' => 'required',
-    //         'apellido_materno' => 'required',
-    //         'departamento' => 'required',
-    //         'puesto' => 'required',
-    //         'email' => 'required|email|unique:empleados,email,' . $id,
-    //         'tipo_horario' => 'required',
-    //         'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // validar la imagen
-
-    //     ]);
-
-    //     try {
-
-    //         $empleado = Empleado::findOrFail($id);
-
-    //         $fotoNombre = $empleado->foto;
-    //         if ($request->hasFile('foto')) {
-    //             $file = $request->file('foto');
-    //             if ($empleado->foto && File::exists(public_path('img/empleados/' . $empleado->foto))) {
-    //                 File::delete(public_path('img/empleados/' . $empleado->foto));
-    //             }
-
-    //             // Guardar la nueva foto
-    //             $file = $request->file('foto');
-    //             $fotoNombre = Str::uuid() . '.' . $file->getClientOriginalExtension();
-    //             $file->move(public_path('img/empleados'), $fotoNombre);
-    //         }
-
-    //         $data = [
-    //             'id' => $request->id,
-    //             'nombres' => $request->nombres,
-    //             'apellido_paterno' => $request->apellido_paterno,
-    //             'apellido_materno' => $request->apellido_materno,
-    //             'departamento' => $request->departamento,
-    //             'puesto' => $request->puesto,
-    //             'email' => $request->email,
-    //             'tipo_horario' => $request->tipo_horario,
-    //             'foto' => $fotoNombre, // Guarda el nombre de la foto o null
-    //         ];
-
-    //         $empleado->update($data);
-
-    //         return redirect()->route('admin.empleados')->with('success', 'Empleado actualizado.');
-    //     } catch (\Exception $e) {
-    //         return redirect()->back()->with('error', 'Error al actualizar empleado ' . $e->getMessage());
-    //     }
-    // }
 
     public function destroy($id)
     {

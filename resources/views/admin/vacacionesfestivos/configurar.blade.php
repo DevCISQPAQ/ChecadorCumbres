@@ -153,12 +153,6 @@
 
             <!-- BOTONES -->
             <div class="flex justify-end gap-3">
-                <a
-                    href="{{ route('admin.preferencias') }}"
-                    class="px-4 py-2 text-gray-600 hover:text-gray-800">
-                    Cancelar
-                </a>
-
                 <button
                     type="submit"
                     class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg">

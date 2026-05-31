@@ -144,31 +144,7 @@ class UsuarioController extends Controller
         ));
     }
 
-    // public function actualizarData(Request $request)
-    // {
-    //     $request->validate([
-    //         'hora_limite_entrada' => 'required|date_format:H:i',
-    //         // 'hora_limite_salida' => 'required|date_format:H:i',
-    //     ]);
-
-    //     try {
-    //         Configuracion::updateOrCreate(
-    //             ['clave' => 'hora_limite_entrada'],
-    //             ['valor' => $request->hora_limite_entrada]
-    //         );
-
-    //         // Configuracion::updateOrCreate(
-    //         //     ['clave' => 'hora_limite_salida'],
-    //         //     ['valor' => $request->hora_limite_salida]
-    //         // );
-
-
-    //         return redirect()->route('admin.preferencias')->with('success', 'Configuraciones actualizadas correctamente.');
-    //     } catch (\Exception $e) {
-    //         return redirect()->back()->with('error', 'Error al actualizar usuario ' . $e->getMessage());
-    //     }
-    // }
-
+  
     public function store(Request $request)
     {
         $request->validate([
@@ -212,7 +188,6 @@ class UsuarioController extends Controller
             ->route('admin.vacacionesfestivos.configurar')
             ->with('success', 'Vacaciones registradas correctamente.');
     }
-
 
 
     public function storeDiaFestivo(Request $request)
