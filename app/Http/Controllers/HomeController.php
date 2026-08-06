@@ -189,8 +189,24 @@ class HomeController extends Controller
     }
 
 
-    private function generarAsistenciaDelDia($empleado, $fecha)
+    private function generarAsistenciaDelDia($empleado, $fecha) //validar lo de horas trabajadas
     {
+
+
+        // CHECADAS
+
+        $checadas = \App\Models\Checada::where('empleado_id', $empleado->id)
+            ->whereDate('fecha_hora', $fecha)
+            ->orderBy('fecha_hora')
+            ->get();
+
+
+
+        $horario = \App\Models\HorarioEmpleado::where('empleado_id', $empleado->id)
+            ->where('dia_semana', \Carbon\Carbon::parse($fecha)->dayOfWeekIso)
+            ->first();
+
+
 
         //1. VACACIONES
 
@@ -232,27 +248,6 @@ class HomeController extends Controller
         }
 
 
-        // 3. CHECADAS
-
-        $checadas = \App\Models\Checada::where('empleado_id', $empleado->id)
-            ->whereDate('fecha_hora', $fecha)
-            ->orderBy('fecha_hora')
-            ->get();
-
-        //servia !!
-        // $horario = \App\Models\HorarioEmpleado::where('empleado_id', $empleado->id)
-        //     ->where('dia_semana', now()->dayOfWeekIso)
-        //     ->where('activo', true)
-        //     ->first();
-
-        $horario = \App\Models\HorarioEmpleado::where('empleado_id', $empleado->id)
-            ->where('dia_semana', \Carbon\Carbon::parse($fecha)->dayOfWeekIso)
-            ->first();
-
-
-        // $entrada = $checadas->where('tipo', 'entrada')->first();
-        // $salida = $checadas->where('tipo', 'salida')->last();
-
 
         // NO tiene horario = libre
         if (!$horario) {
@@ -291,13 +286,7 @@ class HomeController extends Controller
         }
 
 
-        $checadas = \App\Models\Checada::where('empleado_id', $empleado->id)
-            ->whereDate('fecha_hora', $fecha)
-            ->orderBy('fecha_hora')
-            ->get();
-
         $entrada = $checadas->where('tipo', 'entrada')->first();
-
         $salida = $checadas->where('tipo', 'salida')->last();
 
         //falta
@@ -319,80 +308,11 @@ class HomeController extends Controller
         }
 
 
-
-        // SOLO tiene salida
-        // if (!$entrada && $salida) {
-
-        //     \App\Models\Asistencia::updateOrCreate(
-        //         [
-        //             'empleado_id' => $empleado->id,
-        //             'fecha' => $fecha
-        //         ],
-        //         [
-        //             'estado' => 'retardo',
-        //             'horas_trabajadas' => 0,
-        //             'minutos_retardo' => 0
-        //         ]
-        //     );
-
-        //     return;
-        // }
-
-
-        // tiene horario pero no esta activo checar!
-        // if (!$entrada && !$salida && $horario) {
-
-        //     \App\Models\Asistencia::updateOrCreate(
-        //         [
-        //             'empleado_id' => $empleado->id,
-        //             'fecha' => $fecha
-        //         ],
-        //         [
-        //             'estado' => 'falta',
-        //             'horas_trabajadas' => 0,
-        //             'minutos_retardo' => 0
-        //         ]
-        //     );
-
-        //     return;
-        // }
-
-
-
-        // // NO tiene entrada ni salida
-        // if (!$entrada && !$salida && $horario) {
-
-        //     \App\Models\Asistencia::updateOrCreate(
-        //         [
-        //             'empleado_id' => $empleado->id,
-        //             'fecha' => $fecha
-        //         ],
-        //         [
-        //             'estado' => 'falta',
-        //             'horas_trabajadas' => 0,
-        //             'minutos_retardo' => 0
-        //         ]
-        //     );
-
-        //     return;
-        // }
-
-
         // 5. RETARDO
 
         $estado = 'presente';
         $minutosRetardo = 0;
 
-        // if ($horario && $entrada) {
-
-        //     $limite = \Carbon\Carbon::parse($horario->hora_entrada)
-        //         ->addMinutes($horario->tolerancia_minutos);
-
-        //     if ($entrada->fecha_hora->gt($limite)) {
-        //         $estado = 'retardo';
-        //         $minutosRetardo = $limite->diffInMinutes($entrada->fecha_hora);
-        //     }
-        // }
 
         if ($entrada) {
 

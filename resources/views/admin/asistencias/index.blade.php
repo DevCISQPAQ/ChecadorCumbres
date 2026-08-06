@@ -125,7 +125,8 @@
                         <option value="falta">Falta</option>
                         <option value="vacaciones">Vacaciones</option>
                         <option value="permiso">Permiso</option>
-                        <option value="libre">Libre</option>
+                        <option value="libre">Libre</option> 
+                         <option value="festivo">Festivo</option> 
 
                     </select>
                 </div>

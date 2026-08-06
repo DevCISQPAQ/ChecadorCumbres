@@ -11,6 +11,8 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use App\Models\Departamento;
 use App\Models\HorarioEmpleado;
+use App\Models\Vacacion;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class EmpleadoController extends Controller
 {
@@ -464,5 +466,25 @@ class EmpleadoController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error al eliminar al empleado: ' . $e->getMessage());
         }
+    }
+
+    public function generarVacacionesPdf($id)
+    {
+        $empleado = Empleado::findOrFail($id);
+
+        $vacaciones = Vacacion::where('empleado_id', $id)
+            ->orderBy('fecha_inicio')
+            ->get();
+
+
+        $pdf = Pdf::loadView(
+            'admin.vacacionesfestivos.pdf-empleado',
+            compact('empleado', 'vacaciones')
+        );
+
+
+        return $pdf->stream(
+            'vacaciones_' . $empleado->nombres . '.pdf'
+        );
     }
 }

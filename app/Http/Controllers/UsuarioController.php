@@ -11,6 +11,14 @@ use App\Models\Empleado;
 use App\Models\Vacacion;
 use App\Models\DiaFestivo;
 use App\Models\Departamento;
+use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
 use Carbon\Carbon;
 
 class UsuarioController extends Controller
@@ -137,14 +145,14 @@ class UsuarioController extends Controller
 
         $diasFestivos = DiaFestivo::latest()->get();
 
-        return view('admin.vacacionesfestivos.configurar', compact(
+        return view('admin.vacacionesfestivos.index', compact(
             'empleados',
             'vacaciones',
             'diasFestivos'
         ));
     }
 
-  
+
     public function store(Request $request)
     {
         $request->validate([
@@ -185,17 +193,25 @@ class UsuarioController extends Controller
         ]);
 
         return redirect()
-            ->route('admin.vacacionesfestivos.configurar')
+            ->route('admin.vacacionesfestivos.index')
             ->with('success', 'Vacaciones registradas correctamente.');
     }
 
 
     public function storeDiaFestivo(Request $request)
     {
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-            'fecha' => 'required|date|unique:dias_festivos,fecha',
-        ]);
+        $request->validate(
+            [
+                'nombre' => 'required|string|max:255',
+                'fecha' => 'required|date|unique:dias_festivos,fecha',
+            ],
+            [
+                'fecha.unique' => 'Ya existe un día festivo registrado para esa fecha.',
+                'fecha.required' => 'La fecha es obligatoria.',
+                'fecha.date' => 'La fecha no es válida.',
+                'nombre.required' => 'El nombre es obligatorio.',
+            ]
+        );
 
         DiaFestivo::create([
             'nombre' => $request->nombre,
@@ -283,5 +299,152 @@ class UsuarioController extends Controller
         return redirect()
             ->back()
             ->with('success', 'Registro eliminado correctamente');
+    }
+
+    public function generarVacacionesExcel(Request $request)
+    {
+        try {
+
+            $query = Vacacion::with('empleado');
+
+            if ($request->filled('empleado_id')) {
+                $query->where('empleado_id', $request->empleado_id);
+            }
+
+            $vacaciones = $query->orderBy('fecha_inicio')->get();
+
+            return Excel::download(
+                new class($vacaciones) implements FromArray, WithHeadings, WithStyles {
+
+                    private $vacaciones;
+
+                    public function __construct($vacaciones)
+                    {
+                        $this->vacaciones = $vacaciones;
+                    }
+
+                    public function array(): array
+                    {
+                        $data = [];
+
+                        foreach ($this->vacaciones as $vacacion) {
+
+                            $inicio = \Carbon\Carbon::parse($vacacion->fecha_inicio);
+                            $fin = \Carbon\Carbon::parse($vacacion->fecha_fin);
+
+                            $dias = $inicio->diffInDays($fin) + 1;
+
+                            if ($fin->lt(now())) {
+                                $estado = 'Finalizadas';
+                            } elseif ($inicio->lte(now()) && $fin->gte(now())) {
+                                $estado = 'En curso';
+                            } else {
+                                $estado = 'Próximas';
+                            }
+
+                            $data[] = [
+                                $vacacion->empleado->n_empleado,
+                                $vacacion->empleado->nombres . ' ' .
+                                    $vacacion->empleado->apellido_paterno . ' ' .
+                                    $vacacion->empleado->apellido_materno,
+
+                                $inicio->format('d/m/Y'),
+                                $fin->format('d/m/Y'),
+                                $dias,
+                                $estado,
+                                $vacacion->motivo ?: '-'
+                            ];
+                        }
+
+                        return $data;
+                    }
+
+                    public function headings(): array
+                    {
+                        return [
+                            'No. Empleado',
+                            'Empleado',
+                            'Fecha inicio',
+                            'Fecha fin',
+                            'Días',
+                            'Estado',
+                            'Motivo'
+                        ];
+                    }
+
+                    public function styles(Worksheet $sheet)
+                    {
+                        $highestRow = $sheet->getHighestRow();
+
+                        // Encabezado
+                        $sheet->getStyle("A1:G1")->getFont()->setBold(true);
+
+                        $sheet->getStyle("A1:G1")->getFill()
+                            ->setFillType(Fill::FILL_SOLID)
+                            ->getStartColor()
+                            ->setRGB('D9EAD3');
+
+                        // Centrar contenido
+                        $sheet->getStyle("A1:G{$highestRow}")
+                            ->getAlignment()
+                            ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+                        // Bordes
+                        $sheet->getStyle("A1:G{$highestRow}")
+                            ->getBorders()
+                            ->getAllBorders()
+                            ->setBorderStyle(Border::BORDER_THIN);
+
+                        // Filas alternadas
+                        for ($row = 2; $row <= $highestRow; $row++) {
+
+                            if ($row % 2 == 0) {
+
+                                $sheet->getStyle("A{$row}:G{$row}")
+                                    ->getFill()
+                                    ->setFillType(Fill::FILL_SOLID)
+                                    ->getStartColor()
+                                    ->setRGB('F8F9FA');
+                            }
+
+                            // Colorear estado
+                            $estado = $sheet->getCell("F{$row}")->getValue();
+
+                            if ($estado == 'Próximas') {
+
+                                $sheet->getStyle("F{$row}")
+                                    ->getFont()
+                                    ->getColor()
+                                    ->setRGB('008000');
+                            } elseif ($estado == 'En curso') {
+
+                                $sheet->getStyle("F{$row}")
+                                    ->getFont()
+                                    ->getColor()
+                                    ->setRGB('E69138');
+                            } elseif ($estado == 'Finalizadas') {
+
+                                $sheet->getStyle("F{$row}")
+                                    ->getFont()
+                                    ->getColor()
+                                    ->setRGB('CC0000');
+                            }
+                        }
+
+                        // Ajustar ancho automáticamente
+                        foreach (range('A', 'G') as $column) {
+                            $sheet->getColumnDimension($column)->setAutoSize(true);
+                        }
+                    }
+                },
+                'vacaciones_' . now()->format('Y-m-d') . '.xlsx'
+            );
+        } catch (\Exception $e) {
+
+            return back()->with(
+                'error',
+                'Error al generar el Excel: ' . $e->getMessage()
+            );
+        }
     }
 }

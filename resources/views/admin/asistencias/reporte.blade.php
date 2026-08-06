@@ -89,14 +89,38 @@ $primerEmpleado = null;
                 @forelse($asistencias as $asistencia)
                 @php
                 $empleado = $asistencia->empleado;
-                if ($asistencia->retardo) {
+                if ($asistencia->estado === 'retardo') {
                 $totalRetardos++;
                 }
+
+                $colorEstado = match($asistencia->estado) {
+                'presente' => 'green',
+                'retardo' => '#ca8a04',
+                'falta' => 'red',
+                'vacaciones' => 'blue',
+                'permiso' => 'purple',
+                'libre' => '#0891b2',
+                'festivo' => 'gray',
+                default => '#6b7280',
+                };
+
+                $textoEstado = match($asistencia->estado) {
+                'presente' => 'Presente',
+                'retardo' => 'Retardo',
+                'falta' => 'Falta',
+                'vacaciones' => 'Vacaciones',
+                'permiso' => 'Permiso',
+                'libre' => 'Libre',
+                'festivo' => 'Festivo',
+                default => 'Sin registro',
+                };
+                @endphp
+
                 @endphp
                 <tr class="items">
                     <td>{{ $asistencia->empleado_id ?? ($empleado->id ?? '-') }}</td>
                     <td>{{ $empleado ? $empleado->nombres . ' ' . $empleado->apellido_paterno . ' ' . $empleado->apellido_materno : 'N/A' }}</td>
-                    <td>{{ $empleado->departamento ?? 'N/A' }}</td>
+                    <td>{{ $empleado->departamento->nombre ?? 'N/A' }}</td>
                     {{-- Columna de fecha --}}
                     <td>{{ $asistencia->created_at ? $asistencia->created_at->format('d/m/Y') : '-' }}</td>
                     {{-- Hora de entrada --}}
@@ -107,12 +131,9 @@ $primerEmpleado = null;
                     <td @if(!$asistencia->hora_salida) style="color: red;" @endif>
                         {{ $asistencia->hora_salida ? \Carbon\Carbon::parse($asistencia->hora_salida)->format('H:i') : 'Sin registro' }}
                     </td>
-                    {{-- Retardo --}}
-                    <td @if(is_null($asistencia->retardo)) style="color: red;"
-                        @elseif($asistencia->retardo) style="color: red;"
-                        @else style="color: green;"
-                        @endif>
-                        {{ is_null($asistencia->retardo) ? 'Sin registro' : ($asistencia->retardo ? 'Sí' : 'No') }}
+                    {{-- Estado --}}
+                    <td style="color: {{ $colorEstado }}; font-weight: bold;">
+                        {{ $textoEstado }}
                     </td>
                 </tr>
                 @empty

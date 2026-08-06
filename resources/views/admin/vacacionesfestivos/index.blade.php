@@ -2,6 +2,20 @@
 
 @section('content')
 
+@if ($errors->any())
+<div x-data="{ show: true }"
+    x-init="setTimeout(() => show = false, 4000)"
+    x-show="show"
+    x-transition
+    class="mb-5 bg-red-100 border border-red-400 text-red-700 p-4 rounded">
+    <ul class="list-disc pl-5 text-sm">
+        @foreach ($errors->all() as $error)
+        <li>{{ $error }}</li>
+        @endforeach
+    </ul>
+</div>
+@endif
+
 <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
 
     <!-- ===================================================== -->
@@ -19,16 +33,6 @@
                 Asigna un periodo de vacaciones a un empleado.
             </p>
         </div>
-
-        @if ($errors->any())
-        <div class="mb-5 bg-red-100 border border-red-400 text-red-700 p-4 rounded">
-            <ul class="list-disc pl-5 text-sm">
-                @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-        @endif
 
         <form action="{{ route('admin.vacaciones.store') }}" method="POST">
             @csrf
@@ -139,7 +143,7 @@
                 </div>
             </div>
             <!-- MOTIVO -->
-            <div class="mb-6">
+            <div class="mb-3">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                     Observaciones / Motivo
                 </label>
@@ -162,6 +166,7 @@
 
         </form>
 
+
         <!-- TABLA VACACIONES -->
         <div class="mt-8">
             <div class="flex items-center justify-between mb-4">
@@ -171,11 +176,20 @@
                 <span class="text-sm text-gray-500">
                     Total: {{ $vacaciones->count() }}
                 </span>
+                <div class="flex gap-2">
+                    <a
+                        href="{{ route('admin.vacaciones.excel') }}"
+                        target="_blank"
+                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm">
+                        Descargar Excel
+                    </a>
+                </div>
+
             </div>
-            <div class="overflow-x-auto border border-gray-200 rounded-xl">
+            <div class="max-h-[300px] overflow-y-auto overflow-x-auto border border-gray-200 rounded-xl">
                 <table class="min-w-full divide-y divide-gray-200">
                     <!-- HEADER -->
-                    <thead class="bg-gray-50">
+                    <thead class="sticky top-0 z-10 bg-gray-50">
                         <tr>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
                                 Empleado
@@ -383,10 +397,10 @@
                     Total: {{ $diasFestivos->count() }}
                 </span>
             </div>
-            <div class="overflow-x-auto border border-gray-200 rounded-xl">
+            <div class="max-h-[300px] overflow-y-auto overflow-x-auto border border-gray-200 rounded-xl">
                 <table class="min-w-full divide-y divide-gray-200">
                     <!-- HEADER -->
-                    <thead class="bg-gray-50">
+                    <thead class="sticky top-0 z-10 bg-gray-50">
                         <tr>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
                                 Nombre
@@ -469,6 +483,7 @@
             </div>
         </div>
     </div>
+
 </div>
 
 @endsection

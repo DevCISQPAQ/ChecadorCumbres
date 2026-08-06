@@ -22,8 +22,8 @@
             @endif
             {{-- Solo mostrar este enlace si el usuario es administrador --}}
             @if(auth()->user()->level_user >= 1)
-            <a href="{{ route('admin.vacacionesfestivos.configurar') }}"
-                class="block py-2.5 px-4 {{ request()->routeIs('admin.vacacionesfestivos.configurar*') ? 'bg-blue-100 text-blue-700' : 'text-gray-700' }} hover:bg-blue-50 transition-colors">
+            <a href="{{ route('admin.vacacionesfestivos.index') }}"
+                class="block py-2.5 px-4 {{ request()->routeIs('admin.vacacionesfestivos.index*') ? 'bg-blue-100 text-blue-700' : 'text-gray-700' }} hover:bg-blue-50 transition-colors">
                 Vacaciones y festivos
             </a>
             <a href="{{ route('admin.preferencias') }}"

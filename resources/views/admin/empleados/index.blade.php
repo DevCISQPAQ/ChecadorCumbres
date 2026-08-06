@@ -101,10 +101,17 @@
                         <template x-if="editarActivo">
                             <td class="p-3 flex gap-2">
                                 <div class="flex gap-2">
+                                    <a
+                                        href="{{ route('admin.empleados.vacaciones.pdf', $empleado->id) }}"
+                                        target="_blank"
+                                        class="bg-green-100 hover:bg-green-200 text-green-700 px-3 py-1 rounded-lg text-xs font-medium transition">
+                                        Vacaciones PDF
+                                    </a>
                                     <a href="{{ route('admin.empleados.editar', $empleado->id) }}" target="_self"
                                         class="bg-orange-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">
                                         Editar
                                     </a>
+
                                     <form action="{{ route('admin.empleados.destroy', $empleado->id) }}" method="POST"
                                         onsubmit="return confirm('¿Eliminar empleado?')" class="inline-block">
                                         @csrf

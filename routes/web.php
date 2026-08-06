@@ -51,13 +51,17 @@ Route::prefix('admin')->name('admin.')->group(function () {
             ->name('departamentos.destroy');
 
 
-        Route::get('/vacacionesfestivos/configurar', [UsuarioController::class, 'configurarVacacionesFestivos'])->name('vacacionesfestivos.configurar');
+        Route::get('/vacacionesfestivos', [UsuarioController::class, 'configurarVacacionesFestivos'])->name('vacacionesfestivos.index');
         //Route::post('/preferencias/configuracion', [UsuarioController::class, 'actualizarData'])->name('usuarios.data');
         // vacaciones
         Route::post('/vacaciones/store', [UsuarioController::class, 'store'])->name('vacaciones.store');
         Route::post('/dias-festivos/store', [UsuarioController::class, 'storeDiaFestivo'])->name('diasfestivos.store');
         Route::delete('/vacaciones/{id}', [UsuarioController::class, 'destroyVacaciones'])->name('vacaciones.destroyVacaciones');
         Route::delete('/festivos/{id}', [UsuarioController::class, 'destroyFestivos'])->name('festivos.destroyFestivos');
+        Route::get('/vacaciones/excel', [UsuarioController::class, 'generarVacacionesExcel'])->name('vacaciones.excel');
+        Route::get('/empleados/{empleado}/vacaciones/pdf',[EmpleadoController::class, 'generarVacacionesPdf'])->name('empleados.vacaciones.pdf');
+
+
 
 
         // Empleados

@@ -61,7 +61,12 @@
         {{-- Contenido dinámico --}}
         <main class="p-6 flex-1 overflow-y-auto">
             @if(session('success') || session('error'))
-            <div class="{{ session('success') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }} p-3 rounded mb-4">
+            <div
+                x-data="{ show: true }"
+                x-init="setTimeout(() => show = false, 4000)"
+                x-show="show"
+                x-transition
+                class="{{ session('success') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }} p-3 rounded mb-4">
                 {{ session('success') ?? session('error') }}
             </div>
             @endif
