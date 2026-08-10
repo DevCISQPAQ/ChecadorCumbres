@@ -41,10 +41,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 
 
-        Route::get('/preferencias/departamentos', [UsuarioController::class, 'listarDepartamentos'])
-            ->name('departamentos.list');
+        Route::get('/preferencias/configuraciones', [UsuarioController::class, 'listarDepartamentos'])
+            ->name('configuraciones');
 
-        Route::post('/preferencias/departamentos', [UsuarioController::class, 'storeDepartamento'])
+        Route::post('/preferencias/configuraciones', [UsuarioController::class, 'storeDepartamento'])
             ->name('departamentos.store');
 
         Route::delete('/departamentos/{id}', [UsuarioController::class, 'destroyDepartamento'])
@@ -52,14 +52,18 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 
         Route::get('/vacacionesfestivos', [UsuarioController::class, 'configurarVacacionesFestivos'])->name('vacacionesfestivos.index');
+        Route::post('/configuracion/horario-0730', [UsuarioController::class, 'actualizarHorario0730'])->name('configuracion.horario0730');
         //Route::post('/preferencias/configuracion', [UsuarioController::class, 'actualizarData'])->name('usuarios.data');
         // vacaciones
         Route::post('/vacaciones/store', [UsuarioController::class, 'store'])->name('vacaciones.store');
         Route::post('/dias-festivos/store', [UsuarioController::class, 'storeDiaFestivo'])->name('diasfestivos.store');
         Route::delete('/vacaciones/{id}', [UsuarioController::class, 'destroyVacaciones'])->name('vacaciones.destroyVacaciones');
         Route::delete('/festivos/{id}', [UsuarioController::class, 'destroyFestivos'])->name('festivos.destroyFestivos');
+        Route::put('/vacaciones/{vacacion}', [UsuarioController::class, 'updateVacaciones'])->name('vacaciones.update');
+        Route::put('/festivos/{diaFestivo}', [UsuarioController::class, 'updateFestivos'])->name('festivos.update');
+
         Route::get('/vacaciones/excel', [UsuarioController::class, 'generarVacacionesExcel'])->name('vacaciones.excel');
-        Route::get('/empleados/{empleado}/vacaciones/pdf',[EmpleadoController::class, 'generarVacacionesPdf'])->name('empleados.vacaciones.pdf');
+        Route::get('/empleados/{empleado}/vacaciones/pdf', [EmpleadoController::class, 'generarVacacionesPdf'])->name('empleados.vacaciones.pdf');
 
 
 

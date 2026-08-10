@@ -277,8 +277,24 @@ class UsuarioController extends Controller
     {
         try {
 
+            $ajusteActivo = Configuracion::where(
+                'clave',
+                'ajuste_horario_0730'
+            )->value('valor');
+
+            $horaAjustada = Configuracion::where(
+                'clave',
+                'hora_entrada_ajustada_0730'
+            )->value('valor');
+
+
+
             $departamentos = Departamento::all();
-            return view('admin.usuarios.departamento', compact('departamentos'));
+            return view('admin.usuarios.configuraciones', compact(
+                'departamentos',
+                'ajusteActivo',
+                'horaAjustada'
+            ));
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error al cargar la página de Usuarios ' . $e->getMessage());
         }
@@ -300,6 +316,49 @@ class UsuarioController extends Controller
             ->back()
             ->with('success', 'Registro eliminado correctamente');
     }
+
+    public function updateVacaciones(Request $request, Vacacion $vacacion)
+    {
+        $request->validate([
+            'fecha_inicio' => 'required|date',
+            'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
+            'motivo' => 'nullable|string|max:500',
+        ]);
+
+        $vacacion->update([
+            'fecha_inicio' => $request->fecha_inicio,
+            'fecha_fin' => $request->fecha_fin,
+            'motivo' => $request->motivo,
+        ]);
+
+        return back()->with(
+            'success',
+            'Vacaciones actualizadas correctamente.'
+        );
+    }
+
+
+    public function updateFestivos(Request $request, DiaFestivo $diaFestivo)
+    {
+        $request->validate([
+            'nombre' => 'required|string|max:255',
+            'fecha' => 'required|date',
+            'oficial' => 'nullable|boolean',
+        ]);
+
+        $diaFestivo->update([
+            'nombre' => $request->nombre,
+            'fecha' => $request->fecha,
+            'oficial' => $request->boolean('oficial'),
+        ]);
+
+        return back()->with(
+            'success',
+            'Día festivo actualizado correctamente.'
+        );
+    }
+
+
 
     public function generarVacacionesExcel(Request $request)
     {
@@ -446,5 +505,40 @@ class UsuarioController extends Controller
                 'Error al generar el Excel: ' . $e->getMessage()
             );
         }
+    }
+
+    public function actualizarHorario0730(Request $request)
+    {
+        $request->validate([
+            'hora_entrada_ajustada_0730' => [
+                'required',
+                'date_format:H:i'
+            ],
+        ]);
+
+        Configuracion::updateOrCreate(
+            [
+                'clave' => 'ajuste_horario_0730'
+            ],
+            [
+                'valor' => $request->has('ajuste_horario_0730')
+                    ? '1'
+                    : '0'
+            ]
+        );
+
+        Configuracion::updateOrCreate(
+            [
+                'clave' => 'hora_entrada_ajustada_0730'
+            ],
+            [
+                'valor' => $request->hora_entrada_ajustada_0730
+            ]
+        );
+
+        return back()->with(
+            'success',
+            'Configuración de horario actualizada correctamente.'
+        );
     }
 }

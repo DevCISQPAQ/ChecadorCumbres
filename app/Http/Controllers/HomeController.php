@@ -31,7 +31,6 @@ class HomeController extends Controller
         }
 
         try {
-            //$respuesta = $this->agregarAsistencia($empleado);
             $respuesta = $this->registrarChecada($empleado);
         } catch (\Exception $e) {
             return response()->json([
@@ -70,23 +69,6 @@ class HomeController extends Controller
             ];
         }
 
-        //
-        // $ultimaChecada = Checada::where('empleado_id', $empleado->id)
-        //     ->whereDate('fecha_hora', $hoy)
-        //     ->latest()
-        //     ->first();
-
-        // // evitar duplicados seguidos
-        // if ($ultimaChecada && $ultimaChecada->tipo === $tipo) {
-        //     return [
-        //         'success' => false,
-        //         'message' => 'Ya registraste esta acción recientemente.'
-        //     ];
-        // }
-
-        //
-
-
         Checada::create([
             'empleado_id' => $empleado->id,
             'fecha_hora' => $ahora,
@@ -113,11 +95,6 @@ class HomeController extends Controller
             ->where('activo', true)
             ->first();
 
-        // si no tiene horario → sistema libre
-        // if (!$horario) {
-        //     return $this->toggleEntradaSalidaLibre($empleado, $ahora);
-        // }
-
         $checadasHoy = Checada::where('empleado_id', $empleado->id)
             ->whereDate('fecha_hora', $ahora->toDateString())
             ->orderBy('fecha_hora')
@@ -134,7 +111,7 @@ class HomeController extends Controller
             return $this->toggleEntradaSalidaLibre($empleado, $ahora);
         }
 
-        // 1️⃣ Entrada
+        // Entrada
         if ($total === 0) {
 
             $horaSalida = $horario->hora_salida; // "HH:MM"
@@ -146,7 +123,7 @@ class HomeController extends Controller
         }
 
 
-        // 2️⃣ Salida (con validación de horario)
+        // Salida (con validación de horario)
         if ($total === 1) {
 
             // si ya registró salida → no permitir otra
@@ -164,7 +141,7 @@ class HomeController extends Controller
             return 'salida';
         }
 
-        // 3️⃣ ya no permitir más de 2
+        // ya no permitir más de 2
         return null;
     }
 
@@ -191,22 +168,15 @@ class HomeController extends Controller
 
     private function generarAsistenciaDelDia($empleado, $fecha) //validar lo de horas trabajadas
     {
-
-
         // CHECADAS
-
         $checadas = \App\Models\Checada::where('empleado_id', $empleado->id)
             ->whereDate('fecha_hora', $fecha)
             ->orderBy('fecha_hora')
             ->get();
 
-
-
         $horario = \App\Models\HorarioEmpleado::where('empleado_id', $empleado->id)
             ->where('dia_semana', \Carbon\Carbon::parse($fecha)->dayOfWeekIso)
             ->first();
-
-
 
         //1. VACACIONES
 
@@ -227,7 +197,6 @@ class HomeController extends Controller
             return;
         }
 
-
         //2. FESTIVOS
 
         if ($this->esDiaFestivo($fecha)) {
@@ -246,8 +215,6 @@ class HomeController extends Controller
 
             return;
         }
-
-
 
         // NO tiene horario = libre
         if (!$horario) {
@@ -316,8 +283,13 @@ class HomeController extends Controller
 
         if ($entrada) {
 
-            $limite = \Carbon\Carbon::parse($horario->hora_entrada)
+            $horaEntradaEfectiva = $this->obtenerHoraEntradaEfectiva($horario);
+
+            $limite = \Carbon\Carbon::parse($horaEntradaEfectiva)
                 ->addMinutes($horario->tolerancia_minutos);
+
+            // $limite = \Carbon\Carbon::parse($horario->hora_entrada)
+            //     ->addMinutes($horario->tolerancia_minutos);
 
             if ($entrada->fecha_hora->gt($limite)) {
 
@@ -379,18 +351,6 @@ class HomeController extends Controller
         $ahora = now();
         $hoy = $ahora->toDateString();
 
-        // $checada = Checada::find($id);
-
-        // if (!$checada) {
-        //     return response()->json([
-        //         'success' => false,
-        //         'message' => 'Checada no encontrada.'
-        //     ], 404);
-        // }
-
-        // $checada->tipo = 'salida';
-        // $checada->save();
-
         Checada::create([
             'empleado_id' => $empleado->id,
             'fecha_hora' => $ahora,
@@ -402,5 +362,33 @@ class HomeController extends Controller
             'success' => true,
             'message' => 'Salida confirmada.'
         ]);
+    }
+
+    private function obtenerHoraEntradaEfectiva($horario)
+    {
+        if (!$horario) {
+            return null;
+        }
+
+        $ajusteActivo = Configuracion::where(
+            'clave',
+            'ajuste_horario_0730'
+        )->value('valor');
+
+        $horaAjustada = Configuracion::where(
+            'clave',
+            'hora_entrada_ajustada_0730'
+        )->value('valor');
+
+        // Si el ajuste está activo y el horario original es 07:30
+        if (
+            $ajusteActivo == '1' &&
+            Carbon::parse($horario->hora_entrada)->format('H:i') === '07:30'
+        ) {
+            return $horaAjustada;
+        }
+
+        // Todos los demás conservan su horario original
+        return $horario->hora_entrada;
     }
 }

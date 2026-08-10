@@ -24,12 +24,12 @@
 
     <div class="bg-white p-6 rounded-xl shadow">
 
-        <div class="mb-6">
+        <div class="mb-3">
             <h1 class="text-2xl font-bold text-gray-800">
                 Registrar vacaciones
             </h1>
 
-            <p class="text-sm text-gray-500 mt-1">
+            <p class="text-sm text-gray-500">
                 Asigna un periodo de vacaciones a un empleado.
             </p>
         </div>
@@ -159,13 +159,12 @@
             <div class="flex justify-end gap-3">
                 <button
                     type="submit"
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg">
+                    class="bg-blue-600 cursor-pointer hover:bg-blue-700 text-white px-5 py-2 rounded-lg">
                     Guardar vacaciones
                 </button>
             </div>
 
         </form>
-
 
         <!-- TABLA VACACIONES -->
         <div class="mt-8">
@@ -277,11 +276,19 @@
                             <td class="px-4 py-4">
                                 <div class="flex items-center justify-center gap-2">
                                     <!-- EDITAR -->
-                                    <a
-                                        href=""
-                                        class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded-lg text-xs font-medium transition">
+                                    <button
+                                        type="button"
+                                        @click="$dispatch('editar-vacacion', {{ Js::from([
+                                        'id' => $vacacion->id,
+                                         'url' => route('admin.vacaciones.update', $vacacion->id),
+                                         'fecha_inicio' => \Carbon\Carbon::parse($vacacion->fecha_inicio)->format('Y-m-d'),
+                                         'fecha_fin' => \Carbon\Carbon::parse($vacacion->fecha_fin)->format('Y-m-d'),
+                                         'motivo' => $vacacion->motivo ?? ''
+                                           ]) }})"
+                                        class="cursor-pointer bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded-lg text-xs font-medium transition">
                                         Editar
-                                    </a>
+                                    </button>
+
                                     <!-- ELIMINAR -->
                                     <form
                                         action="{{ route('admin.vacaciones.destroyVacaciones', $vacacion->id) }}"
@@ -292,7 +299,7 @@
                                         @method('DELETE')
                                         <button
                                             type="submit"
-                                            class="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1 rounded-lg text-xs font-medium transition">
+                                            class="bg-red-100 hover:bg-red-200 cursor-pointer text-red-700 px-3 py-1 rounded-lg text-xs font-medium transition">
                                             Eliminar
                                         </button>
                                     </form>
@@ -318,12 +325,12 @@
 
     <div class="bg-white p-6 rounded-xl shadow h-fit">
 
-        <div class="mb-6">
+        <div class="mb-3">
             <h1 class="text-2xl font-bold text-gray-800">
                 Registrar día festivo
             </h1>
 
-            <p class="text-sm text-gray-500 mt-1">
+            <p class="text-sm text-gray-500">
                 Agrega días oficiales o no laborables.
             </p>
         </div>
@@ -379,7 +386,7 @@
 
                 <button
                     type="submit"
-                    class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg">
+                    class="bg-green-600 cursor-pointer hover:bg-green-700 text-white px-5 py-2 rounded-lg">
                     Guardar día festivo
                 </button>
 
@@ -449,11 +456,18 @@
                             <td class="px-4 py-4">
                                 <div class="flex items-center justify-center gap-2">
                                     <!-- EDITAR -->
-                                    <a
-                                        href=""
-                                        class="bg-green-100 hover:bg-green-200 text-green-700 px-3 py-1 rounded-lg text-xs font-medium transition">
+                                    <button
+                                        type="button"
+                                        @click="$dispatch('editar-festivo', {{ Js::from([
+                                        'id' => $dia->id,
+                                        'url' => route('admin.festivos.update', $dia->id),
+                                        'nombre' => $dia->nombre,
+                                        'fecha' => \Carbon\Carbon::parse($dia->fecha)->format('Y-m-d'),
+                                         'oficial' => (bool) $dia->oficial
+                                          ]) }})"
+                                        class="cursor-pointer bg-green-100 hover:bg-green-200 text-green-700 px-3 py-1 rounded-lg text-xs font-medium transition">
                                         Editar
-                                    </a>
+                                    </button>
 
                                     <!-- ELIMINAR -->
                                     <form
@@ -464,7 +478,7 @@
                                         @method('DELETE')
                                         <button
                                             type="submit"
-                                            class="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1 rounded-lg text-xs font-medium transition">
+                                            class="bg-red-100 hover:bg-red-200 cursor-pointer text-red-700 px-3 py-1 rounded-lg text-xs font-medium transition">
                                             Eliminar
                                         </button>
                                     </form>
@@ -482,6 +496,265 @@
                 </table>
             </div>
         </div>
+    </div>
+
+</div>
+
+{{-- ===================================================== --}}
+{{-- MODAL EDITAR VACACIONES --}}
+{{-- ===================================================== --}}
+
+<div x-data="{ abierto: false, id: null, url: '', fecha_inicio: '', fecha_fin: '', motivo: '',
+    abrir(datos) {
+        this.id = datos.id;
+        this.url = datos.url;
+        this.fecha_inicio = datos.fecha_inicio;
+        this.fecha_fin = datos.fecha_fin;
+        this.motivo = datos.motivo || '';
+
+        this.abierto = true;
+    }
+     }"
+    @editar-vacacion.window="abrir($event.detail)">
+
+    <div
+        x-show="abierto"
+        x-cloak
+        x-transition
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+
+        <div
+            @click.outside="abierto = false"
+            class="bg-white w-full max-w-lg rounded-xl shadow-xl p-6">
+
+            <div class="flex justify-between items-center mb-5">
+
+                <h2 class="text-xl font-bold text-gray-800">
+                    Editar vacaciones
+                </h2>
+
+                <button
+                    type="button"
+                    @click="abierto = false"
+                    class="cursor-pointer text-gray-500 hover:text-gray-700 text-xl">
+
+                    &times;
+
+                </button>
+
+            </div>
+
+            <form
+                :action="url"
+                method="POST">
+
+                @csrf
+                @method('PUT')
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+
+                    <div>
+
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Fecha inicio
+                        </label>
+
+                        <input
+                            type="date"
+                            name="fecha_inicio"
+                            x-model="fecha_inicio"
+                            required
+                            class="w-full border-gray-300 rounded-lg shadow-sm">
+
+                    </div>
+
+                    <div>
+
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Fecha fin
+                        </label>
+
+                        <input
+                            type="date"
+                            name="fecha_fin"
+                            x-model="fecha_fin"
+                            required
+                            class="w-full border-gray-300 rounded-lg shadow-sm">
+
+                    </div>
+
+                </div>
+
+                <div class="mb-5">
+
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Observaciones / Motivo
+                    </label>
+
+                    <textarea
+                        name="motivo"
+                        rows="4"
+                        x-model="motivo"
+                        class="w-full border-gray-300 rounded-lg shadow-sm"></textarea>
+
+                </div>
+
+                <div class="flex justify-end gap-3">
+
+                    <button
+                        type="button"
+                        @click="abierto = false"
+                        class="cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2 rounded-lg">
+
+                        Cancelar
+
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg">
+
+                        Guardar cambios
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{{-- ===================================================== --}}
+{{-- MODAL EDITAR DÍA FESTIVO --}}
+{{-- ===================================================== --}}
+
+<div x-data="{
+    abierto: false,
+    id: null,
+    url: '',
+    nombre: '',
+    fecha: '',
+    oficial: false,
+
+    abrir(datos) {
+        this.id = datos.id;
+        this.url = datos.url;
+        this.nombre = datos.nombre;
+        this.fecha = datos.fecha;
+        this.oficial = datos.oficial;
+        this.abierto = true;
+    }}"
+    @editar-festivo.window="abrir($event.detail)">
+
+    <div
+        x-show="abierto"
+        x-cloak
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+
+        <div
+            @click.outside="abierto = false"
+            x-transition
+            class="bg-white w-full max-w-lg rounded-xl shadow-xl p-6">
+
+            <div class="flex justify-between items-center mb-5">
+
+                <h2 class="text-xl font-bold text-gray-800">
+                    Editar día festivo
+                </h2>
+
+                <button
+                    type="button"
+                    @click="abierto = false"
+                    class="text-gray-500 hover:text-gray-700 text-xl">
+
+                    &times;
+
+                </button>
+
+            </div>
+
+            <form
+                :action="url"
+                method="POST">
+
+
+                @csrf
+                @method('PUT')
+
+                <div class="mb-4">
+
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Nombre del día festivo
+                    </label>
+
+                    <input
+                        type="text"
+                        name="nombre"
+                        x-model="nombre"
+                        required
+                        class="w-full border-gray-300 rounded-lg shadow-sm">
+
+                </div>
+
+                <div class="mb-4">
+
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Fecha
+                    </label>
+
+                    <input
+                        type="date"
+                        name="fecha"
+                        x-model="fecha"
+                        required
+                        class="w-full border-gray-300 rounded-lg shadow-sm">
+
+                </div>
+
+                <div class="mb-6 flex items-center gap-3">
+
+                    <input
+                        type="checkbox"
+                        name="oficial"
+                        value="1"
+                        x-model="oficial"
+                        class="rounded border-gray-300 text-green-600">
+
+                    <label class="text-sm text-gray-700">
+                        Día festivo oficial
+                    </label>
+
+                </div>
+
+                <div class="flex justify-end gap-3">
+
+                    <button
+                        type="button"
+                        @click="abierto = false"
+                        class="bg-gray-100 cursor-pointer hover:bg-gray-200 text-gray-700 px-5 py-2 rounded-lg">
+
+                        Cancelar
+
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="bg-green-600 cursor-pointer hover:bg-green-700 text-white px-5 py-2 rounded-lg">
+
+                        Guardar cambios
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
     </div>
 
 </div>

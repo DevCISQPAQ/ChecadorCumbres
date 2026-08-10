@@ -8,6 +8,12 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="shortcut icon" type="image/svg" href="{{ asset('/img/sello-cumbres-en-blanco-01.png') }}">
     <link rel="shortcut icon" sizes="192x192" href="{{ asset('/img/sello-cumbres-en-blanco-01.png') }}">
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
+
 </head>
 
 <body x-data="{
@@ -60,14 +66,14 @@
 
         {{-- Contenido dinámico --}}
         <main class="p-6 flex-1 overflow-y-auto">
-            @if(session('success') || session('error'))
+            @if(session('success') || session('error') || $errors->any())
             <div
                 x-data="{ show: true }"
                 x-init="setTimeout(() => show = false, 4000)"
                 x-show="show"
                 x-transition
                 class="{{ session('success') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }} p-3 rounded mb-4">
-                {{ session('success') ?? session('error') }}
+                {{ session('success') ?? session('error') ?? $errors->first() }}
             </div>
             @endif
             @yield('content')

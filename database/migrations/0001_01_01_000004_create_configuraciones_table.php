@@ -12,7 +12,7 @@ return new class extends Migration
         Schema::create('configuraciones', function (Blueprint $table) {
             $table->id();
             $table->string('clave')->unique(); 
-            $table->string('valor');           
+            $table->string('valor')->nullable();           
             $table->timestamps();
         });
     }

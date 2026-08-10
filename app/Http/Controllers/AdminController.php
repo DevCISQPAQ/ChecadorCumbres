@@ -34,23 +34,14 @@ class AdminController extends Controller
 
             $user = Auth::user();
 
-            // if (!$user->is_admin) {
-            //     return redirect()->route('estudiantes.index');
-            // }
-
             $departamentos = Departamento::orderBy('nombre')->get();
             $conteosAsistencias = $this->obtenerConteosdeAsistencia();
             $hayFiltros = $this->hayFiltros($request);
-
-            // if ($this->hayFiltros($request)) {
-            //     $asistencias = $this->obtenerAsistenciasConDiasFaltantes($request);
-            // } else {
             $asistencias = $this->listarAsistencias($request);
-            // }
+           
 
             return view('admin.asistencias.index', array_merge($conteosAsistencias, compact('asistencias', 'hayFiltros', 'departamentos')));
 
-            // return view('admin.asistencias.index', compact('asistencias'));
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error al cargar la página de Dashboard ' . $e->getMessage());
         }
@@ -59,7 +50,7 @@ class AdminController extends Controller
     public function listarAsistencias(Request $request, $paginado = true)
     {
 
-        // ⚠️ Si se seleccionó SIN HORA DE ENTRADA y SIN HORA DE SALIDA
+        // Si se seleccionó SIN HORA DE ENTRADA y SIN HORA DE SALIDA
         if ((string)$request->hora_entrada === '0' && (string)$request->hora_salida === '0') {
             // Filtrar empleados sin asistencia para la fecha específica (hoy o filtrada)
             $fecha = Carbon::today(); // por defecto
@@ -114,10 +105,6 @@ class AdminController extends Controller
             ->where('estado', 'presente')
             ->count();
 
-        // $asistenciaS = Asistencia::whereDate('fecha', Carbon::today())
-        //     ->whereNotNull('hora_salida')
-        //     ->count();
-
         $retardosHoy = Asistencia::whereDate('fecha', Carbon::today())
             ->where('estado', 'retardo')
             ->count();
@@ -156,8 +143,6 @@ class AdminController extends Controller
         ) {
             $query->whereDate('created_at', Carbon::today());
         }
-
-        // $query->whereHas('checadas');
 
         return $query;
     }
@@ -244,7 +229,6 @@ class AdminController extends Controller
 
         return $query;
     }
-
 
     private function aplicarFiltroDepartamento($query, Request $request)
     {
@@ -451,103 +435,7 @@ class AdminController extends Controller
         }
     }
 
-    //principal
-    // private function obtenerAsistenciasConDiasFaltantes(Request $request)
-    // {
-    //     $fechaInicio = $request->filled('fecha_inicio')
-    //         ? Carbon::parse($request->fecha_inicio)
-    //         : Carbon::today();
-
-    //     $fechaFin = $request->filled('fecha_fin')
-    //         ? Carbon::parse($request->fecha_fin)
-    //         : Carbon::today();
-
-    //     // 1️⃣ Filtrar empleados primero
-    //     $empleadosQuery = Empleado::query();
-
-    //     if ($request->filled('departamento')) {
-    //         $empleadosQuery->where('departamento', $request->departamento);
-    //     }
-
-    //     if ($request->filled('buscar')) {
-    //         $buscar = strtolower($request->buscar);
-    //         $empleadosQuery->where(function ($q) use ($buscar) {
-    //             $q->whereRaw('LOWER(nombres) LIKE ?', ["%$buscar%"])
-    //                 ->orWhereRaw('LOWER(apellido_paterno) LIKE ?', ["%$buscar%"])
-    //                 ->orWhereRaw('LOWER(apellido_materno) LIKE ?', ["%$buscar%"])
-    //                 ->orWhereRaw('LOWER(id) LIKE ?', ["%$buscar%"]);
-    //         });
-    //     }
-
-    //     $empleados = $empleadosQuery->get();
-
-    //     // 2️⃣ Obtener todas las asistencias en el rango
-    //     $asistencias = Asistencia::with('empleado')
-    //         // ->whereBetween('created_at', [$fechaInicio->startOfDay(), $fechaFin->endOfDay()])
-    //         ->whereBetween('fecha', [$fechaInicio->toDateString(), $fechaFin->toDateString()])
-    //         ->get()
-    //         //->groupBy(fn($a) => $a->empleado_id . '_' . $a->created_at->format('Y-m-d'));
-    //         ->groupBy(fn($a) => $a->empleado_id . '_' . $a->fecha);
-
-    //     $periodo = CarbonPeriod::create($fechaInicio, $fechaFin);
-    //     $resultado = collect();
-
-    //     // 3️⃣ Recorrer empleados y fechas
-    //     foreach ($empleados as $empleado) {
-    //         foreach ($periodo as $fecha) {
-    //             $key = $empleado->id . '_' . $fecha->format('Y-m-d');
-
-    //             if (
-    //                 isset($asistencias[$key]) &&
-    //                 in_array($asistencias[$key]->first()->estado, ['presente', 'retardo'])
-    //             ) {
-    //                 $resultado->push($asistencias[$key]->first());
-    //             } else {
-    //                 // Registro virtual sin asistencia
-    //                 $resultado->push((object)[
-    //                     'empleado'      => $empleado,
-    //                     'empleado_id'   => $empleado->id,
-    //                     'created_at'    => $fecha->copy(),
-    //                     'hora_entrada'  => null,
-    //                     'hora_salida'   => null,
-    //                     'retardo'       => null,
-    //                 ]);
-    //             }
-    //         }
-    //     }
-
-    //     // 🔹 Filtrar por retardo (si viene en request)
-    //     if ($request->filled('retardo')) {
-    //         $retardo = (string) $request->retardo; // "1" o "0"
-
-    //         $resultado = $resultado->filter(function ($item) use ($retardo) {
-    //             // excluir registros virtuales
-    //             if ($item->retardo === null) {
-    //                 return false;
-    //             }
-    //             return (string) $item->retardo === $retardo;
-    //         })->values();
-    //     }
-
-    //     // FILTRO HORA DE ENTRADA
-    //     if ($request->filled('hora_entrada')) {
-    //         $horaEntradaFiltro = $request->hora_entrada;
-    //         $resultado = $resultado->filter(function ($item) use ($horaEntradaFiltro) {
-    //             return $horaEntradaFiltro === "1" ? $item->hora_entrada !== null : $item->hora_entrada === null;
-    //         })->values();
-    //     }
-
-    //     // FILTRO HORA DE SALIDA
-    //     if ($request->filled('hora_salida')) {
-    //         $horaSalidaFiltro = $request->hora_salida;
-    //         $resultado = $resultado->filter(function ($item) use ($horaSalidaFiltro) {
-    //             return $horaSalidaFiltro === "1" ? $item->hora_salida !== null : $item->hora_salida === null;
-    //         })->values();
-    //     }
-
-    //     return $resultado;
-    // }
-
+   
     private function obtenerAsistenciasConDiasFaltantes(Request $request)
     {
         $fechaInicio = $request->filled('fecha_inicio')
@@ -559,7 +447,7 @@ class AdminController extends Controller
             : Carbon::today();
 
 
-        // 1️⃣ Filtrar empleados primero
+        // Filtrar empleados primero
         $empleadosQuery = Empleado::query();
 
         if ($request->filled('departamento')) {

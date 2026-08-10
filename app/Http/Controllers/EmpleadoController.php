@@ -16,11 +16,10 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class EmpleadoController extends Controller
 {
+
     public function listarEmpleados(Request $request)
     {
         try {
-
-            //throw new \PDOException('Simulando desconexión de base de datos');
 
             $conteos = $this->obtenerConteosPorDepartamento();
             $empleados = $this->obtenerEmpleados($request);
@@ -77,8 +76,6 @@ class EmpleadoController extends Controller
         $departamentos = Departamento::orderBy('nombre')->get();
 
         return view('admin.empleados.crear', compact('departamentos'));
-
-        //return view('admin.empleados.crear');
     }
 
     public function guardarEmpleado(Request $request)
