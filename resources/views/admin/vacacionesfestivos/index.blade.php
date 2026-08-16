@@ -34,7 +34,7 @@
             </p>
         </div>
 
-        <form action="{{ route('admin.vacaciones.store') }}" method="POST">
+        <form id="guardar-vacaciones" action="{{ route('admin.vacaciones.store') }}" method="POST">
             @csrf
 
             <!-- EMPLEADO -->
@@ -335,7 +335,7 @@
             </p>
         </div>
 
-        <form action="{{ route('admin.diasfestivos.store') }}" method="POST">
+        <form id="guardar-festivo" action="{{ route('admin.diasfestivos.store') }}" method="POST">
             @csrf
 
             <!-- NOMBRE -->

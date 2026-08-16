@@ -1,12 +1,26 @@
 import { showLoader } from './loader.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    const form = document.querySelector('#crear-empleado-form, #editar-empleado-form, #crear-user-form, #editar-user-form, #filtrosForm, #buscar-empleado-form');
-    if (!form) return; // no estás en la vista de crear empleado
 
-    form.addEventListener('submit', () => {
-        showLoader();
+    const forms = document.querySelectorAll(
+        '#crear-empleado-form, ' +
+        '#editar-empleado-form, ' +
+        '#crear-user-form, ' +
+        '#editar-user-form, ' +
+        '#filtrosForm, ' +
+        '#buscar-empleado-form, ' +
+        '#guardar-vacaciones, ' +
+        '#guardar-festivo'
+    );
+
+    if (!forms.length) return;
+
+    forms.forEach(form => {
+
+        form.addEventListener('submit', () => {
+            showLoader();
+        });
+
     });
+
 });
-
-

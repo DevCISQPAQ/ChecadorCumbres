@@ -10,7 +10,7 @@ $roles = [
 <div class="px-6 py-3 bg-white rounded shadow mb-4">
     <h2 class="text-xl font-bold mb-3">Configuraciones</h2>
     <div class="flex gap-5">
-        <a href="{{ route('admin.configuraciones') }}" class="bg-green-100 text-green-700 px-2 py-1 rounded hover:bg-green-200">
+        <a href="{{ route('admin.configuraciones') }}" class="bg-orange-500 text-white px-2 py-1 rounded hover:bg-orange-700">
             Departamentos / Horarios</a>
     </div>
 </div>

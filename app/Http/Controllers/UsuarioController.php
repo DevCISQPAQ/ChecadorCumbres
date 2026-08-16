@@ -264,6 +264,13 @@ class UsuarioController extends Controller
             'nombre' => 'required|string|max:255|unique:departamentos,nombre'
         ]);
 
+        // Verificar límite de departamentos
+        if (Departamento::count() >= 10) {
+            return redirect()
+                ->back()
+                ->with('error', 'No se pueden crear más de 10 departamentos.');
+        }
+
         Departamento::create([
             'nombre' => $request->nombre
         ]);

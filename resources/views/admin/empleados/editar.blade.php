@@ -5,6 +5,7 @@
 <div class="max-w-8xl mx-auto">
 
     <form
+        id="editar-empleado-form"
         method="POST"
         action="{{ route('admin.empleados.actualizar', $empleado->id) }}"
         enctype="multipart/form-data">
@@ -69,6 +70,9 @@
 
                         <input
                             type="text"
+                            maxlength="8"
+                            pattern="[0-9]*"
+                            inputmode="numeric"
                             name="n_empleado"
                             value="{{ old('n_empleado', $empleado->n_empleado) }}"
                             required
@@ -245,8 +249,8 @@
                                 <th class="border p-2">Día</th>
                                 <th class="border p-2">Entrada</th>
                                 <th class="border p-2">Salida</th>
-                                <th class="border p-2">Salida comida</th>
-                                <th class="border p-2">Regreso comida</th>
+                                <!-- <th class="border p-2">Salida comida</th>
+                                <th class="border p-2">Regreso comida</th> -->
                                 <th class="border p-2">Tol.</th>
                                 <th class="border p-2">Activo</th>
                             </tr>
@@ -299,7 +303,7 @@
                                 </td>
 
                                 {{-- SALIDA COMIDA --}}
-                                <td class="border p-1">
+                                <!-- <td class="border p-1">
 
                                     <input
                                         type="time"
@@ -307,10 +311,10 @@
                                         value="{{ $horario->hora_salida_comida ?? '' }}"
                                         class="w-full border rounded px-2 py-1">
 
-                                </td>
+                                </td> -->
 
                                 {{-- REGRESO COMIDA --}}
-                                <td class="border p-1">
+                                <!-- <td class="border p-1">
 
                                     <input
                                         type="time"
@@ -318,10 +322,10 @@
                                         value="{{ $horario->hora_regreso_comida ?? '' }}"
                                         class="w-full border rounded px-2 py-1">
 
-                                </td>
+                                </td> -->
 
                                 {{-- TOLERANCIA --}}
-                                <td class="border p-1">
+                                <td class="border p-1 text-center">
 
                                     <input
                                         type="number"
@@ -364,17 +368,12 @@
             <a
                 href="{{ route('admin.empleados') }}"
                 class="px-4 py-2 text-gray-600 hover:underline">
-
                 Cancelar
-
             </a>
-
             <button
                 type="submit"
                 class="ml-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded">
-
                 Actualizar empleado
-
             </button>
 
         </div>
