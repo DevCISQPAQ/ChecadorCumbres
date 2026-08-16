@@ -41,7 +41,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 
 
-        Route::get('/preferencias/configuraciones', [UsuarioController::class, 'listarDepartamentos'])
+        Route::get('/preferencias/configuraciones', [UsuarioController::class, 'listarConfiguracion'])
             ->name('configuraciones');
 
         Route::post('/preferencias/configuraciones', [UsuarioController::class, 'storeDepartamento'])
@@ -49,10 +49,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::delete('/departamentos/{id}', [UsuarioController::class, 'destroyDepartamento'])
             ->name('departamentos.destroy');
+        Route::put('/departamentos/{departamento}', [UsuarioController::class, 'updateDepartamento'])
+            ->name('departamentos.update');
 
 
         Route::get('/vacacionesfestivos', [UsuarioController::class, 'configurarVacacionesFestivos'])->name('vacacionesfestivos.index');
         Route::post('/configuracion/horario-0730', [UsuarioController::class, 'actualizarHorario0730'])->name('configuracion.horario0730');
+        Route::post('/configuracion/salida-1500', [UsuarioController::class, 'actualizarHorarioSalida1500'])->name('configuracion.horarioSalida1500');
         //Route::post('/preferencias/configuracion', [UsuarioController::class, 'actualizarData'])->name('usuarios.data');
         // vacaciones
         Route::post('/vacaciones/store', [UsuarioController::class, 'store'])->name('vacaciones.store');

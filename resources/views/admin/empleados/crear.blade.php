@@ -250,7 +250,7 @@
                                 <td class="border p-1 text-center">
                                     <input
                                         type="number"
-                                        value="10"
+                                        value="6"
                                         min="0"
                                         name="horarios[{{ $numero }}][tolerancia_minutos]"
                                         class="w-16 border rounded px-1 py-1">

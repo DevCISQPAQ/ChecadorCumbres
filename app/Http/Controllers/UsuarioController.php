@@ -280,10 +280,11 @@ class UsuarioController extends Controller
             ->with('success', 'Departamento creado correctamente');
     }
 
-    public function listarDepartamentos()
+    public function listarConfiguracion()
     {
         try {
 
+            // AJUSTE DE ENTRADA
             $ajusteActivo = Configuracion::where(
                 'clave',
                 'ajuste_horario_0730'
@@ -295,15 +296,32 @@ class UsuarioController extends Controller
             )->value('valor');
 
 
+            // AJUSTE DE SALIDA
+            $ajusteSalidaActivo = Configuracion::where(
+                'clave',
+                'ajuste_horario_salida_1500'
+            )->value('valor');
+
+            $horaSalidaAjustada = Configuracion::where(
+                'clave',
+                'hora_salida_ajustada_1500'
+            )->value('valor');
+
 
             $departamentos = Departamento::all();
+
             return view('admin.usuarios.configuraciones', compact(
                 'departamentos',
                 'ajusteActivo',
-                'horaAjustada'
+                'horaAjustada',
+                'ajusteSalidaActivo',
+                'horaSalidaAjustada'
             ));
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error al cargar la página de Usuarios ' . $e->getMessage());
+            return redirect()->back()->with(
+                'error',
+                'Error al cargar la página de Usuarios ' . $e->getMessage()
+            );
         }
     }
 
@@ -364,8 +382,6 @@ class UsuarioController extends Controller
             'Día festivo actualizado correctamente.'
         );
     }
-
-
 
     public function generarVacacionesExcel(Request $request)
     {
@@ -547,5 +563,56 @@ class UsuarioController extends Controller
             'success',
             'Configuración de horario actualizada correctamente.'
         );
+    }
+
+    public function actualizarHorarioSalida1500(Request $request)
+    {
+        $request->validate([
+            'hora_salida_ajustada_1500' => [
+                'required',
+                'date_format:H:i'
+            ],
+        ]);
+
+        Configuracion::updateOrCreate(
+            [
+                'clave' => 'ajuste_horario_salida_1500'
+            ],
+            [
+                'valor' => $request->has('ajuste_horario_salida_1500')
+                    ? '1'
+                    : '0'
+            ]
+        );
+
+        Configuracion::updateOrCreate(
+            [
+                'clave' => 'hora_salida_ajustada_1500'
+            ],
+            [
+                'valor' => $request->hora_salida_ajustada_1500
+            ]
+        );
+
+        return back()->with(
+            'success',
+            'Configuración de horario de salida actualizada correctamente.'
+        );
+    }
+
+    public function updateDepartamento(Request $request, $id)
+    {
+        $request->validate([
+            'nombre' => 'required|string|max:255',
+        ]);
+
+        $departamento = Departamento::findOrFail($id);
+
+        $departamento->nombre = $request->nombre;
+        $departamento->save();
+
+        return redirect()
+            ->route('admin.configuraciones')
+            ->with('success', 'Departamento actualizado correctamente.');
     }
 }

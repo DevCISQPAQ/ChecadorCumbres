@@ -22,8 +22,9 @@ return new class extends Migration
             $table->string('apellido_materno');
 
             $table->foreignId('departamento_id')
+                ->nullable()
                 ->constrained('departamentos')
-                ->cascadeOnDelete();
+                ->nullOnDelete();
 
             $table->string('puesto');
 

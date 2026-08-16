@@ -114,7 +114,8 @@ class HomeController extends Controller
         // Entrada
         if ($total === 0) {
 
-            $horaSalida = $horario->hora_salida; // "HH:MM"
+            // $horaSalida = $horario->hora_salida; // "HH:MM"
+            $horaSalida = $this->obtenerHoraSalidaEfectiva($horario);
             if ($ahora->format('H:i') > $horaSalida) {
                 return 'salida';
             }
@@ -131,7 +132,8 @@ class HomeController extends Controller
                 return null;
             }
 
-            $horaSalida = $horario->hora_salida;
+            // $horaSalida = $horario->hora_salida;
+            $horaSalida = $this->obtenerHoraSalidaEfectiva($horario);
 
             // si aún no es hora de salida
             if ($ahora->format('H:i') < $horaSalida) {
@@ -390,5 +392,33 @@ class HomeController extends Controller
 
         // Todos los demás conservan su horario original
         return $horario->hora_entrada;
+    }
+
+    private function obtenerHoraSalidaEfectiva($horario)
+    {
+        if (!$horario) {
+            return null;
+        }
+
+        $ajusteActivo = Configuracion::where(
+            'clave',
+            'ajuste_horario_salida_1500'
+        )->value('valor');
+
+        $horaAjustada = Configuracion::where(
+            'clave',
+            'hora_salida_ajustada_1500'
+        )->value('valor');
+
+        // Si el ajuste está activo y el horario original es 15:00
+        if (
+            $ajusteActivo == '1' &&
+            Carbon::parse($horario->hora_salida)->format('H:i') === '15:00'
+        ) {
+            return $horaAjustada;
+        }
+
+        // Todos los demás conservan su horario original
+        return $horario->hora_salida;
     }
 }

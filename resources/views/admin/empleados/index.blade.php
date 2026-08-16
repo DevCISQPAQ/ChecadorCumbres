@@ -46,7 +46,7 @@
 
                 @if(request()->has('buscar') && request('buscar') !== '')
                 <a href="{{ route('admin.empleados') }}"
-                    class="px-4 py-2 bg-red-600 rounded hover:bg-red-400 text-white w-full md:w-auto text-center">
+                    class="px-4 py-1 bg-red-600 rounded hover:bg-red-400 text-white w-full md:w-auto text-center">
                     Borrar filtros
                 </a>
                 @endif
@@ -95,7 +95,7 @@
                     <tr class="border border-gray-300 rounded-lg hover:bg-gray-50">
                         <td class="p-3 text-center">{{ $empleado->n_empleado }}</td>
                         <td class="p-3 text-center">{{ $empleado ? $empleado->nombres . ' ' . $empleado->apellido_paterno . ' ' . $empleado->apellido_materno : 'N/A' }}</td>
-                        <td class="p-3 text-center">{{ $empleado->departamento->nombre }}</td>
+                        <td class="p-3 text-center">{{ $empleado->departamento?->nombre }}</td>
                         <td class="p-3 text-center">{{ $empleado->puesto }}</td>
                         <td class="p-3 text-center max-w-[200px] truncate">{{ $empleado->email }}</td>
                         <template x-if="editarActivo">

@@ -41,7 +41,7 @@ class EmpleadoController extends Controller
                 $q->whereRaw('LOWER(nombres) LIKE ?', ["%{$buscar}%"])
                     ->orWhereRaw('LOWER(apellido_paterno) LIKE ?', ["%{$buscar}%"])
                     ->orWhereRaw('LOWER(apellido_materno) LIKE ?', ["%{$buscar}%"])
-                    ->orWhereRaw('LOWER(id) LIKE ?', ["%{$buscar}%"])
+                    ->orWhereRaw('LOWER(n_empleado) LIKE ?', ["%{$buscar}%"])
                     ->orWhereHas('departamento', function ($d) use ($buscar) {
                         $d->whereRaw('LOWER(nombre) LIKE ?', ["%{$buscar}%"]);
                     });

@@ -330,7 +330,7 @@
                                     <input
                                         type="number"
                                         min="0"
-                                        value="{{ $horario->tolerancia_minutos ?? 10 }}"
+                                        value="{{ $horario->tolerancia_minutos ?? 6 }}"
                                         name="horarios[{{ $numero }}][tolerancia_minutos]"
                                         class="w-16 border rounded px-2 py-1">
 

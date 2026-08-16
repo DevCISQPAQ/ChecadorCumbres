@@ -38,10 +38,9 @@ class AdminController extends Controller
             $conteosAsistencias = $this->obtenerConteosdeAsistencia();
             $hayFiltros = $this->hayFiltros($request);
             $asistencias = $this->listarAsistencias($request);
-           
+
 
             return view('admin.asistencias.index', array_merge($conteosAsistencias, compact('asistencias', 'hayFiltros', 'departamentos')));
-
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error al cargar la página de Dashboard ' . $e->getMessage());
         }
@@ -64,7 +63,7 @@ class AdminController extends Controller
             });
 
             if ($request->filled('departamento')) {
-                $query->where('departamento', $request->departamento);
+                $query->where('departamento_id', $request->departamento);
             }
 
             if ($paginado) {
@@ -156,7 +155,7 @@ class AdminController extends Controller
                 $q->whereRaw('LOWER(nombres) LIKE ?', ["%{$buscar}%"])
                     ->orWhereRaw('LOWER(apellido_paterno) LIKE ?', ["%{$buscar}%"])
                     ->orWhereRaw('LOWER(apellido_materno) LIKE ?', ["%{$buscar}%"])
-                    ->orWhereRaw('LOWER(id) LIKE ?', ["%{$buscar}%"]);
+                    ->orWhereRaw('LOWER(n_empleado) LIKE ?', ["%{$buscar}%"]);
             });
         }
 
@@ -356,7 +355,7 @@ class AdminController extends Controller
                             $data[] = [
                                 $empleado->id ?? '-',
                                 $empleado->nombres . ' ' . ($empleado->apellido_paterno ?? '') . ' ' . ($empleado->apellido_materno ?? ''),
-                                $empleado->departamento->nombre ?? '-',
+                                $empleado->departamento?->nombre ?? '-',
                                 $empleado->email ?? '-',
                                 $asistencia->created_at ? $asistencia->created_at->format('d/m/Y') : '-',
                                 $asistencia->hora_entrada ? $asistencia->hora_entrada->format('H:i') : 'Sin registro',
@@ -435,7 +434,7 @@ class AdminController extends Controller
         }
     }
 
-   
+
     private function obtenerAsistenciasConDiasFaltantes(Request $request)
     {
         $fechaInicio = $request->filled('fecha_inicio')
@@ -451,7 +450,7 @@ class AdminController extends Controller
         $empleadosQuery = Empleado::query();
 
         if ($request->filled('departamento')) {
-            $empleadosQuery->where('departamento', $request->departamento);
+            $empleadosQuery->where('departamento_id', $request->departamento);
         }
 
         if ($request->filled('buscar')) {
