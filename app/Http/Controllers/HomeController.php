@@ -7,13 +7,18 @@ use App\Models\Empleado;
 use App\Models\Asistencia;
 use Illuminate\Http\Request;
 use App\Models\Configuracion;
-
+use App\Services\AsistenciaService;
 use App\Models\Checada;
 use App\Models\HorarioEmpleado;
 use Carbon\Carbon;
 
 class HomeController extends Controller
 {
+
+    public function __construct(
+        private AsistenciaService $asistenciaService
+    ) {}
+
     public function showWelcome()
     {
         return view('welcome');
@@ -76,7 +81,8 @@ class HomeController extends Controller
         ]);
 
         // recalcular asistencia del día (opcional pero recomendado)
-        $this->generarAsistenciaDelDia($empleado, $hoy);
+        //$this->generarAsistenciaDelDia($empleado, $hoy);
+        $this->asistenciaService->generarAsistenciaDelDia($empleado);
 
         return [
             'success' => true,
@@ -115,7 +121,8 @@ class HomeController extends Controller
         if ($total === 0) {
 
             // $horaSalida = $horario->hora_salida; // "HH:MM"
-            $horaSalida = $this->obtenerHoraSalidaEfectiva($horario);
+            //$horaSalida = $this->obtenerHoraSalidaEfectiva($horario);
+            $horaSalida = $this->asistenciaService->obtenerHoraSalidaEfectiva($horario);
             if ($ahora->format('H:i') > $horaSalida) {
                 return 'salida';
             }
@@ -133,8 +140,8 @@ class HomeController extends Controller
             }
 
             // $horaSalida = $horario->hora_salida;
-            $horaSalida = $this->obtenerHoraSalidaEfectiva($horario);
-
+            // $horaSalida = $this->obtenerHoraSalidaEfectiva($horario);
+            $horaSalida = $this->asistenciaService->obtenerHoraSalidaEfectiva($horario);
             // si aún no es hora de salida
             if ($ahora->format('H:i') < $horaSalida) {
                 return 'salida_temprana';
@@ -146,8 +153,6 @@ class HomeController extends Controller
         // ya no permitir más de 2
         return null;
     }
-
-
 
     private function toggleEntradaSalidaLibre($empleado, $ahora)
     {
@@ -167,7 +172,7 @@ class HomeController extends Controller
         };
     }
 
-
+    /*
     private function generarAsistenciaDelDia($empleado, $fecha) //validar lo de horas trabajadas
     {
         // CHECADAS
@@ -325,9 +330,9 @@ class HomeController extends Controller
                 'minutos_retardo' => $minutosRetardo
             ]
         );
-    }
+    }*/
 
-
+    /*
     private function estaEnVacaciones($empleado, $fecha)
     {
         return \App\Models\Vacacion::where('empleado_id', $empleado->id)
@@ -336,11 +341,10 @@ class HomeController extends Controller
             ->exists();
     }
 
-
     private function esDiaFestivo($fecha)
     {
         return \App\Models\DiaFestivo::whereDate('fecha', $fecha)->exists();
-    }
+    }*/
 
     /*
     |--------------------------------------------------------------------------
@@ -359,13 +363,15 @@ class HomeController extends Controller
             'tipo' => 'salida',
         ]);
 
-        $this->generarAsistenciaDelDia($empleado, $hoy);
+        //  $this->generarAsistenciaDelDia($empleado, $hoy);
+        $this->asistenciaService->generarAsistenciaDelDia($empleado);
         return response()->json([
             'success' => true,
             'message' => 'Salida confirmada.'
         ]);
     }
 
+    /*
     private function obtenerHoraEntradaEfectiva($horario)
     {
         if (!$horario) {
@@ -420,5 +426,5 @@ class HomeController extends Controller
 
         // Todos los demás conservan su horario original
         return $horario->hora_salida;
-    }
+    }*/
 }

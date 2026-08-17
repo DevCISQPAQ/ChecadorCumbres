@@ -20,6 +20,7 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use Carbon\CarbonPeriod;
+use Illuminate\Support\Facades\DB;
 
 
 class AdminController extends Controller
@@ -183,47 +184,114 @@ class AdminController extends Controller
         return $query;
     }
 
+    // private function aplicarFiltroHoraEntrada($query, Request $request)
+    // {
+    //     if ($request->filled('hora_entrada') && in_array($request->hora_entrada, ['0', '1'])) {
+
+    //         if ($request->hora_entrada == '1') {
+
+    //             // Tiene entrada
+    //             $query->whereHas('checadas', function ($q) {
+    //                 $q->where('tipo', 'entrada');
+    //                 $q->where('fecha_hora', today());
+    //             });
+    //         } else {
+
+    //             // No tiene entrada
+    //             $query->whereDoesntHave('checadas', function ($q) {
+    //                 $q->where('tipo', 'entrada');
+    //                 $q->where('fecha_hora', today());
+    //             });
+    //         }
+    //     }
+
+    //     return $query;
+    // }
+
     private function aplicarFiltroHoraEntrada($query, Request $request)
     {
-        if ($request->filled('hora_entrada') && in_array($request->hora_entrada, ['0', '1'])) {
+        if (
+            !$request->filled('hora_entrada') ||
+            !in_array($request->hora_entrada, ['0', '1'])
+        ) {
+            return $query;
+        }
 
-            if ($request->hora_entrada == '1') {
+        if ($request->hora_entrada === '1') {
 
-                // Tiene entrada
-                $query->whereHas('checadas', function ($q) {
-                    $q->where('tipo', 'entrada');
-                    $q->where('fecha_hora', today());
-                });
-            } else {
+            $query->whereHas('checadas', function ($q) {
+                $q->where('tipo', 'entrada')
+                    ->whereDate(
+                        'fecha_hora',
+                        DB::raw('asistencias.fecha')
+                    );
+            });
+        } else {
 
-                // No tiene entrada
-                $query->whereDoesntHave('checadas', function ($q) {
-                    $q->where('tipo', 'entrada');
-                    $q->where('fecha_hora', today());
-                });
-            }
+            $query->whereDoesntHave('checadas', function ($q) {
+                $q->where('tipo', 'entrada')
+                    ->whereDate(
+                        'fecha_hora',
+                        DB::raw('asistencias.fecha')
+                    );
+            });
         }
 
         return $query;
     }
 
+    // private function aplicarFiltroHoraSalida($query, Request $request)
+    // {
+    //     if ($request->filled('hora_salida') && in_array($request->hora_salida, ['0', '1'])) {
+
+    //         if ($request->hora_salida == '1') {
+
+    //             $query->whereHas('checadas', function ($q) {
+    //                 $q->where('tipo', 'salida');
+    //                 $q->where('fecha_hora', today());
+    //             });
+    //         } else {
+
+    //             $query->whereDoesntHave('checadas', function ($q) {
+    //                 $q->where('tipo', 'salida');
+    //                 $q->where('fecha_hora', today());
+    //             });
+    //         }
+    //     }
+
+    //     return $query;
+    // }
+
+
     private function aplicarFiltroHoraSalida($query, Request $request)
     {
-        if ($request->filled('hora_salida') && in_array($request->hora_salida, ['0', '1'])) {
+        if (
+            !$request->filled('hora_salida') ||
+            !in_array($request->hora_salida, ['0', '1'])
+        ) {
+            return $query;
+        }
 
-            if ($request->hora_salida == '1') {
+        $tieneSalida = $request->hora_salida === '1';
 
-                $query->whereHas('checadas', function ($q) {
-                    $q->where('tipo', 'salida');
-                    $q->where('fecha_hora', today());
-                });
-            } else {
+        if ($tieneSalida) {
 
-                $query->whereDoesntHave('checadas', function ($q) {
-                    $q->where('tipo', 'salida');
-                    $q->where('fecha_hora', today());
-                });
-            }
+            $query->whereHas('checadas', function ($q) {
+                $q->where('tipo', 'salida')
+                    ->whereDate(
+                        'fecha_hora',
+                        DB::raw('asistencias.fecha')
+                    );
+            });
+        } else {
+
+            $query->whereDoesntHave('checadas', function ($q) {
+                $q->where('tipo', 'salida')
+                    ->whereDate(
+                        'fecha_hora',
+                        DB::raw('asistencias.fecha')
+                    );
+            });
         }
 
         return $query;
