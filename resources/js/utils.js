@@ -20,6 +20,11 @@ export function actualizarEmpleadoConSaludo(empleado, nombreElement, fotoElement
     fotoElement.src = empleado.foto ? `/img/empleados/${empleado.foto}` : `/img/escudo-gris.png`;
 }
 
+//
+
+
+
+//
 export function mostrarModalConfirmacion(mensaje) {
     return new Promise((resolve) => {
         hideLoader();
@@ -61,6 +66,109 @@ export function mostrarModalConfirmacion(mensaje) {
     });
 }
 
+///
+
+export async function actualizarCsrfToken() {
+
+    const response = await fetch('/csrf-token', {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        credentials: 'same-origin',
+        cache: 'no-store',
+    });
+
+    if (!response.ok) {
+        throw new Error('No se pudo actualizar el token CSRF.');
+    }
+
+    const data = await response.json();
+
+    if (!data.token) {
+        throw new Error('Laravel no devolvió un token CSRF.');
+    }
+
+    const meta = document.querySelector('meta[name="csrf-token"]');
+
+    if (meta) {
+        meta.setAttribute('content', data.token);
+    }
+
+    return data.token;
+}
+
+function obtenerTokenCsrfActual() {
+
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    if (!meta) {
+        throw new Error('No se encontró el token CSRF.');
+    }
+    return meta.getAttribute('content');
+}
+
+setInterval(async () => {
+    try {
+        await actualizarCsrfToken();
+        console.log('Token CSRF renovado correctamente.');
+    } catch (error) {
+        console.error(
+            'No se pudo renovar el token CSRF:',
+            error
+        );
+    }
+}, 30 * 60 * 1000);
+
+
+async function postConCsrf(url, opciones = {}) {
+
+    let token = obtenerTokenCsrfActual();
+    let response = await fetch(url, {
+        ...opciones,
+
+        headers: {
+            ...opciones.headers,
+            'X-CSRF-TOKEN': token,
+        },
+
+        credentials: 'same-origin',
+    });
+
+    if (response.status === 419) {
+        console.warn(
+            'Token CSRF expirado. Renovando token y reintentando...'
+        );
+
+        try {
+
+            token = await actualizarCsrfToken();
+
+        } catch (error) {
+
+            console.error(
+                'No se pudo renovar el token CSRF:',
+                error
+            );
+
+            throw new Error(
+                'La sesión expiró. No se pudo renovar automáticamente.'
+            );
+        }
+        response = await fetch(url, {
+            ...opciones,
+            headers: {
+                ...opciones.headers,
+                'X-CSRF-TOKEN': token,
+            },
+            credentials: 'same-origin',
+        });
+    }
+    return response;
+}
+
+//
+
 // Maneja lógica común para registrar asistencia y mostrar resultados
 export async function manejarAsistencia(empleadoId, elementos, options = {}) {
     showLoader();
@@ -75,9 +183,19 @@ export async function manejarAsistencia(empleadoId, elementos, options = {}) {
             headers: {
                 'Accept': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                //     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
             },
+            credentials: 'same-origin',
+            cache: 'no-store',
         });
+
+        if (!response.ok) {
+
+            throw new Error(
+                `Error HTTP ${response.status}`
+            );
+        }
+
 
         const data = await response.json();
         if (data.success === false) {
@@ -95,19 +213,32 @@ export async function manejarAsistencia(empleadoId, elementos, options = {}) {
             if (options.pauseQr) options.pauseQr();
             const confirmar = await mostrarModalConfirmacion(asistencia.message);
             if (confirmar) {
-                const respSalida = await fetch(`/asistencia/${empleadoId}/salida`, {
+                // const respSalida = await fetch(`/asistencia/${empleadoId}/salida`, {
+                const respSalida = await postConCsrf(`/asistencia/${empleadoId}/salida`, {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                     },
                     body: JSON.stringify({}),
                 });
 
+                // if (!respSalida.ok) {
+                //     const errSalida = await respSalida.json();
+                //     throw new Error(errSalida.message || 'Error al marcar salida');
+                // }
                 if (!respSalida.ok) {
-                    const errSalida = await respSalida.json();
-                    throw new Error(errSalida.message || 'Error al marcar salida');
+                    let errSalida = null;
+                    try {
+                        errSalida =
+                            await respSalida.json();
+                    } catch (e) {
+                        // La respuesta no era JSON
+                    }
+                    throw new Error(
+                        errSalida?.message ||
+                        `Error al marcar salida (${respSalida.status})`
+                    );
                 }
 
                 const dataSalida = await respSalida.json();
