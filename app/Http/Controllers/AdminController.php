@@ -420,15 +420,42 @@ class AdminController extends Controller
                         foreach ($this->asistencias as $asistencia) {
                             $empleado = $asistencia->empleado ?? $asistencia;
 
+                            $estado = match ($asistencia->estado ?? null) {
+                                'presente'   => 'Presente',
+                                'retardo'    => 'Retardo',
+                                'falta'      => 'Falta',
+                                'vacaciones' => 'Vacaciones',
+                                'permiso'    => 'Permiso',
+                                'libre'      => 'Libre',
+                                'festivo'    => 'Festivo',
+                                'fin_semana' => 'Fin de semana',
+                                default      => 'Sin registro',
+                            };
+
+                            $finDeSemana = $asistencia->estado === 'libre'
+                                && !$asistencia->hora_entrada
+                                && !$asistencia->hora_salida
+                                && in_array(date('N', strtotime($asistencia->fecha)), [6, 7]);
+
                             $data[] = [
-                                $empleado->id ?? '-',
+                                $empleado->n_empleado ?? '-',
                                 $empleado->nombres . ' ' . ($empleado->apellido_paterno ?? '') . ' ' . ($empleado->apellido_materno ?? ''),
                                 $empleado->departamento?->nombre ?? '-',
                                 $empleado->email ?? '-',
                                 $asistencia->created_at ? $asistencia->created_at->format('d/m/Y') : '-',
-                                $asistencia->hora_entrada ? $asistencia->hora_entrada->format('H:i') : 'Sin registro',
-                                $asistencia->hora_salida ? $asistencia->hora_salida->format('H:i') : 'Sin registro',
-                                $asistencia->estado ?? 'falta'
+                                // CAMBIAR ESTAS DOS LÍNEAS
+                                $asistencia->estado === 'libre'
+                                    ? ($finDeSemana ? 'Fin de semana' : 'Libre')
+                                    : ($asistencia->hora_entrada
+                                        ? $asistencia->hora_entrada->format('H:i')
+                                        : 'Sin registro'),
+
+                                $asistencia->estado === 'libre'
+                                    ? ($finDeSemana ? 'Fin de semana' : 'Libre')
+                                    : ($asistencia->hora_salida
+                                        ? $asistencia->hora_salida->format('H:i')
+                                        : 'Sin registro'),
+                                $estado
                             ];
                         }
 
@@ -528,12 +555,14 @@ class AdminController extends Controller
                 $q->whereRaw('LOWER(nombres) LIKE ?', ["%$buscar%"])
                     ->orWhereRaw('LOWER(apellido_paterno) LIKE ?', ["%$buscar%"])
                     ->orWhereRaw('LOWER(apellido_materno) LIKE ?', ["%$buscar%"])
-                    ->orWhereRaw('LOWER(id) LIKE ?', ["%$buscar%"]);
+                    ->orWhereRaw('LOWER(n_empleado) LIKE ?', ["%$buscar%"]);
             });
         }
 
-        $empleados = $empleadosQuery->get();
-
+        //$empleados = $empleadosQuery->get();
+        $empleados = $empleadosQuery
+            ->with('horarios')
+            ->get();
 
         // 2️⃣ Obtener asistencias en el rango
         $asistencias = Asistencia::with('empleado')
@@ -619,6 +648,11 @@ class AdminController extends Controller
                 if (isset($asistencias[$key])) {
                     $resultado->push($asistencias[$key]->first());
                 } else {
+                    // Determinar si es sábado/domingo no laborable
+                    $esFinDeSemana = $this->esFinDeSemanaNoLaborable(
+                        $empleado,
+                        $fecha
+                    );
                     // Registro virtual sin asistencia
                     $resultado->push((object)[
                         'empleado'      => $empleado,
@@ -628,7 +662,9 @@ class AdminController extends Controller
                         'hora_entrada'  => null,
                         'hora_salida'   => null,
                         'retardo'       => null,
-                        'estado'        => 'falta',
+                        'estado'        => $esFinDeSemana
+                            ? 'fin_semana'
+                            : 'falta',
                     ]);
                 }
             }
@@ -737,5 +773,22 @@ class AdminController extends Controller
             || $request->filled('hora_salida')
             || $request->filled('retardo')
             || $request->filled('estado');
+    }
+
+    private function esFinDeSemanaNoLaborable($empleado, Carbon $fecha): bool
+    {
+        // 1 = lunes ... 6 = sábado ... 7 = domingo
+        $diaSemana = $fecha->dayOfWeekIso;
+
+        // Solamente nos interesa sábado y domingo
+        if (!in_array($diaSemana, [6, 7])) {
+            return false;
+        }
+
+        // Buscar si el empleado tiene horario activo ese día
+        return !$empleado->horarios
+            ->where('dia_semana', $diaSemana)
+            ->where('activo', true)
+            ->isNotEmpty();
     }
 }

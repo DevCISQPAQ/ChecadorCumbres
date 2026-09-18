@@ -89,6 +89,12 @@ $primerEmpleado = null;
                 @forelse($asistencias as $asistencia)
                 @php
                 $empleado = $asistencia->empleado;
+
+                $finDeSemana = $asistencia->estado === 'libre'
+                && !$asistencia->hora_entrada
+                && !$asistencia->hora_salida
+                && in_array(date('N', strtotime($asistencia->fecha)), [6, 7]);
+
                 if ($asistencia->estado === 'retardo') {
                 $totalRetardos++;
                 }
@@ -118,19 +124,21 @@ $primerEmpleado = null;
 
                 @endphp
                 <tr class="items">
-                    <td>{{ $asistencia->empleado_id ?? ($empleado->id ?? '-') }}</td>
+                    <td>{{ $asistencia->n_empleado ?? ($empleado->n_empleado ?? '-') }}</td>
                     <td>{{ $empleado ? $empleado->nombres . ' ' . $empleado->apellido_paterno . ' ' . $empleado->apellido_materno : 'N/A' }}</td>
                     <td>{{ $empleado->departamento->nombre ?? 'N/A' }}</td>
                     {{-- Columna de fecha --}}
                     <td>{{ $asistencia->created_at ? $asistencia->created_at->format('d/m/Y') : '-' }}</td>
                     {{-- Hora de entrada --}}
-                    <td @if(!$asistencia->hora_entrada) style="color: red;" @endif>
-                        {{ $asistencia->hora_entrada ? \Carbon\Carbon::parse($asistencia->hora_entrada)->format('H:i') : 'Sin registro' }}
+                    <td @if(!$asistencia->hora_entrada && $asistencia->estado !== 'libre') style="color: red;" @endif>
+                        {{ $asistencia->estado === 'libre' ? ( $finDeSemana ? 'Fin de semana' : 'Libre' ) : ($asistencia->hora_entrada ? \Carbon\Carbon::parse($asistencia->hora_entrada)->format('H:i') : 'Sin registro') }}
                     </td>
+
                     {{-- Hora de salida --}}
-                    <td @if(!$asistencia->hora_salida) style="color: red;" @endif>
-                        {{ $asistencia->hora_salida ? \Carbon\Carbon::parse($asistencia->hora_salida)->format('H:i') : 'Sin registro' }}
+                    <td @if(!$asistencia->hora_salida && $asistencia->estado !== 'libre') style="color: red;" @endif>
+                        {{ $asistencia->estado === 'libre' ? ( $finDeSemana ? 'Fin de semana' : 'Libre' ) : ($asistencia->hora_salida ? \Carbon\Carbon::parse($asistencia->hora_salida)->format('H:i') : 'Sin registro') }}
                     </td>
+                    
                     {{-- Estado --}}
                     <td style="color: {{ $colorEstado }}; font-weight: bold;">
                         {{ $textoEstado }}

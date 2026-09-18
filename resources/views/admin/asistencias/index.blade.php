@@ -125,8 +125,8 @@
                         <option value="falta">Falta</option>
                         <option value="vacaciones">Vacaciones</option>
                         <option value="permiso">Permiso</option>
-                        <option value="libre">Libre</option> 
-                         <option value="festivo">Festivo</option> 
+                        <option value="libre">Libre</option>
+                        <option value="festivo">Festivo</option>
 
                     </select>
                 </div>
@@ -318,24 +318,18 @@
                         @endif
 
                         <!-- ENTRADA -->
-                        <td class="p-3 text-center {{ !$entrada ? 'text-red-600 font-semibold' : '' }}">
+                        <td class="p-3 text-center {{ !$entrada && $asistencia->estado !== 'libre' ? 'text-red-600 font-semibold' : '' }}">
 
-                            {{ $entrada
-                                ? \Carbon\Carbon::parse($entrada->fecha_hora)->format('H:i')
-                                : 'Sin registro'
-                            }}
+                            {{ $asistencia->estado === 'libre' && !$entrada && in_array(\Carbon\Carbon::parse($asistencia->fecha)->dayOfWeekIso, [6, 7]) ? 'Fin de semana'  : ($asistencia->estado === 'libre' && !$entrada ? 'Libre' : ($entrada ? \Carbon\Carbon::parse($entrada->fecha_hora)->format('H:i') : 'Sin registro')) }}
 
                         </td>
 
                         <!-- SALIDA -->
-                        <td class="p-3 text-center {{ !$salida ? 'text-red-600 font-semibold' : '' }}">
+                        <td class="p-3 text-center {{ !$salida && $asistencia->estado !== 'libre' ? 'text-red-600 font-semibold' : '' }}">
 
-                            {{ $salida
-                                ? \Carbon\Carbon::parse($salida->fecha_hora)->format('H:i')
-                                : 'Sin registro'
-                            }}
-
+                            {{ $asistencia->estado === 'libre' && !$salida && in_array(\Carbon\Carbon::parse($asistencia->fecha)->dayOfWeekIso, [6, 7]) ? 'Fin de semana' : ($asistencia->estado === 'libre' && !$salida ? 'Libre' : ($salida ? \Carbon\Carbon::parse($salida->fecha_hora)->format('H:i') : 'Sin registro')) }}
                         </td>
+
 
                         <!-- ESTADO -->
                         <td class="p-3 text-center font-semibold
@@ -368,6 +362,10 @@
 
                                 @case('festivo')
                                     text-gray-600
+                                @break
+
+                                @case('fin_semana')
+                                text-orange-400
                                 @break
 
                                 @default
@@ -404,6 +402,10 @@
 
                             @case('libre')
                             Libre
+                            @break
+
+                            @case('fin_semana')
+                            Fin de semana
                             @break
 
                             @default
