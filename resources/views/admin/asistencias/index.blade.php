@@ -441,9 +441,7 @@
 
     <!-- Paginación -->
     <div class="mt-4">
-        @if(!$hayFiltros)
         {{ $asistencias->links() }}
-        @endif
     </div>
 </div>
 
