@@ -221,19 +221,14 @@
                                 Empleado
                             </th>
 
-                            <th align="left"
+                            <th align="center"
                                 style="padding: 8px; border-bottom: 2px solid #ddd; background-color: #ecf0f1;">
-                                Fecha
+                                Faltas
                             </th>
 
                             <th align="left"
                                 style="padding: 8px; border-bottom: 2px solid #ddd; background-color: #ecf0f1;">
-                                Día
-                            </th>
-
-                            <th align="left"
-                                style="padding: 8px; border-bottom: 2px solid #ddd; background-color: #ecf0f1;">
-                                Motivo
+                                Fechas
                             </th>
 
                         </tr>
@@ -249,17 +244,21 @@
 
                         $empleado = $registro['empleado'];
 
+                        $totalFaltas = count($registro['faltas']);
+
                         @endphp
 
 
-                        @foreach ($registro['faltas'] as $falta)
-
                         <tr>
+
+                            {{-- NÚMERO DE EMPLEADO --}}
 
                             <td style="padding: 8px; border-bottom: 1px solid #eee;">
                                 {{ $empleado->n_empleado }}
                             </td>
 
+
+                            {{-- NOMBRE DEL EMPLEADO --}}
 
                             <td style="padding: 8px; border-bottom: 1px solid #eee;">
 
@@ -269,29 +268,36 @@
                             </td>
 
 
+                            {{-- TOTAL DE FALTAS --}}
+
+                            <td align="center"
+                                style="padding: 8px;
+                       border-bottom: 1px solid #eee;
+                       color: #c0392b;
+                       font-weight: bold;">
+
+                                {{ $totalFaltas }}
+
+                            </td>
+
+
+                            {{-- FECHAS --}}
+
                             <td style="padding: 8px; border-bottom: 1px solid #eee;">
+
+                                @foreach ($registro['faltas'] as $index => $falta)
 
                                 {{ \Carbon\Carbon::parse($falta['fecha'])->format('d/m/Y') }}
 
-                            </td>
+                                @if (!$loop->last)
+                                ,
+                                @endif
 
-
-                            <td style="padding: 8px; border-bottom: 1px solid #eee;">
-
-                                {{ ucfirst($falta['dia']) }}
-
-                            </td>
-
-
-                            <td style="padding: 8px; border-bottom: 1px solid #eee; color: #c0392b;">
-
-                                {{ $falta['motivo'] }}
+                                @endforeach
 
                             </td>
 
                         </tr>
-
-                        @endforeach
 
                         @endforeach
 

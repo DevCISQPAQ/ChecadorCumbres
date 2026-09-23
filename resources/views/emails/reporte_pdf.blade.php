@@ -205,9 +205,8 @@
             <tr>
                 <th>N. Empleado</th>
                 <th>Empleado</th>
-                <th>Fecha</th>
-                <th>Día</th>
-                <th>Motivo</th>
+                <th class="center">Faltas</th>
+                <th>Fechas</th>
             </tr>
 
         </thead>
@@ -217,16 +216,23 @@
             @foreach ($empleadosSinAsistencia as $registro)
 
             @php
+
             $empleado = $registro['empleado'];
+
+            $totalFaltas = count($registro['faltas']);
+
             @endphp
 
-            @foreach ($registro['faltas'] as $falta)
-
             <tr>
+
+                {{-- NÚMERO DE EMPLEADO --}}
 
                 <td>
                     {{ $empleado->n_empleado }}
                 </td>
+
+
+                {{-- NOMBRE COMPLETO --}}
 
                 <td>
                     {{ $empleado->nombres }}
@@ -234,21 +240,34 @@
                     {{ $empleado->apellido_materno }}
                 </td>
 
+
+                {{-- TOTAL DE FALTAS --}}
+
+                <td class="center sin-registro"
+                    style="font-weight: bold;">
+
+                    {{ $totalFaltas }}
+
+                </td>
+
+
+                {{-- FECHAS DE LAS FALTAS --}}
+
                 <td>
+
+                    @foreach ($registro['faltas'] as $falta)
+
                     {{ \Carbon\Carbon::parse($falta['fecha'])->format('d/m/Y') }}
-                </td>
 
-                <td>
-                    {{ ucfirst($falta['dia']) }}
-                </td>
+                    @if (!$loop->last)
+                    ,
+                    @endif
 
-                <td class="sin-registro">
-                    {{ $falta['motivo'] }}
+                    @endforeach
+
                 </td>
 
             </tr>
-
-            @endforeach
 
             @endforeach
 
