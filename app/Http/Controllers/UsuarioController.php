@@ -615,4 +615,9 @@ class UsuarioController extends Controller
             ->route('admin.configuraciones')
             ->with('success', 'Departamento actualizado correctamente.');
     }
+
+    public function configurarIncidencias()
+    {
+         return view('admin.incidencias.index');
+    }
 }

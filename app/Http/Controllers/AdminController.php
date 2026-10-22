@@ -25,6 +25,18 @@ use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
+
+    public function dashboard()
+    {
+        try {
+
+            return view('admin.dashboard');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error al cargar la página de... ' . $e->getMessage());
+        }
+    }
+
+
     public function asistencias(Request $request)
     {
         try {

@@ -17,16 +17,12 @@ Route::get('/admin', [AuthController::class, 'showLoginForm'])->name('login.form
 Route::post('/admin', [AuthController::class, 'login'])->name('login');
 
 Route::prefix('admin')->name('admin.')->group(function () {
-    // Login y logout
-    // Route::get('/', [AuthController::class, 'showLoginForm'])->name('login.form');
-    // Route::post('/', [AuthController::class, 'login'])->name('login');
 
-    // 🔐 Rutas protegidas
+    //Rutas protegidas  
     Route::middleware('auth')->group(function () {
         // Dashboard de asistencias
+         Route::get('/dashboard', [AdminController::class, 'dashboard']);
         Route::get('/asistencias', [AdminController::class, 'asistencias'])->name('asistencias');
-        // Route::get('/asistencias/reporte', [AdminController::class, 'generarReporte'])->name('asistencias.reporte');
-        // Route::get('/asistencias/reporte', [AdminController::class, 'generarReporteExcel'])->name('asistencias.reporte.excel');
         Route::get('/asistencias/reporte/pdf', [AdminController::class, 'generarReporte'])
             ->name('asistencias.reporte.pdf');
 
@@ -58,7 +54,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/vacacionesfestivos', [UsuarioController::class, 'configurarVacacionesFestivos'])->name('vacacionesfestivos.index');
         Route::post('/configuracion/horario-0730', [UsuarioController::class, 'actualizarHorario0730'])->name('configuracion.horario0730');
         Route::post('/configuracion/salida-1500', [UsuarioController::class, 'actualizarHorarioSalida1500'])->name('configuracion.horarioSalida1500');
-        //Route::post('/preferencias/configuracion', [UsuarioController::class, 'actualizarData'])->name('usuarios.data');
         // vacaciones
         Route::post('/vacaciones/store', [UsuarioController::class, 'store'])->name('vacaciones.store');
         Route::post('/dias-festivos/store', [UsuarioController::class, 'storeDiaFestivo'])->name('diasfestivos.store');
@@ -70,6 +65,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/vacaciones/excel', [UsuarioController::class, 'generarVacacionesExcel'])->name('vacaciones.excel');
         Route::get('/empleados/{empleado}/vacaciones/pdf', [EmpleadoController::class, 'generarVacacionesPdf'])->name('empleados.vacaciones.pdf');
 
+        //incidencias 
+         Route::get('/incidencias', [UsuarioController::class, 'configurarIncidencias'])->name('incidencias.index');
 
 
 
