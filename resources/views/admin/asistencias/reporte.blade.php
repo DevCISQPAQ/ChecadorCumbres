@@ -106,6 +106,7 @@ $primerEmpleado = null;
                 'vacaciones' => 'blue',
                 'permiso' => 'purple',
                 'libre' => '#0891b2',
+                'incapacidad' => '#27F5D6',
                 'festivo' => 'gray',
                 default => '#6b7280',
                 };
@@ -116,6 +117,7 @@ $primerEmpleado = null;
                 'falta' => 'Falta',
                 'vacaciones' => 'Vacaciones',
                 'permiso' => 'Permiso',
+                'incapacidad' => 'Incapacidad',
                 'libre' => 'Libre',
                 'festivo' => 'Festivo',
                 default => 'Sin registro',

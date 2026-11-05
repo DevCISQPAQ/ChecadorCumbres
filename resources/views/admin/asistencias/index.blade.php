@@ -8,7 +8,7 @@
 <h2 class="text-2xl font-semibold text-gray-800 mb-6">Asistencias</h2>
 
 {{-- Tarjetas resumen --}}
-<div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2 md:gap-6 md:space-y-0 space-y-2">
+<div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-7 gap-2 md:gap-6 md:space-y-0 space-y-2">
 
     <div class="bg-white p-2 rounded-lg shadow">
         <h3 class="text-sm text-center font-semibold text-gray-700">Asistencias</h3>
@@ -42,6 +42,13 @@
         <h3 class="text-sm text-center font-semibold text-gray-700">Permisos</h3>
         <p class="text-xl mt-1 text-center font-bold text-purple-600">
             {{ $permisosHoy ?? 0 }}
+        </p>
+    </div>
+
+    <div class="bg-white p-2 rounded-lg shadow">
+        <h3 class="text-sm text-center font-semibold text-gray-700">Incapacidad</h3>
+        <p class="text-xl mt-1 text-center font-bold text-pink-600">
+            {{ $incapacidadHoy ?? 0 }}
         </p>
     </div>
 
@@ -126,6 +133,7 @@
                         <option value="falta">Falta</option>
                         <option value="vacaciones">Vacaciones</option>
                         <option value="permiso">Permiso</option>
+                        <option value="incapacidad">Incapacidad</option>
                         <option value="libre">Libre</option>
                         <option value="festivo">Festivo</option>
 
@@ -357,6 +365,10 @@
                                     text-purple-600
                                 @break
 
+                                @case('incapacidad')
+                                    text-red-700
+                                @break
+
                                 @case('libre')
                                     text-cyan-600
                                 @break
@@ -395,6 +407,10 @@
 
                             @case('permiso')
                             Permiso
+                            @break
+
+                            @case('incapacidad')
+                            Incapacidad
                             @break
 
                             @case('festivo')

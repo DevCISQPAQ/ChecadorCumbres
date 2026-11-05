@@ -20,12 +20,12 @@ class Empleado extends Model
         'activo'
     ];
 
-     protected $casts = [
+    protected $casts = [
         'activo' => 'boolean'
     ];
 
     // Relación uno a muchos con asistencias
-       public function departamento()
+    public function departamento()
     {
         return $this->belongsTo(Departamento::class);
     }
@@ -50,6 +50,10 @@ class Empleado extends Model
         return $this->hasMany(Vacacion::class);
     }
 
+    public function ausencias()
+    {
+        return $this->hasMany(Ausencias::class, 'empleado_id');
+    }
     /*
     |--------------------------------------------------------------------------
     | ACCESSORS

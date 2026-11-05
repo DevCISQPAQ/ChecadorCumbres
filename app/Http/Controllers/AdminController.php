@@ -21,6 +21,7 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\DB;
+use App\Models\Ausencias;
 
 
 class AdminController extends Controller
@@ -132,6 +133,9 @@ class AdminController extends Controller
         $permisosHoy = Asistencia::whereDate('fecha', Carbon::today())
             ->where('estado', 'permiso')
             ->count();
+        $incapacidadHoy = Asistencia::whereDate('fecha', Carbon::today())
+            ->where('estado', 'incapacidad')
+            ->count();
         $libresHoy = Asistencia::whereDate('fecha', Carbon::today())
             ->where('estado', 'libre')
             ->count();
@@ -142,6 +146,7 @@ class AdminController extends Controller
             'faltasHoy',
             'vacacionesHoy',
             'permisosHoy',
+            'incapacidadHoy',
             'libresHoy'
         );
     }
@@ -196,29 +201,6 @@ class AdminController extends Controller
         return $query;
     }
 
-    // private function aplicarFiltroHoraEntrada($query, Request $request)
-    // {
-    //     if ($request->filled('hora_entrada') && in_array($request->hora_entrada, ['0', '1'])) {
-
-    //         if ($request->hora_entrada == '1') {
-
-    //             // Tiene entrada
-    //             $query->whereHas('checadas', function ($q) {
-    //                 $q->where('tipo', 'entrada');
-    //                 $q->where('fecha_hora', today());
-    //             });
-    //         } else {
-
-    //             // No tiene entrada
-    //             $query->whereDoesntHave('checadas', function ($q) {
-    //                 $q->where('tipo', 'entrada');
-    //                 $q->where('fecha_hora', today());
-    //             });
-    //         }
-    //     }
-
-    //     return $query;
-    // }
 
     private function aplicarFiltroHoraEntrada($query, Request $request)
     {
@@ -251,28 +233,6 @@ class AdminController extends Controller
 
         return $query;
     }
-
-    // private function aplicarFiltroHoraSalida($query, Request $request)
-    // {
-    //     if ($request->filled('hora_salida') && in_array($request->hora_salida, ['0', '1'])) {
-
-    //         if ($request->hora_salida == '1') {
-
-    //             $query->whereHas('checadas', function ($q) {
-    //                 $q->where('tipo', 'salida');
-    //                 $q->where('fecha_hora', today());
-    //             });
-    //         } else {
-
-    //             $query->whereDoesntHave('checadas', function ($q) {
-    //                 $q->where('tipo', 'salida');
-    //                 $q->where('fecha_hora', today());
-    //             });
-    //         }
-    //     }
-
-    //     return $query;
-    // }
 
 
     private function aplicarFiltroHoraSalida($query, Request $request)
@@ -439,6 +399,7 @@ class AdminController extends Controller
                                 'vacaciones' => 'Vacaciones',
                                 'permiso'    => 'Permiso',
                                 'libre'      => 'Libre',
+                                'incapacidad' => 'Incapacidad',
                                 'festivo'    => 'Festivo',
                                 'fin_semana' => 'Fin de semana',
                                 default      => 'Sin registro',
@@ -542,82 +503,128 @@ class AdminController extends Controller
     }
 
 
+
+
     private function obtenerAsistenciasConDiasFaltantes(Request $request)
     {
         $fechaInicio = $request->filled('fecha_inicio')
-            ? Carbon::parse($request->fecha_inicio)
-            : Carbon::today();
+            ? Carbon::parse($request->fecha_inicio)->startOfDay()
+            : Carbon::today()->startOfDay();
 
         $fechaFin = $request->filled('fecha_fin')
-            ? Carbon::parse($request->fecha_fin)
-            : Carbon::today();
+            ? Carbon::parse($request->fecha_fin)->startOfDay()
+            : Carbon::today()->startOfDay();
 
+        // Validar que la fecha inicial no sea posterior a la final
+        if ($fechaInicio->gt($fechaFin)) {
+            return collect();
+        }
 
-        // Filtrar empleados primero
+        // =========================================
+        // 1. OBTENER EMPLEADOS
+        // =========================================
+
         $empleadosQuery = Empleado::query();
 
         if ($request->filled('departamento')) {
-            $empleadosQuery->where('departamento_id', $request->departamento);
+            $empleadosQuery->where(
+                'departamento_id',
+                $request->departamento
+            );
         }
 
         if ($request->filled('buscar')) {
             $buscar = strtolower($request->buscar);
 
             $empleadosQuery->where(function ($q) use ($buscar) {
-                $q->whereRaw('LOWER(nombres) LIKE ?', ["%$buscar%"])
-                    ->orWhereRaw('LOWER(apellido_paterno) LIKE ?', ["%$buscar%"])
-                    ->orWhereRaw('LOWER(apellido_materno) LIKE ?', ["%$buscar%"])
-                    ->orWhereRaw('LOWER(n_empleado) LIKE ?', ["%$buscar%"]);
+                $q->whereRaw('LOWER(nombres) LIKE ?', ["%{$buscar}%"])
+                    ->orWhereRaw('LOWER(apellido_paterno) LIKE ?', ["%{$buscar}%"])
+                    ->orWhereRaw('LOWER(apellido_materno) LIKE ?', ["%{$buscar}%"])
+                    ->orWhereRaw('LOWER(n_empleado) LIKE ?', ["%{$buscar}%"]);
             });
         }
 
-        //$empleados = $empleadosQuery->get();
         $empleados = $empleadosQuery
             ->with('horarios')
             ->get();
 
-        // 2️⃣ Obtener asistencias en el rango
+        if ($empleados->isEmpty()) {
+            return collect();
+        }
+
+        $empleadoIds = $empleados->pluck('id');
+
+        // =========================================
+        // 2. OBTENER ASISTENCIAS DEL PERIODO
+        // =========================================
+
         $asistencias = Asistencia::with('empleado')
+            ->whereIn('empleado_id', $empleadoIds)
             ->whereBetween('fecha', [
                 $fechaInicio->toDateString(),
                 $fechaFin->toDateString()
             ])
             ->get();
 
+        // =========================================
+        // 3. OBTENER AUSENCIAS DEL PERIODO
+        // =========================================
 
-        // ✅ NUEVO: Obtener checadas del periodo
-        $checadas = Checada::whereBetween('fecha_hora', [
-            $fechaInicio->copy()->startOfDay(),
-            $fechaFin->copy()->endOfDay()
-        ])
+        $ausencias = Ausencias::whereIn(
+            'empleado_id',
+            $empleadoIds
+        )
+            ->whereDate(
+                'fecha_inicio',
+                '<=',
+                $fechaFin->toDateString()
+            )
+            ->whereDate(
+                'fecha_fin',
+                '>=',
+                $fechaInicio->toDateString()
+            )
+            ->get()
+            ->groupBy('empleado_id');
+
+        // =========================================
+        // 4. OBTENER CHECADAS DEL PERIODO
+        // =========================================
+
+        $checadas = Checada::whereIn(
+            'empleado_id',
+            $empleadoIds
+        )
+            ->whereBetween('fecha_hora', [
+                $fechaInicio->copy()->startOfDay(),
+                $fechaFin->copy()->endOfDay()
+            ])
             ->get()
             ->groupBy(function ($checada) {
                 return $checada->empleado_id . '_' .
-                    $checada->fecha_hora->format('Y-m-d');
+                    Carbon::parse($checada->fecha_hora)->format('Y-m-d');
             });
 
+        // =========================================
+        // 5. AGREGAR HORAS DE ENTRADA Y SALIDA
+        // =========================================
 
-        // ✅ NUEVO: Agregar entrada/salida a cada asistencia
         $asistencias = $asistencias->map(function ($asistencia) use ($checadas) {
 
             $key = $asistencia->empleado_id . '_' .
                 Carbon::parse($asistencia->fecha)->format('Y-m-d');
 
-
             $checadasEmpleado = $checadas->get($key, collect());
-
 
             $entrada = $checadasEmpleado
                 ->where('tipo', 'entrada')
                 ->sortBy('fecha_hora')
                 ->first();
 
-
             $salida = $checadasEmpleado
                 ->where('tipo', 'salida')
                 ->sortByDesc('fecha_hora')
                 ->first();
-
 
             $asistencia->setAttribute(
                 'hora_entrada',
@@ -634,54 +641,134 @@ class AdminController extends Controller
                 $asistencia->estado === 'retardo'
             );
 
-
             return $asistencia;
         });
 
+        // =========================================
+        // 6. AGRUPAR ASISTENCIAS
+        // =========================================
 
-        // ✅ CORREGIDO: agrupar con la fecha correcta
         $asistencias = $asistencias->groupBy(
             fn($a) => $a->empleado_id . '_' .
                 Carbon::parse($a->fecha)->format('Y-m-d')
         );
 
+        // =========================================
+        // 7. RECORRER EMPLEADOS Y FECHAS
+        // =========================================
 
-        $periodo = CarbonPeriod::create($fechaInicio, $fechaFin);
+        $periodo = CarbonPeriod::create(
+            $fechaInicio,
+            $fechaFin
+        );
+
         $resultado = collect();
 
-
-        // 3️⃣ Recorrer empleados y fechas
         foreach ($empleados as $empleado) {
 
             foreach ($periodo as $fecha) {
 
-                $key = $empleado->id . '_' . $fecha->format('Y-m-d');
+                $fechaActual = $fecha->copy()->startOfDay();
 
-                if (isset($asistencias[$key])) {
-                    $resultado->push($asistencias[$key]->first());
+                $key = $empleado->id . '_' .
+                    $fechaActual->format('Y-m-d');
+
+                // =====================================
+                // BUSCAR AUSENCIA DEL EMPLEADO
+                // =====================================
+
+                $ausencia = $ausencias
+                    ->get($empleado->id, collect())
+                    ->first(function ($item) use ($fechaActual) {
+
+                        $inicio = Carbon::parse(
+                            $item->fecha_inicio
+                        )->startOfDay();
+
+                        $fin = Carbon::parse(
+                            $item->fecha_fin
+                        )->startOfDay();
+
+                        return $fechaActual->between($inicio, $fin);
+                    });
+
+                // =====================================
+                // 8. SI EXISTE AUSENCIA
+                // =====================================
+
+                if ($ausencia) {
+
+                    $resultado->push((object)[
+
+                        'empleado' => $empleado,
+
+                        'empleado_id' => $empleado->id,
+
+                        'created_at' => $fechaActual->copy(),
+
+                        'fecha' => $fechaActual->format('Y-m-d'),
+
+                        'hora_entrada' => null,
+
+                        'hora_salida' => null,
+
+                        'retardo' => false,
+
+                        'estado' => $ausencia->tipo,
+
+                        'motivo' => $ausencia->motivo,
+
+                    ]);
+                } elseif (isset($asistencias[$key])) {
+
+                    // =================================
+                    // 9. SI EXISTE ASISTENCIA
+                    // =================================
+
+                    $resultado->push(
+                        $asistencias[$key]->first()
+                    );
                 } else {
-                    // Determinar si es sábado/domingo no laborable
+
+                    // =================================
+                    // 10. SI NO EXISTE ASISTENCIA
+                    // =================================
+
                     $esFinDeSemana = $this->esFinDeSemanaNoLaborable(
                         $empleado,
-                        $fecha
+                        $fechaActual
                     );
-                    // Registro virtual sin asistencia
+
                     $resultado->push((object)[
-                        'empleado'      => $empleado,
-                        'empleado_id'   => $empleado->id,
-                        'created_at'    => $fecha->copy(),
-                        'fecha'         => $fecha->format('Y-m-d'),
-                        'hora_entrada'  => null,
-                        'hora_salida'   => null,
-                        'retardo'       => null,
-                        'estado'        => $esFinDeSemana
+
+                        'empleado' => $empleado,
+
+                        'empleado_id' => $empleado->id,
+
+                        'created_at' => $fechaActual->copy(),
+
+                        'fecha' => $fechaActual->format('Y-m-d'),
+
+                        'hora_entrada' => null,
+
+                        'hora_salida' => null,
+
+                        'retardo' => null,
+
+                        'estado' => $esFinDeSemana
                             ? 'fin_semana'
                             : 'falta',
+
+                        'motivo' => null,
+
                     ]);
                 }
             }
         }
 
+        // =========================================
+        // 11. FILTRAR POR ESTADO
+        // =========================================
 
         if ($request->filled('estado')) {
 
@@ -694,52 +781,271 @@ class AdminController extends Controller
                 ->values();
         }
 
+        // =========================================
+        // 12. FILTRAR POR RETARDO
+        // =========================================
 
-        // 🔹 Filtrar por retardo
         if ($request->filled('retardo')) {
 
             $retardo = (string) $request->retardo;
 
-            $resultado = $resultado->filter(function ($item) use ($retardo) {
+            $resultado = $resultado
+                ->filter(function ($item) use ($retardo) {
 
-                if ($item->retardo === null) {
-                    return false;
-                }
+                    if ($item->retardo === null) {
+                        return false;
+                    }
 
-                return (string) $item->retardo === $retardo;
-            })->values();
+                    return (string) (int) $item->retardo === $retardo;
+                })
+                ->values();
         }
 
+        // =========================================
+        // 13. FILTRAR POR HORA DE ENTRADA
+        // =========================================
 
-        // FILTRO HORA DE ENTRADA
         if ($request->filled('hora_entrada')) {
 
             $horaEntradaFiltro = $request->hora_entrada;
 
-            $resultado = $resultado->filter(function ($item) use ($horaEntradaFiltro) {
+            $resultado = $resultado
+                ->filter(function ($item) use ($horaEntradaFiltro) {
 
-                return $horaEntradaFiltro === "1"
-                    ? $item->hora_entrada !== null
-                    : $item->hora_entrada === null;
-            })->values();
+                    return $horaEntradaFiltro === '1'
+                        ? $item->hora_entrada !== null
+                        : $item->hora_entrada === null;
+                })
+                ->values();
         }
 
+        // =========================================
+        // 14. FILTRAR POR HORA DE SALIDA
+        // =========================================
 
-        // FILTRO HORA DE SALIDA
         if ($request->filled('hora_salida')) {
 
             $horaSalidaFiltro = $request->hora_salida;
 
-            $resultado = $resultado->filter(function ($item) use ($horaSalidaFiltro) {
+            $resultado = $resultado
+                ->filter(function ($item) use ($horaSalidaFiltro) {
 
-                return $horaSalidaFiltro === "1"
-                    ? $item->hora_salida !== null
-                    : $item->hora_salida === null;
-            })->values();
+                    return $horaSalidaFiltro === '1'
+                        ? $item->hora_salida !== null
+                        : $item->hora_salida === null;
+                })
+                ->values();
         }
 
         return $resultado;
     }
+
+
+
+    // private function obtenerAsistenciasConDiasFaltantes(Request $request)
+    // {
+    //     $fechaInicio = $request->filled('fecha_inicio')
+    //         ? Carbon::parse($request->fecha_inicio)
+    //         : Carbon::today();
+
+    //     $fechaFin = $request->filled('fecha_fin')
+    //         ? Carbon::parse($request->fecha_fin)
+    //         : Carbon::today();
+
+
+    //     // Filtrar empleados primero
+    //     $empleadosQuery = Empleado::query();
+
+    //     // Obtener ausencias registradas en el periodo
+    //     $ausencias = Ausencias::whereDate('fecha_inicio', '<=', $fechaFin)
+    //         ->whereDate('fecha_fin', '>=', $fechaInicio)
+    //         ->get()
+    //         ->groupBy('empleado_id');
+
+    //     if ($request->filled('departamento')) {
+    //         $empleadosQuery->where('departamento_id', $request->departamento);
+    //     }
+
+    //     if ($request->filled('buscar')) {
+    //         $buscar = strtolower($request->buscar);
+
+    //         $empleadosQuery->where(function ($q) use ($buscar) {
+    //             $q->whereRaw('LOWER(nombres) LIKE ?', ["%$buscar%"])
+    //                 ->orWhereRaw('LOWER(apellido_paterno) LIKE ?', ["%$buscar%"])
+    //                 ->orWhereRaw('LOWER(apellido_materno) LIKE ?', ["%$buscar%"])
+    //                 ->orWhereRaw('LOWER(n_empleado) LIKE ?', ["%$buscar%"]);
+    //         });
+    //     }
+
+    //     //$empleados = $empleadosQuery->get();
+    //     $empleados = $empleadosQuery
+    //         ->with('horarios')
+    //         ->get();
+
+    //     // 2️⃣ Obtener asistencias en el rango
+    //     $asistencias = Asistencia::with('empleado')
+    //         ->whereBetween('fecha', [
+    //             $fechaInicio->toDateString(),
+    //             $fechaFin->toDateString()
+    //         ])
+    //         ->get();
+
+
+    //     // ✅ NUEVO: Obtener checadas del periodo
+    //     $checadas = Checada::whereBetween('fecha_hora', [
+    //         $fechaInicio->copy()->startOfDay(),
+    //         $fechaFin->copy()->endOfDay()
+    //     ])
+    //         ->get()
+    //         ->groupBy(function ($checada) {
+    //             return $checada->empleado_id . '_' .
+    //                 $checada->fecha_hora->format('Y-m-d');
+    //         });
+
+
+    //     // ✅ NUEVO: Agregar entrada/salida a cada asistencia
+    //     $asistencias = $asistencias->map(function ($asistencia) use ($checadas) {
+
+    //         $key = $asistencia->empleado_id . '_' .
+    //             Carbon::parse($asistencia->fecha)->format('Y-m-d');
+
+
+    //         $checadasEmpleado = $checadas->get($key, collect());
+
+
+    //         $entrada = $checadasEmpleado
+    //             ->where('tipo', 'entrada')
+    //             ->sortBy('fecha_hora')
+    //             ->first();
+
+
+    //         $salida = $checadasEmpleado
+    //             ->where('tipo', 'salida')
+    //             ->sortByDesc('fecha_hora')
+    //             ->first();
+
+
+    //         $asistencia->setAttribute(
+    //             'hora_entrada',
+    //             $entrada?->fecha_hora
+    //         );
+
+    //         $asistencia->setAttribute(
+    //             'hora_salida',
+    //             $salida?->fecha_hora
+    //         );
+
+    //         $asistencia->setAttribute(
+    //             'retardo',
+    //             $asistencia->estado === 'retardo'
+    //         );
+
+
+    //         return $asistencia;
+    //     });
+
+
+    //     // ✅ CORREGIDO: agrupar con la fecha correcta
+    //     $asistencias = $asistencias->groupBy(
+    //         fn($a) => $a->empleado_id . '_' .
+    //             Carbon::parse($a->fecha)->format('Y-m-d')
+    //     );
+
+
+    //     $periodo = CarbonPeriod::create($fechaInicio, $fechaFin);
+    //     $resultado = collect();
+
+
+    //     // 3️⃣ Recorrer empleados y fechas
+    //     foreach ($empleados as $empleado) {
+
+    //         foreach ($periodo as $fecha) {
+
+    //             $key = $empleado->id . '_' . $fecha->format('Y-m-d');
+
+    //             if (isset($asistencias[$key])) {
+    //                 $resultado->push($asistencias[$key]->first());
+    //             } else {
+    //                 // Determinar si es sábado/domingo no laborable
+    //                 $esFinDeSemana = $this->esFinDeSemanaNoLaborable(
+    //                     $empleado,
+    //                     $fecha
+    //                 );
+    //                 // Registro virtual sin asistencia
+    //                 $resultado->push((object)[
+    //                     'empleado'      => $empleado,
+    //                     'empleado_id'   => $empleado->id,
+    //                     'created_at'    => $fecha->copy(),
+    //                     'fecha'         => $fecha->format('Y-m-d'),
+    //                     'hora_entrada'  => null,
+    //                     'hora_salida'   => null,
+    //                     'retardo'       => null,
+    //                     'estado'        => $esFinDeSemana
+    //                         ? 'fin_semana'
+    //                         : 'falta',
+    //                 ]);
+    //             }
+    //         }
+    //     }
+
+
+    //     if ($request->filled('estado')) {
+
+    //         $estado = $request->estado;
+
+    //         $resultado = $resultado
+    //             ->filter(function ($item) use ($estado) {
+    //                 return $item->estado === $estado;
+    //             })
+    //             ->values();
+    //     }
+
+
+    //     // 🔹 Filtrar por retardo
+    //     if ($request->filled('retardo')) {
+
+    //         $retardo = (string) $request->retardo;
+
+    //         $resultado = $resultado->filter(function ($item) use ($retardo) {
+
+    //             if ($item->retardo === null) {
+    //                 return false;
+    //             }
+
+    //             return (string) $item->retardo === $retardo;
+    //         })->values();
+    //     }
+
+
+    //     // FILTRO HORA DE ENTRADA
+    //     if ($request->filled('hora_entrada')) {
+
+    //         $horaEntradaFiltro = $request->hora_entrada;
+
+    //         $resultado = $resultado->filter(function ($item) use ($horaEntradaFiltro) {
+
+    //             return $horaEntradaFiltro === "1"
+    //                 ? $item->hora_entrada !== null
+    //                 : $item->hora_entrada === null;
+    //         })->values();
+    //     }
+
+
+    //     // FILTRO HORA DE SALIDA
+    //     if ($request->filled('hora_salida')) {
+
+    //         $horaSalidaFiltro = $request->hora_salida;
+
+    //         $resultado = $resultado->filter(function ($item) use ($horaSalidaFiltro) {
+
+    //             return $horaSalidaFiltro === "1"
+    //                 ? $item->hora_salida !== null
+    //                 : $item->hora_salida === null;
+    //         })->values();
+    //     }
+
+    //     return $resultado;
+    // }
 
 
     private function aplicarFiltroEstado($query, $request)
@@ -753,6 +1059,7 @@ class AdminController extends Controller
                 'falta',
                 'vacaciones',
                 'permiso',
+                'incapacidad',
                 'libre',
                 'festivo',
                 'sin_registro'

@@ -26,13 +26,13 @@
             @endif
             {{-- Solo mostrar este enlace si el usuario es administrador --}}
             @if(auth()->user()->level_user >= 1)
-            <a href="{{ route('admin.vacacionesfestivos.index') }}"
-                class="block py-2.5 px-4 {{ request()->routeIs('admin.vacacionesfestivos.index*') ? 'bg-blue-100 text-blue-700' : 'text-gray-700' }} hover:bg-blue-50 transition-colors">
-                Vacaciones y festivos
+            <a href="{{ route('admin.ausencias.index') }}"
+                class="block py-2.5 px-4 {{ request()->routeIs('admin.ausencias.index*') ? 'bg-blue-100 text-blue-700' : 'text-gray-700' }} hover:bg-blue-50 transition-colors">
+                Ausencias
             </a>
-            <a href="{{ route('admin.incidencias.index') }}"
-                class="block py-2.5 px-4 {{ request()->routeIs('admin.incidencias.index*') ? 'bg-blue-100 text-blue-700' : 'text-gray-700' }} hover:bg-blue-50 transition-colors">
-                Incidencias
+            <a href="{{ route('admin.festivos.index') }}"
+                class="block py-2.5 px-4 {{ request()->routeIs('admin.festivos.index*') ? 'bg-blue-100 text-blue-700' : 'text-gray-700' }} hover:bg-blue-50 transition-colors">
+                Festivos
             </a>
             <a href="{{ route('admin.preferencias') }}"
                 class="block py-2.5 px-4 {{ request()->routeIs('admin.preferencias*') ? 'bg-blue-100 text-blue-700' : 'text-gray-700' }} hover:bg-blue-50 transition-colors">

@@ -11,8 +11,8 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use App\Models\Departamento;
 use App\Models\HorarioEmpleado;
-use App\Models\Vacacion;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\Ausencias;
 
 class EmpleadoController extends Controller
 {
@@ -469,19 +469,17 @@ class EmpleadoController extends Controller
     {
         $empleado = Empleado::findOrFail($id);
 
-        $vacaciones = Vacacion::where('empleado_id', $id)
+        $ausencias = Ausencias::where('empleado_id', $id)
             ->orderBy('fecha_inicio')
             ->get();
 
-
         $pdf = Pdf::loadView(
-            'admin.vacacionesfestivos.pdf-empleado',
-            compact('empleado', 'vacaciones')
+            'admin.ausencias.pdf-empleado',
+            compact('empleado', 'ausencias')
         );
 
-
         return $pdf->stream(
-            'vacaciones_' . $empleado->nombres . '.pdf'
+            'ausencias_' . $empleado->nombres . '.pdf'
         );
     }
 }

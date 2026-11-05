@@ -8,7 +8,7 @@ use App\Models\User;
 use App\Models\Configuracion;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Empleado;
-use App\Models\Vacacion;
+use App\Models\Ausencias;
 use App\Models\DiaFestivo;
 use App\Models\Departamento;
 use Maatwebsite\Excel\Facades\Excel;
@@ -133,69 +133,77 @@ class UsuarioController extends Controller
         }
     }
 
-    public function configurarVacacionesFestivos()
+
+    public function configurarAusencias()
     {
+        $empleados = Empleado::orderBy('nombres')->get();
 
-        $empleados = Empleado::orderBy('nombres')
-            ->get();
-
-        $vacaciones = Vacacion::with('empleado')
+        $ausencias = Ausencias::with('empleado')
             ->latest()
             ->get();
 
+        return view('admin.ausencias.index', compact(
+            'empleados',
+            'ausencias'
+        ));
+    }
+
+
+    public function configurarFestivos()
+    {
+        //$empleados = Empleado::orderBy('nombres')->get();
+
+        // $ausencias = Ausencias::with('empleado')
+        //     ->latest()
+        //     ->get();
+
         $diasFestivos = DiaFestivo::latest()->get();
 
-        return view('admin.vacacionesfestivos.index', compact(
-            'empleados',
-            'vacaciones',
+        return view('admin.festivos.index', compact(
             'diasFestivos'
         ));
     }
 
 
-    public function store(Request $request)
+    public function storeAusencia(Request $request)
     {
         $request->validate([
             'empleado_id' => 'required|exists:empleados,id',
+            'tipo' => 'required|in:vacaciones,permiso,incapacidad',
             'fecha_inicio' => 'required|date',
             'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
             'motivo' => 'nullable|string|max:1000',
         ]);
 
-        // validar traslape de vacaciones
-        $existe = Vacacion::where('empleado_id', $request->empleado_id)
+        // Validar traslape de ausencias
+        $existe = Ausencias::where('empleado_id', $request->empleado_id)
             ->where(function ($query) use ($request) {
-
-                $query->whereBetween('fecha_inicio', [
-                    $request->fecha_inicio,
-                    $request->fecha_fin
-                ])
-                    ->orWhereBetween('fecha_fin', [
-                        $request->fecha_inicio,
-                        $request->fecha_fin
-                    ]);
+                $query->where('fecha_inicio', '<=', $request->fecha_fin)
+                    ->where('fecha_fin', '>=', $request->fecha_inicio);
             })
             ->exists();
 
         if ($existe) {
             return back()
                 ->withErrors([
-                    'fecha_inicio' => 'El empleado ya tiene vacaciones registradas en esas fechas.'
+                    'fecha_inicio' => 'El empleado ya tiene una ausencia registrada en esas fechas.'
                 ])
                 ->withInput();
         }
 
-        Vacacion::create([
+        Ausencias::create([
             'empleado_id' => $request->empleado_id,
+            'tipo' => $request->tipo,
             'fecha_inicio' => $request->fecha_inicio,
             'fecha_fin' => $request->fecha_fin,
             'motivo' => $request->motivo,
         ]);
 
         return redirect()
-            ->route('admin.vacacionesfestivos.index')
-            ->with('success', 'Vacaciones registradas correctamente.');
+            ->route('admin.ausencias.index')
+            ->with('success', 'Ausencia registrada correctamente.');
     }
+
 
 
     public function storeDiaFestivo(Request $request)
@@ -223,22 +231,24 @@ class UsuarioController extends Controller
     }
 
 
-    public function destroyVacaciones($id)
-    {
-        $vacacion = Vacacion::find($id);
 
-        if (!$vacacion) {
+    public function destroyAusencia($id)
+    {
+        $ausencia = Ausencias::find($id);
+
+        if (!$ausencia) {
             return redirect()
                 ->back()
-                ->with('error', 'El registro no existe');
+                ->with('error', 'El registro no existe.');
         }
 
-        $vacacion->delete();
+        $ausencia->delete();
 
         return redirect()
             ->back()
-            ->with('success', 'Registro eliminado correctamente');
+            ->with('success', 'Ausencia eliminada correctamente.');
     }
+
 
     public function destroyFestivos($id)
     {
@@ -342,15 +352,32 @@ class UsuarioController extends Controller
             ->with('success', 'Registro eliminado correctamente');
     }
 
-    public function updateVacaciones(Request $request, Vacacion $vacacion)
+
+    public function updateAusencia(Request $request, Ausencias $ausencia)
     {
         $request->validate([
+            'tipo' => 'required|in:vacaciones,permiso,incapacidad',
             'fecha_inicio' => 'required|date',
             'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
-            'motivo' => 'nullable|string|max:500',
+            'motivo' => 'nullable|string|max:1000',
         ]);
 
-        $vacacion->update([
+        $existe = Ausencias::where('empleado_id', $ausencia->empleado_id)
+            ->where('id', '!=', $ausencia->id)
+            ->where('fecha_inicio', '<=', $request->fecha_fin)
+            ->where('fecha_fin', '>=', $request->fecha_inicio)
+            ->exists();
+
+        if ($existe) {
+            return back()
+                ->withErrors([
+                    'fecha_inicio' => 'El empleado ya tiene otra ausencia registrada en esas fechas.'
+                ])
+                ->withInput();
+        }
+
+        $ausencia->update([
+            'tipo' => $request->tipo,
             'fecha_inicio' => $request->fecha_inicio,
             'fecha_fin' => $request->fecha_fin,
             'motivo' => $request->motivo,
@@ -358,9 +385,10 @@ class UsuarioController extends Controller
 
         return back()->with(
             'success',
-            'Vacaciones actualizadas correctamente.'
+            'Ausencia actualizada correctamente.'
         );
     }
+
 
 
     public function updateFestivos(Request $request, DiaFestivo $diaFestivo)
@@ -383,58 +411,72 @@ class UsuarioController extends Controller
         );
     }
 
-    public function generarVacacionesExcel(Request $request)
+
+    public function generarAusenciasExcel(Request $request)
     {
         try {
 
-            $query = Vacacion::with('empleado');
+            $query = Ausencias::with('empleado');
 
             if ($request->filled('empleado_id')) {
                 $query->where('empleado_id', $request->empleado_id);
             }
 
-            $vacaciones = $query->orderBy('fecha_inicio')->get();
+            if ($request->filled('tipo')) {
+                $query->where('tipo', $request->tipo);
+            }
+
+            $ausencias = $query->orderBy('fecha_inicio')->get();
 
             return Excel::download(
-                new class($vacaciones) implements FromArray, WithHeadings, WithStyles {
 
-                    private $vacaciones;
+                new class($ausencias) implements FromArray, WithHeadings, WithStyles {
 
-                    public function __construct($vacaciones)
+                    private $ausencias;
+
+                    public function __construct($ausencias)
                     {
-                        $this->vacaciones = $vacaciones;
+                        $this->ausencias = $ausencias;
                     }
 
                     public function array(): array
                     {
                         $data = [];
 
-                        foreach ($this->vacaciones as $vacacion) {
+                        foreach ($this->ausencias as $ausencia) {
 
-                            $inicio = \Carbon\Carbon::parse($vacacion->fecha_inicio);
-                            $fin = \Carbon\Carbon::parse($vacacion->fecha_fin);
+                            $inicio = Carbon::parse($ausencia->fecha_inicio);
+                            $fin = Carbon::parse($ausencia->fecha_fin);
+                            $hoy = now()->startOfDay();
 
                             $dias = $inicio->diffInDays($fin) + 1;
 
-                            if ($fin->lt(now())) {
+                            if ($fin->lt($hoy)) {
                                 $estado = 'Finalizadas';
-                            } elseif ($inicio->lte(now()) && $fin->gte(now())) {
+                            } elseif ($inicio->lte($hoy) && $fin->gte($hoy)) {
                                 $estado = 'En curso';
                             } else {
                                 $estado = 'Próximas';
                             }
 
-                            $data[] = [
-                                $vacacion->empleado->n_empleado,
-                                $vacacion->empleado->nombres . ' ' .
-                                    $vacacion->empleado->apellido_paterno . ' ' .
-                                    $vacacion->empleado->apellido_materno,
+                            $tipos = [
+                                'vacaciones' => 'Vacaciones',
+                                'permiso' => 'Permiso',
+                                'incapacidad' => 'Incapacidad',
+                            ];
 
+                            $data[] = [
+                                $ausencia->empleado->n_empleado,
+                                $ausencia->empleado->nombres . ' ' .
+                                    $ausencia->empleado->apellido_paterno . ' ' .
+                                    $ausencia->empleado->apellido_materno,
+
+                                $tipos[$ausencia->tipo] ?? $ausencia->tipo,
                                 $inicio->format('d/m/Y'),
                                 $fin->format('d/m/Y'),
                                 $dias,
                                 $estado,
-                                $vacacion->motivo ?: '-'
+                                $ausencia->motivo ?: '-'
                             ];
                         }
 
@@ -446,6 +488,7 @@ class UsuarioController extends Controller
                         return [
                             'No. Empleado',
                             'Empleado',
+                            'Tipo de ausencia',
                             'Fecha inicio',
                             'Fecha fin',
                             'Días',
@@ -458,68 +501,59 @@ class UsuarioController extends Controller
                     {
                         $highestRow = $sheet->getHighestRow();
 
-                        // Encabezado
-                        $sheet->getStyle("A1:G1")->getFont()->setBold(true);
+                        $sheet->getStyle("A1:H1")->getFont()->setBold(true);
 
-                        $sheet->getStyle("A1:G1")->getFill()
+                        $sheet->getStyle("A1:H1")->getFill()
                             ->setFillType(Fill::FILL_SOLID)
                             ->getStartColor()
                             ->setRGB('D9EAD3');
 
-                        // Centrar contenido
-                        $sheet->getStyle("A1:G{$highestRow}")
+                        $sheet->getStyle("A1:H{$highestRow}")
                             ->getAlignment()
                             ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-                        // Bordes
-                        $sheet->getStyle("A1:G{$highestRow}")
+                        $sheet->getStyle("A1:H{$highestRow}")
                             ->getBorders()
                             ->getAllBorders()
                             ->setBorderStyle(Border::BORDER_THIN);
 
-                        // Filas alternadas
                         for ($row = 2; $row <= $highestRow; $row++) {
 
                             if ($row % 2 == 0) {
-
-                                $sheet->getStyle("A{$row}:G{$row}")
+                                $sheet->getStyle("A{$row}:H{$row}")
                                     ->getFill()
                                     ->setFillType(Fill::FILL_SOLID)
                                     ->getStartColor()
                                     ->setRGB('F8F9FA');
                             }
 
-                            // Colorear estado
-                            $estado = $sheet->getCell("F{$row}")->getValue();
+                            $estado = $sheet->getCell("G{$row}")->getValue();
 
                             if ($estado == 'Próximas') {
-
-                                $sheet->getStyle("F{$row}")
+                                $sheet->getStyle("G{$row}")
                                     ->getFont()
                                     ->getColor()
                                     ->setRGB('008000');
                             } elseif ($estado == 'En curso') {
-
-                                $sheet->getStyle("F{$row}")
+                                $sheet->getStyle("G{$row}")
                                     ->getFont()
                                     ->getColor()
                                     ->setRGB('E69138');
                             } elseif ($estado == 'Finalizadas') {
-
-                                $sheet->getStyle("F{$row}")
+                                $sheet->getStyle("G{$row}")
                                     ->getFont()
                                     ->getColor()
                                     ->setRGB('CC0000');
                             }
                         }
 
-                        // Ajustar ancho automáticamente
-                        foreach (range('A', 'G') as $column) {
+                        foreach (range('A', 'H') as $column) {
                             $sheet->getColumnDimension($column)->setAutoSize(true);
                         }
                     }
                 },
-                'vacaciones_' . now()->format('Y-m-d') . '.xlsx'
+
+                'ausencias_' . now()->format('Y-m-d') . '.xlsx'
             );
         } catch (\Exception $e) {
 
@@ -529,6 +563,7 @@ class UsuarioController extends Controller
             );
         }
     }
+
 
     public function actualizarHorario0730(Request $request)
     {
@@ -614,10 +649,5 @@ class UsuarioController extends Controller
         return redirect()
             ->route('admin.configuraciones')
             ->with('success', 'Departamento actualizado correctamente.');
-    }
-
-    public function configurarIncidencias()
-    {
-         return view('admin.incidencias.index');
     }
 }

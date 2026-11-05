@@ -8,7 +8,7 @@ use App\Models\Configuracion;
 use App\Models\DiaFestivo;
 use App\Models\Empleado;
 use App\Models\HorarioEmpleado;
-use App\Models\Vacacion;
+use App\Models\Ausencias;
 use Carbon\Carbon;
 
 class AsistenciaService
@@ -23,13 +23,12 @@ class AsistenciaService
     // public function generarAsistenciaDelDia(Empleado $empleado, $fecha): Asistencia
     // {
 
+
     public function generarAsistenciaDelDia(Empleado $empleado, $fecha = null): Asistencia
     {
         $fecha = $fecha
             ? Carbon::parse($fecha)->toDateString()
             : now()->toDateString();
-
-        //$fecha = Carbon::parse($fecha)->toDateString();
 
         // =====================================================
         // HORARIO
@@ -42,19 +41,19 @@ class AsistenciaService
             ->first();
 
         // =====================================================
-        // VACACIONES
+        // AUSENCIAS: PRIORIDAD
         // =====================================================
 
-        $enVacaciones = Vacacion::where('empleado_id', $empleado->id)
+        $ausencia = Ausencias::where('empleado_id', $empleado->id)
             ->whereDate('fecha_inicio', '<=', $fecha)
             ->whereDate('fecha_fin', '>=', $fecha)
-            ->exists();
+            ->first();
 
-        if ($enVacaciones) {
+        if ($ausencia) {
             return $this->guardarAsistencia(
                 $empleado,
                 $fecha,
-                'vacaciones',
+                $ausencia->tipo,
                 0,
                 0
             );
@@ -78,34 +77,6 @@ class AsistenciaService
         }
 
         // =====================================================
-        // LIBRE
-        // =====================================================
-
-        if (!$horario) {
-            return $this->guardarAsistencia(
-                $empleado,
-                $fecha,
-                'libre',
-                0,
-                0
-            );
-        }
-
-        // =====================================================
-        // PERMISO
-        // =====================================================
-
-        if (!$horario->activo) {
-            return $this->guardarAsistencia(
-                $empleado,
-                $fecha,
-                'permiso',
-                0,
-                0
-            );
-        }
-
-        // =====================================================
         // CHECADAS
         // =====================================================
 
@@ -123,75 +94,82 @@ class AsistenciaService
             ->last();
 
         // =====================================================
-        // FALTA
+        // SI TIENE CHECADAS
         // =====================================================
 
-        if (!$entrada && !$salida) {
+        if ($entrada || $salida) {
+
+            $estado = 'presente';
+            $minutosRetardo = 0;
+
+            if ($entrada && $horario && $horario->activo) {
+
+                $horaEntradaEfectiva = $this->obtenerHoraEntradaEfectiva(
+                    $horario
+                );
+
+                $limite = Carbon::parse($fecha . ' ' . $horaEntradaEfectiva)
+                    ->addMinutes($horario->tolerancia_minutos);
+
+                if ($entrada->fecha_hora->gt($limite)) {
+
+                    $estado = 'retardo';
+
+                    $minutosRetardo = (int) $limite->diffInMinutes(
+                        $entrada->fecha_hora
+                    );
+                }
+            }
+
+            $horasTrabajadas = 0;
+
+            if ($entrada && $salida) {
+
+                $horasTrabajadas = abs(
+                    $entrada->fecha_hora->diffInMinutes(
+                        $salida->fecha_hora
+                    )
+                ) / 60;
+            }
+
             return $this->guardarAsistencia(
                 $empleado,
                 $fecha,
-                'falta',
+                $estado,
+                $minutosRetardo,
+                $horasTrabajadas
+            );
+        }
+
+        // =====================================================
+        // LIBRE
+        // =====================================================
+
+        if (!$horario || !$horario->activo) {
+
+            return $this->guardarAsistencia(
+                $empleado,
+                $fecha,
+                'libre',
                 0,
                 0
             );
         }
 
         // =====================================================
-        // RETARDO / PRESENTE
-        // =====================================================
-
-        $estado = 'presente';
-        $minutosRetardo = 0;
-
-        if ($entrada) {
-
-            // IMPORTANTE:
-            // Aquí usamos la hora efectiva, incluyendo
-            // los ajustes configurados.
-            $horaEntradaEfectiva = $this->obtenerHoraEntradaEfectiva(
-                $horario
-            );
-
-            $limite = Carbon::parse($horaEntradaEfectiva)
-                ->addMinutes($horario->tolerancia_minutos);
-
-            if ($entrada->fecha_hora->gt($limite)) {
-
-                $estado = 'retardo';
-
-                $minutosRetardo = $limite->diffInMinutes(
-                    $entrada->fecha_hora
-                );
-            }
-        }
-
-        // =====================================================
-        // HORAS TRABAJADAS
-        // =====================================================
-
-        $horasTrabajadas = 0;
-
-        if ($entrada && $salida) {
-
-            $horasTrabajadas = abs(
-                $entrada->fecha_hora->diffInMinutes(
-                    $salida->fecha_hora
-                )
-            ) / 60;
-        }
-
-        // =====================================================
-        // GUARDAR
+        // FALTA
         // =====================================================
 
         return $this->guardarAsistencia(
             $empleado,
             $fecha,
-            $estado,
-            $minutosRetardo,
-            $horasTrabajadas
+            'falta',
+            0,
+            0
         );
     }
+
+
 
     /**
      * Guarda o actualiza una asistencia.

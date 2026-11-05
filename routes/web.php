@@ -8,7 +8,9 @@ use App\Http\Controllers\UsuarioController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'showWelcome']);
-Route::get('/csrf-token', function () {return response()->json(['token' => csrf_token(),]);});
+Route::get('/csrf-token', function () {
+    return response()->json(['token' => csrf_token(),]);
+});
 Route::get('/empleados/{n_empleado}/buscar', [HomeController::class, 'buscarEmpleado']);
 Route::post('/asistencia/{n_empleado}/salida', [HomeController::class, 'marcarSalidaConfirmada']);
 
@@ -21,7 +23,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     //Rutas protegidas  
     Route::middleware('auth')->group(function () {
         // Dashboard de asistencias
-         Route::get('/dashboard', [AdminController::class, 'dashboard']);
+        Route::get('/dashboard', [AdminController::class, 'dashboard']);
         Route::get('/asistencias', [AdminController::class, 'asistencias'])->name('asistencias');
         Route::get('/asistencias/reporte/pdf', [AdminController::class, 'generarReporte'])
             ->name('asistencias.reporte.pdf');
@@ -51,22 +53,37 @@ Route::prefix('admin')->name('admin.')->group(function () {
             ->name('departamentos.update');
 
 
-        Route::get('/vacacionesfestivos', [UsuarioController::class, 'configurarVacacionesFestivos'])->name('vacacionesfestivos.index');
+        Route::get('/festivos', [UsuarioController::class, 'configurarFestivos'])->name('festivos.index');
+
         Route::post('/configuracion/horario-0730', [UsuarioController::class, 'actualizarHorario0730'])->name('configuracion.horario0730');
         Route::post('/configuracion/salida-1500', [UsuarioController::class, 'actualizarHorarioSalida1500'])->name('configuracion.horarioSalida1500');
         // vacaciones
-        Route::post('/vacaciones/store', [UsuarioController::class, 'store'])->name('vacaciones.store');
+        // Route::post('/ausencias/store', [UsuarioController::class, 'store'])->name('ausencias.store');
         Route::post('/dias-festivos/store', [UsuarioController::class, 'storeDiaFestivo'])->name('diasfestivos.store');
-        Route::delete('/vacaciones/{id}', [UsuarioController::class, 'destroyVacaciones'])->name('vacaciones.destroyVacaciones');
+        // Route::delete('/vacaciones/{id}', [UsuarioController::class, 'destroyVacaciones'])->name('vacaciones.destroyVacaciones');
         Route::delete('/festivos/{id}', [UsuarioController::class, 'destroyFestivos'])->name('festivos.destroyFestivos');
-        Route::put('/vacaciones/{vacacion}', [UsuarioController::class, 'updateVacaciones'])->name('vacaciones.update');
+        // Route::put('/vacaciones/{vacacion}', [UsuarioController::class, 'updateVacaciones'])->name('vacaciones.update');
         Route::put('/festivos/{diaFestivo}', [UsuarioController::class, 'updateFestivos'])->name('festivos.update');
+        // Route::get('/vacaciones/excel', [UsuarioController::class, 'generarVacacionesExcel'])->name('vacaciones.excel');
 
-        Route::get('/vacaciones/excel', [UsuarioController::class, 'generarVacacionesExcel'])->name('vacaciones.excel');
+
+        Route::get('/ausencias', [UsuarioController::class, 'configurarAusencias'])
+            ->name('ausencias.index');
+
+        Route::post('/ausencias', [UsuarioController::class, 'storeAusencia'])
+            ->name('ausencias.store');
+
+        Route::put('/ausencias/{ausencia}', [UsuarioController::class, 'updateAusencia'])
+            ->name('ausencias.update');
+
+        Route::delete('/ausencias/{id}', [UsuarioController::class, 'destroyAusencia'])
+            ->name('ausencias.destroy');
+
+        Route::get('/ausencias/excel', [UsuarioController::class, 'generarAusenciasExcel'])
+            ->name('ausencias.excel');
+
+
         Route::get('/empleados/{empleado}/vacaciones/pdf', [EmpleadoController::class, 'generarVacacionesPdf'])->name('empleados.vacaciones.pdf');
-
-        //incidencias 
-         Route::get('/incidencias', [UsuarioController::class, 'configurarIncidencias'])->name('incidencias.index');
 
 
 
