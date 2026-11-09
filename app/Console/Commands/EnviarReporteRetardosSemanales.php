@@ -9,60 +9,48 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\User;
 use App\Models\Asistencia;
 use App\Mail\ReporteRetardosMail;
+use App\Models\DiaFestivo;
 use App\Models\Empleado;
+use Carbon\Carbon;
 
 class EnviarReporteRetardosSemanales extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'app:enviar-reporte-retardos-semanales';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Command description';
+    protected $description = 'Envía el reporte semanal de asistencia, retardos y faltas a los administradores';
 
-    /**
-     * Execute the console command.
-     */
     public function handle()
     {
-        $inicioSemana = now()->startOfWeek(); // lunes
-        $finSemana = now()->startOfWeek()->addDays(4); // viernes
+        $inicioSemana = now()->startOfWeek();
+        $finSemana = $inicioSemana->copy()->addDays(4);
 
-        /*--------------------------------------------------------------------------
-    | Fechas de lunes a viernes
-    |--------------------------------------------------------------------------*/
+        // Fechas de lunes a viernes
         $fechasSemana = collect();
 
-        for ($fecha = $inicioSemana->copy(); $fecha->lte($finSemana); $fecha->addDay()) {
+        for (
+            $fecha = $inicioSemana->copy();
+            $fecha->lte($finSemana);
+            $fecha->addDay()
+        ) {
             $fechasSemana->push($fecha->copy());
         }
 
-        /*--------------------------------------------------------------------------
-    | Días festivos de la semana
-    |--------------------------------------------------------------------------*/
-        $diasFestivos = \App\Models\DiaFestivo::whereBetween('fecha', [
+        // Días festivos
+        $diasFestivos = DiaFestivo::whereBetween('fecha', [
             $inicioSemana->toDateString(),
             $finSemana->toDateString()
         ])
             ->pluck('fecha')
-            ->map(fn($fecha) => \Carbon\Carbon::parse($fecha)->toDateString());
-        /*--------------------------------------------------------------------------
-    | Empleados activos
-    |--------------------------------------------------------------------------*/
+            ->map(fn($fecha) => Carbon::parse($fecha)->toDateString());
+
+        // Empleados activos
         $empleados = Empleado::where('activo', true)
             ->with([
                 'asistencias' => function ($query) use ($inicioSemana, $finSemana) {
                     $query->whereBetween('fecha', [
                         $inicioSemana->toDateString(),
                         $finSemana->toDateString()
-                    ]);
+                    ])->orderBy('fecha', 'asc');
                 },
                 'horarios' => function ($query) {
                     $query->where('activo', true);
@@ -70,79 +58,67 @@ class EnviarReporteRetardosSemanales extends Command
             ])
             ->get();
 
-        /*|--------------------------------------------------------------------------
-    | Retardos
-    |--------------------------------------------------------------------------*/
         $retardos = collect();
-
-        /*|--------------------------------------------------------------------------
-    | Faltas / empleados sin asistencia
-    |--------------------------------------------------------------------------*/
-
         $empleadosSinAsistencia = collect();
+
+        // Nuevo: todos los registros de asistencia por empleado
+        $asistenciasPorEmpleado = collect();
+
         foreach ($empleados as $empleado) {
 
-            /*|--------------------------------------------------------------------------
-        | Horarios del empleado
-        |--------------------------------------------------------------------------*/
             $horarios = $empleado->horarios->keyBy('dia_semana');
 
-            /*|--------------------------------------------------------------------------
-        | Asistencias del empleado
-        |--------------------------------------------------------------------------*/
-
             $asistencias = $empleado->asistencias->keyBy(function ($asistencia) {
-                return \Carbon\Carbon::parse($asistencia->fecha)->toDateString();
+                return Carbon::parse($asistencia->fecha)->toDateString();
             });
 
             $faltas = collect();
 
+            // Guardar todos los estados registrados
+            if ($empleado->asistencias->isNotEmpty()) {
+
+                $asistenciasPorEmpleado->put(
+                    $empleado->id,
+                    [
+                        'empleado' => $empleado,
+                        'asistencias' => $empleado->asistencias
+                    ]
+                );
+            }
+
+            // Revisar faltas de lunes a viernes
             foreach ($fechasSemana as $fecha) {
 
                 $fechaString = $fecha->toDateString();
-
-                // 1 = lunes, 5 = viernes
                 $diaSemana = $fecha->dayOfWeekIso;
 
-                /*
-            |--------------------------------------------------------------------------
-            | Si es día festivo, no se considera falta
-            |--------------------------------------------------------------------------
-            */
-
+                // No contar festivos
                 if ($diasFestivos->contains($fechaString)) {
                     continue;
                 }
 
-                /*|--------------------------------------------------------------------------
-            | Si el empleado no tiene horario ese día,
-            | significa que es día libre
-            |--------------------------------------------------------------------------*/
+                // Si no tiene horario, es día libre
                 if (!isset($horarios[$diaSemana])) {
                     continue;
                 }
 
-                /*|--------------------------------------------------------------------------
-            | Buscar asistencia de ese día
-            |--------------------------------------------------------------------------*/
                 $asistencia = $asistencias->get($fechaString);
-                /*|--------------------------------------------------------------------------
-            | No tiene asistencia
-            |--------------------------------------------------------------------------*/
 
+                // No tiene registro de asistencia
                 if (!$asistencia) {
+
                     $faltas->push([
                         'fecha' => $fechaString,
                         'dia' => $fecha->translatedFormat('l'),
                         'motivo' => 'Sin asistencia',
                     ]);
+
                     continue;
                 }
 
-                /*|--------------------------------------------------------------------------
-            | Si explícitamente está marcada como falta
-            |--------------------------------------------------------------------------*/
+                // Falta registrada explícitamente
                 if ($asistencia->estado === 'falta') {
+
                     $faltas->push([
                         'fecha' => $fechaString,
                         'dia' => $fecha->translatedFormat('l'),
@@ -151,25 +127,18 @@ class EnviarReporteRetardosSemanales extends Command
                 }
             }
 
-            /*|--------------------------------------------------------------------------
-        | Agregar retardos
-        |--------------------------------------------------------------------------*/
-
+            // Registrar retardos
             $retardosEmpleado = $empleado->asistencias
                 ->where('estado', 'retardo');
-            if ($retardosEmpleado->isNotEmpty()) {
 
+            if ($retardosEmpleado->isNotEmpty()) {
                 $retardos->put(
                     $empleado->id,
                     $retardosEmpleado
                 );
             }
 
-            /*
-        |--------------------------------------------------------------------------
-        | Agregar empleado si tuvo faltas
-        |--------------------------------------------------------------------------
-        */
+            // Registrar empleados con faltas
             if ($faltas->isNotEmpty()) {
 
                 $empleadosSinAsistencia->push([
@@ -179,49 +148,46 @@ class EnviarReporteRetardosSemanales extends Command
             }
         }
 
-        /*
-    |--------------------------------------------------------------------------
-    | Si no hay nada que reportar
-    |--------------------------------------------------------------------------
-    */
-        if ($retardos->isEmpty() && $empleadosSinAsistencia->isEmpty()) {
-
-            Log::info(
-                'No hay retardos ni faltas esta semana.'
-            );
+        // Si no existe ningún registro que reportar
+        if (
+            $retardos->isEmpty() &&
+            $empleadosSinAsistencia->isEmpty() &&
+            $asistenciasPorEmpleado->isEmpty()
+        ) {
+            Log::info('No hay registros de asistencia esta semana.');
 
             return Command::SUCCESS;
         }
 
-        /*
-    |--------------------------------------------------------------------------
-    | Usuarios que reciben el reporte
-    |--------------------------------------------------------------------------
-    */
+        // Usuarios que reciben el reporte
         $usuarios = User::where('yes_notifications', true)->get();
 
-        /*
-    |--------------------------------------------------------------------------
-    | Generar PDF
-    |--------------------------------------------------------------------------
-    */
+        if ($usuarios->isEmpty()) {
+            Log::warning('No hay usuarios configurados para recibir notificaciones.');
+
+            return Command::SUCCESS;
+        }
+
+        // Generar PDF general
         $pdf = PDF::loadView(
             'emails.reporte_pdf',
             compact(
                 'retardos',
                 'empleadosSinAsistencia',
+                'asistenciasPorEmpleado',
                 'inicioSemana',
                 'finSemana'
             )
         );
+
         $pdfContent = $pdf->output();
 
-        /*
-    |--------------------------------------------------------------------------
-    | Enviar correo
-    |--------------------------------------------------------------------------
-    */
+        // Enviar correo a administradores
         foreach ($usuarios as $usuario) {
+
+            if (!$usuario->email) {
+                continue;
+            }
 
             Mail::to($usuario->email)->send(
                 new ReporteRetardosMail(
@@ -233,9 +199,9 @@ class EnviarReporteRetardosSemanales extends Command
                 )
             );
         }
-        Log::info(
-            'Reporte semanal de retardos y faltas enviado correctamente.'
-        );
+
+        Log::info('Reporte semanal de asistencia enviado correctamente.');
+
         return Command::SUCCESS;
     }
 }
