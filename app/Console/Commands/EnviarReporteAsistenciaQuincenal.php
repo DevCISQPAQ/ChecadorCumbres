@@ -3,348 +3,120 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
-use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Empleado;
-use App\Models\DiaFestivo;
-use App\Mail\ReporteAsistenciaEmpleadoMail;
+use App\Jobs\EnviarReporteAsistenciaEmpleado;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class EnviarReporteAsistenciaQuincenal extends Command
 {
-    protected $signature = 'app:enviar-reporte-asistencia-quincenal';
+    // protected $signature = 'app:enviar-reporte-asistencia-quincenal';
+    protected $signature = 'app:enviar-reporte-asistencia-quincenal
+                        {--fecha= : Fecha para simular el periodo Y-m-d}';
 
-    protected $description = 'Envía reportes individuales de asistencia de los últimos 15 días';
+    protected $description = 'Programa los reportes quincenales de asistencia';
 
     public function handle()
     {
-        /*
-        |--------------------------------------------------------------------------
-        | Periodo de los últimos 15 días, incluyendo hoy
-        |--------------------------------------------------------------------------
-        */
-
-        $fechaInicio = now()->subDays(14)->startOfDay();
-        $fechaFin = now()->endOfDay();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Obtener días festivos
-        |--------------------------------------------------------------------------
-        */
-
-        $diasFestivos = DiaFestivo::whereBetween('fecha', [
-            $fechaInicio->toDateString(),
-            $fechaFin->toDateString()
-        ])
-            ->pluck('fecha')
-            ->map(fn($fecha) => Carbon::parse($fecha)->toDateString())
-            ->toArray();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Obtener empleados activos
-        |--------------------------------------------------------------------------
-        */
-
-        $empleados = Empleado::where('activo', true)
-            ->with([
-                'departamento',
-
-                'asistencias' => function ($query) use ($fechaInicio, $fechaFin) {
-                    $query->whereBetween('fecha', [
-                        $fechaInicio->toDateString(),
-                        $fechaFin->toDateString()
-                    ]);
-                },
-
-                'horarios' => function ($query) {
-                    $query->where('activo', true);
-                },
-
-                'checadas' => function ($query) use ($fechaInicio, $fechaFin) {
-                    $query->whereBetween('fecha_hora', [
-                        $fechaInicio,
-                        $fechaFin
-                    ])
-                        ->orderBy('fecha_hora', 'asc');
-                }
-            ])
-            ->get();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Procesar cada empleado
-        |--------------------------------------------------------------------------
-        */
-
-        foreach ($empleados as $empleado) {
-
-            try {
-
-                if (empty($empleado->email)) {
-
-                    Log::warning(
-                        "Empleado {$empleado->id} sin correo electrónico."
-                    );
-
-                    continue;
-                }
+        // $fechaInicio = now()->subDays(14)->startOfDay();
+        // $fechaFin = now()->endOfDay();
 
-                /*
-                |--------------------------------------------------------------------------
-                | Organizar información del empleado
-                |--------------------------------------------------------------------------
-                */
+        // $hoy = now();
 
-                $horarios = $empleado->horarios->keyBy('dia_semana');
+        // if ($hoy->day == 1) {
 
-                $asistencias = $empleado->asistencias->keyBy(function ($asistencia) {
-                    return Carbon::parse($asistencia->fecha)->toDateString();
-                });
+        //     // Primera quincena de envío:
+        //     // Del día 16 del mes anterior
+        //     // hasta el último día del mes anterior.
 
-                $checadasPorFecha = $empleado->checadas->groupBy(function ($checada) {
-                    return Carbon::parse($checada->fecha_hora)->toDateString();
-                });
+        //     $fechaInicio = $hoy->copy()
+        //         ->subMonthNoOverflow()
+        //         ->day(16)
+        //         ->startOfDay();
 
-                $registrosReporte = collect();
+        //     $fechaFin = $hoy->copy()
+        //         ->subMonthNoOverflow()
+        //         ->endOfMonth()
+        //         ->endOfDay();
+        // } elseif ($hoy->day == 15) {
 
-                /*
-                |--------------------------------------------------------------------------
-                | Recorrer los 15 días
-                |--------------------------------------------------------------------------
-                */
+        //     // Segunda quincena de envío:
+        //     // Del día 1 al día 15 del mes actual.
 
-                for (
-                    $fecha = $fechaInicio->copy();
-                    $fecha->lte($fechaFin);
-                    $fecha->addDay()
-                ) {
+        //     $fechaInicio = $hoy->copy()
+        //         ->startOfMonth()
+        //         ->startOfDay();
 
-                    $fechaString = $fecha->toDateString();
+        //     $fechaFin = $hoy->copy()
+        //         ->day(15)
+        //         ->endOfDay();
+        // } else {
 
-                    $diaSemana = $fecha->dayOfWeekIso;
+        //     $this->error('Este comando solamente debe ejecutarse los días 1 y 15.');
 
-                    $asistencia = $asistencias->get($fechaString);
+        //     return Command::FAILURE;
+        // }
 
-                    $checadas = $checadasPorFecha->get(
-                        $fechaString,
-                        collect()
-                    );
+        $hoy = $this->option('fecha')
+            ? Carbon::parse($this->option('fecha'))
+            : now();
 
-                    $tieneHorario = isset($horarios[$diaSemana]);
+        if ($hoy->day == 1) {
 
-                    $esFestivo = in_array(
-                        $fechaString,
-                        $diasFestivos
-                    );
+            $fechaInicio = $hoy->copy()
+                ->subMonthNoOverflow()
+                ->day(16)
+                ->startOfDay();
 
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Obtener entrada y salida
-                    |--------------------------------------------------------------------------
-                    */
+            $fechaFin = $hoy->copy()
+                ->subMonthNoOverflow()
+                ->endOfMonth()
+                ->endOfDay();
+        } elseif ($hoy->day == 15) {
 
-                    // Primera checada de entrada
-                    $entrada = $checadas
-                        ->where('tipo', 'entrada')
-                        ->sortBy('fecha_hora')
-                        ->first();
+            $fechaInicio = $hoy->copy()
+                ->startOfMonth()
+                ->startOfDay();
 
-                    // Última checada de salida
-                    $salida = $checadas
-                        ->where('tipo', 'salida')
-                        ->sortByDesc('fecha_hora')
-                        ->first();
+            $fechaFin = $hoy->copy()
+                ->day(15)
+                ->endOfDay();
+        } else {
 
-                    $horaEntrada = $entrada
-                        ? Carbon::parse($entrada->fecha_hora)->format('H:i')
-                        : null;
+            $this->error('La fecha debe corresponder al día 1 o 15.');
 
-                    $horaSalida = $salida
-                        ? Carbon::parse($salida->fecha_hora)->format('H:i')
-                        : null;
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Si existe asistencia
-                    |--------------------------------------------------------------------------
-                    */
-
-                    if ($asistencia) {
-
-                        $registrosReporte->push([
-
-                            'fecha' => $fecha->copy(),
-
-                            'dia' => $fecha->translatedFormat('l'),
-
-                            'estado' => $asistencia->estado,
-
-                            'hora_entrada' => $horaEntrada,
-
-                            'hora_salida' => $horaSalida,
-
-                            'minutos_retardo' => $asistencia->minutos_retardo ?? 0,
-
-                            'horas_trabajadas' => $asistencia->horas_trabajadas,
-
-                            'observaciones' => $asistencia->observaciones,
-
-                            'tipo' => 'registro',
-
-                        ]);
-
-                        continue;
-                    }
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Día festivo
-                    |--------------------------------------------------------------------------
-                    */
-
-                    if ($esFestivo) {
-
-                        $registrosReporte->push([
-
-                            'fecha' => $fecha->copy(),
-
-                            'dia' => $fecha->translatedFormat('l'),
-
-                            'estado' => 'festivo',
-
-                            'hora_entrada' => $horaEntrada,
-
-                            'hora_salida' => $horaSalida,
-
-                            'minutos_retardo' => 0,
-
-                            'horas_trabajadas' => null,
-
-                            'observaciones' => null,
-
-                            'tipo' => 'no_laborable',
-
-                        ]);
-
-                        continue;
-                    }
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Día libre
-                    |--------------------------------------------------------------------------
-                    */
-
-                    if (!$tieneHorario) {
-
-                        $registrosReporte->push([
-
-                            'fecha' => $fecha->copy(),
-
-                            'dia' => $fecha->translatedFormat('l'),
-
-                            'estado' => 'libre',
-
-                            'hora_entrada' => $horaEntrada,
-
-                            'hora_salida' => $horaSalida,
-
-                            'minutos_retardo' => 0,
-
-                            'horas_trabajadas' => null,
-
-                            'observaciones' => null,
-
-                            'tipo' => 'no_laborable',
-
-                        ]);
-
-                        continue;
-                    }
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Día sin registro
-                    |--------------------------------------------------------------------------
-                    */
-
-                    $registrosReporte->push([
-
-                        'fecha' => $fecha->copy(),
-
-                        'dia' => $fecha->translatedFormat('l'),
-
-                        'estado' => 'sin registro',
-
-                        'hora_entrada' => $horaEntrada,
-
-                        'hora_salida' => $horaSalida,
-
-                        'minutos_retardo' => 0,
-
-                        'horas_trabajadas' => null,
-
-                        'observaciones' => null,
-
-                        'tipo' => 'sin_registro',
-
-                    ]);
-                }
-
-                /*
-                |--------------------------------------------------------------------------
-                | Generar PDF individual
-                |--------------------------------------------------------------------------
-                */
-
-                $pdf = PDF::loadView(
-                    'emails.reporte_asistencia_individual',
-                    [
-                        'empleado' => $empleado,
-                        'asistencias' => $registrosReporte,
-                        'fechaInicio' => $fechaInicio,
-                        'fechaFin' => $fechaFin,
-                    ]
-                )->setPaper('a4', 'landscape');
-
-                $pdfContent = $pdf->output();
-
-                /*
-                |--------------------------------------------------------------------------
-                | Enviar correo al empleado
-                |--------------------------------------------------------------------------
-                */
-
-                Mail::to($empleado->email)->send(
-                    new ReporteAsistenciaEmpleadoMail(
-                        $empleado,
-                        $registrosReporte,
-                        $pdfContent,
-                        $fechaInicio,
-                        $fechaFin
-                    )
-                );
-
-                Log::info(
-                    "Reporte quincenal enviado correctamente al empleado {$empleado->id}."
-                );
-            } catch (\Throwable $e) {
-
-                Log::error(
-                    "Error al enviar reporte al empleado {$empleado->id}: "
-                        . $e->getMessage()
-                );
-
-                continue;
-            }
+            return Command::FAILURE;
         }
 
+
+        $total = 0;
+
+        Empleado::where('activo', true)
+            ->whereNotNull('email')
+            ->where('email', '<>', '')
+            ->select('id')
+            ->chunkById(50, function ($empleados) use (
+                $fechaInicio,
+                $fechaFin,
+                &$total
+            ) {
+                foreach ($empleados as $empleado) {
+
+                    EnviarReporteAsistenciaEmpleado::dispatch(
+                        $empleado->id,
+                        $fechaInicio->toDateString(),
+                        $fechaFin->toDateString()
+                    );
+
+                    $total++;
+                }
+            });
+
         Log::info(
-            'Finalizó el envío de reportes individuales quincenales.'
+            "Se programaron {$total} reportes quincenales."
         );
+
+        $this->info("Se programaron {$total} reportes.");
 
         return Command::SUCCESS;
     }

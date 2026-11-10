@@ -27,6 +27,7 @@ return new class extends Migration
                 'falta',
                 'permiso',
                 'vacaciones',
+                'incapacidad',
                 'festivo',
                 'libre'
             ])->default('presente');

@@ -9,41 +9,50 @@
     <style>
         @page {
             size: A4 portrait;
-            margin: 25px;
+            margin: 25px 28px;
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
             font-family: Arial, sans-serif;
             font-size: 10px;
             color: #000;
+            margin: 0;
+            padding: 0;
+            line-height: 1.3;
         }
 
         h2 {
             text-align: center;
             color: #2c3e50;
-            margin-bottom: 5px;
+            font-size: 19px;
+            margin: 0 0 4px 0;
         }
 
         h3 {
             color: #2c3e50;
-            margin-top: 20px;
-            margin-bottom: 10px;
+            font-size: 11px;
+            margin: 12px 0 7px 0;
         }
 
         p {
-            margin: 7px 0;
+            margin: 5px 0;
+            line-height: 1.3;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 18px;
+            margin-bottom: 9px;
         }
 
         th,
         td {
             border: 1px solid #ddd;
-            padding: 7px;
+            padding: 6px 5px;
             color: #000;
         }
 
@@ -51,69 +60,108 @@
             background-color: #ecf0f1;
             color: #2c3e50;
             text-align: center;
+            font-size: 9px;
         }
 
         td {
             text-align: center;
+            font-size: 9px;
         }
 
-        .left {
-            text-align: left;
+        .encabezado,
+        .encabezado td {
+            border: none;
+            padding: 0;
         }
 
-        .presente {
-            color: green;
-            font-weight: bold;
+        .encabezado {
+            margin-bottom: 10px;
         }
 
-        .retardo {
-            color: #ca8a04;
-            font-weight: bold;
+        .subtitulo {
+            font-size: 12px;
+            text-align: center;
+            margin: 0;
         }
 
-        .falta,
-        .sin-registro {
-            color: red;
-            font-weight: bold;
+        .datos th {
+            width: 20%;
         }
 
-        .vacaciones {
-            color: blue;
-            font-weight: bold;
+        .datos td {
+            width: 30%;
+            font-size: 9px;
         }
 
-        .permiso {
-            color: purple;
-            font-weight: bold;
+        .detalle {
+            table-layout: fixed;
         }
 
-        .incapacidad {
-            color: #0891b2;
-            font-weight: bold;
+        .detalle th,
+        .detalle td {
+            padding: 7px 3px;
+            font-size: 8px;
+            vertical-align: middle;
         }
 
-        .libre {
-            color: #0891b2;
+        .detalle th:nth-child(1) {
+            width: 13%;
         }
 
-        .festivo {
-            color: gray;
+        .detalle th:nth-child(2) {
+            width: 11%;
+        }
+
+        .detalle th:nth-child(3) {
+            width: 14%;
+        }
+
+        .detalle th:nth-child(4) {
+            width: 14%;
+        }
+
+        .detalle th:nth-child(5) {
+            width: 14%;
+        }
+
+        .detalle th:nth-child(6) {
+            width: 17%;
+        }
+
+        .detalle th:nth-child(7) {
+            width: 17%;
+        }
+
+        .resumen {
+            margin-top: 4px;
+        }
+
+        .resumen th,
+        .resumen td {
+            padding: 6px;
+            font-size: 9px;
         }
 
         .resumen th {
             text-align: left;
         }
 
+        .observaciones {
+            text-align: left;
+            padding: 8px;
+            line-height: 1.4;
+        }
+
         .firma-container {
-            width: 100%;
-            margin-top: 45px;
+            margin-top: 25px;
+            margin-bottom: 5px;
         }
 
         .firma {
             width: 45%;
             border: none;
             text-align: center;
-            padding-top: 35px;
+            padding: 0 15px;
         }
 
         .linea-firma {
@@ -122,15 +170,32 @@
         }
 
         .footer {
-            font-size: 9px;
+            font-size: 8px;
             color: #7f8c8d;
             text-align: center;
-            margin-top: 30px;
+            margin-top: 5px;
+            padding: 0;
+            line-height: 1;
+            page-break-before: avoid;
+            page-break-after: avoid;
+            page-break-inside: avoid;
         }
 
-        .observaciones {
-            height: 45px;
-            text-align: left;
+        .saludo {
+            margin: 7px 0;
+        }
+
+        .texto-descripcion {
+            margin: 5px 0 8px 0;
+        }
+
+        .seccion {
+            page-break-inside: avoid;
+        }
+
+        .firma-container,
+        .firma-container tr {
+            page-break-inside: avoid;
         }
     </style>
 </head>
@@ -219,7 +284,7 @@
                 <th>Hora de salida</th>
                 <th>Estado</th>
                 <th>Minutos de retardo</th>
-                <th>Horas trabajadas</th>
+                <!-- <th>Horas trabajadas</th> -->
             </tr>
         </thead>
 
@@ -288,12 +353,7 @@
                     @endif
                 </td>
 
-                <td>
-                    {{ $registro['horas_trabajadas'] !== null
-                            ? number_format((float) $registro['horas_trabajadas'], 2) . ' h'
-                            : '-'
-                        }}
-                </td>
+               
 
             </tr>
 

@@ -6,6 +6,11 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\EmpleadoController;
 use App\Http\Controllers\UsuarioController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DashboardController;
+
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth'])
+    ->name('dashboard');
 
 Route::get('/', [HomeController::class, 'showWelcome']);
 Route::get('/csrf-token', function () {
@@ -23,7 +28,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
     //Rutas protegidas  
     Route::middleware('auth')->group(function () {
         // Dashboard de asistencias
-        Route::get('/dashboard', [AdminController::class, 'dashboard']);
+        // Route::get('/dashboard', [AdminController::class, 'dashboard']);
+        Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth'])->name('dashboard');
         Route::get('/asistencias', [AdminController::class, 'asistencias'])->name('asistencias');
         Route::get('/asistencias/reporte/pdf', [AdminController::class, 'generarReporte'])
             ->name('asistencias.reporte.pdf');
