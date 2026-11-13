@@ -461,12 +461,12 @@
                 <td>{{ $totalMinutosRetardo }} min</td>
             </tr>
 
-            <tr>
+            <!-- <tr>
                 <th>Total de horas trabajadas</th>
                 <td colspan="3">
                     {{ number_format((float) $totalHorasTrabajadas, 2) }} horas
                 </td>
-            </tr>
+            </tr> -->
 
         </tbody>
 

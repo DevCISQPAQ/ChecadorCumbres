@@ -187,7 +187,7 @@
                                 <!-- <th class="p-2 border">Comida</th>
                                 <th class="p-2 border">Regreso</th> -->
                                 <th class="p-2 border">Tol.</th>
-                                <th class="p-2 border">Activo</th>
+                                <!-- <th class="p-2 border">Activo</th> -->
                             </tr>
 
                         </thead>
@@ -256,14 +256,14 @@
                                         class="w-16 border rounded px-1 py-1">
                                 </td>
 
-                                <td class="border p-2 text-center">
+                                <!-- <td class="border p-2 text-center">
                                     <input
                                         type="checkbox"
                                         checked
                                         value="1"
                                         name="horarios[{{ $numero }}][activo]"
                                         class="w-4 h-4">
-                                </td>
+                                </td> -->
 
                             </tr>
 

@@ -252,7 +252,7 @@
                                 <!-- <th class="border p-2">Salida comida</th>
                                 <th class="border p-2">Regreso comida</th> -->
                                 <th class="border p-2">Tol.</th>
-                                <th class="border p-2">Activo</th>
+                                <!-- <th class="border p-2">Activo</th> -->
                             </tr>
 
                         </thead>
@@ -337,7 +337,7 @@
                                 </td>
 
                                 {{-- ACTIVO --}}
-                                <td class="border p-2 text-center">
+                                <!-- <td class="border p-2 text-center">
 
                                     <input
                                         type="checkbox"
@@ -346,7 +346,7 @@
                                         {{ isset($horario) && $horario->activo ? 'checked' : '' }}
                                         class="w-4 h-4">
 
-                                </td>
+                                </td> -->
 
                             </tr>
 
