@@ -8,8 +8,8 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    <link rel="shortcut icon" type="image/svg" href="{{ asset('/img/sello-cumbres-en-blanco-01.png') }}">
-    <link rel="shortcut icon" sizes="192x192" href="{{ asset('/img/sello-cumbres-en-blanco-01.png') }}">
+    <link rel="shortcut icon" type="image/svg" href="{{ asset('/img/iconos/favicon.svg') }}">
+    <link rel="shortcut icon" sizes="192x192" href="{{ asset('/img/iconos/favicon.svg') }}">
 </head>
 
 <body class="bg-gray-100 min-h-screen flex items-center justify-center px-4">
@@ -25,7 +25,7 @@
 
         {{-- LOGO --}}
         <div class="flex justify-center mb-3">
-            <img src="/img/sello-cumbres.svg" alt="Logo" class="h-20">
+            <img src="img/logos/svg/logo-recuadro.svg" alt="Logo" class="h-20">
         </div>
 
         {{-- TITULO --}}
@@ -119,7 +119,7 @@
         {{-- FOOTER --}}
         <div class="border-t border-gray-100 mt-7 pt-4 text-center">
             <p class="text-xs text-gray-400">
-                Cumbres International School
+                cheko
             </p>
         </div>
 

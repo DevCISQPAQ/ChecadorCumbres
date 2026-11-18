@@ -1,31 +1,13 @@
-
 <div class="flex h-full flex-col bg-white">
 
     {{-- LOGO Y MARCA --}}
-    <div class="flex min-h-[105px] items-center gap-3 border-b
-                border-slate-100 px-6 py-5">
-
-        <div class="flex h-14 w-14 shrink-0 items-center justify-center
-                    rounded-xl bg-[#F1F5FF] p-2">
-
-            <img
-                src="{{ asset('img/sello-cumbres.svg') }}"
-                alt="Logo Cumbres"
-                class="max-h-full max-w-full object-contain">
-
-        </div>
-
-        <div class="min-w-0">
-            <h2 class="text-base font-bold tracking-tight text-[#0A1033]">
-                Cumbres
-            </h2>
-
-            <p class="mt-0.5 text-xs text-slate-500">
-                Sistema de asistencias
-            </p>
-        </div>
-
+    <div class="flex min-h-[105px] items-center justify-center border-b border-slate-100 px-6 py-5">
+        <img
+            src="{{ asset('img/logos/svg/logo-recuadro.svg') }}"
+            alt="Logo Cheko"
+            class="w-auto h-auto max-h-[85px] max-w-[220px] object-contain">
     </div>
+
 
     {{-- NAVEGACIÓN --}}
     <nav class="flex-1 space-y-1 overflow-y-auto px-4 py-6">
@@ -58,7 +40,7 @@
             <span>Dashboard</span>
 
             @if(request()->is('admin/dashboard'))
-                <span class="ml-auto h-2 w-2 rounded-full bg-white"></span>
+            <span class="ml-auto h-2 w-2 rounded-full bg-white"></span>
             @endif
 
         </a>
@@ -86,7 +68,7 @@
             <span>Asistencias</span>
 
             @if(request()->routeIs('admin.asistencias*'))
-                <span class="ml-auto h-2 w-2 rounded-full bg-white"></span>
+            <span class="ml-auto h-2 w-2 rounded-full bg-white"></span>
             @endif
 
         </a>
@@ -94,126 +76,126 @@
         {{-- EMPLEADOS --}}
         @if(auth()->user()->level_user)
 
-            <a
-                href="{{ route('admin.empleados') }}"
-                class="group flex items-center gap-3 rounded-xl px-3 py-3
+        <a
+            href="{{ route('admin.empleados') }}"
+            class="group flex items-center gap-3 rounded-xl px-3 py-3
                        text-sm font-medium transition-all duration-200
                        {{ request()->routeIs('admin.empleados*')
                             ? 'bg-[#2447FF] text-white shadow-md shadow-[#2447FF]/20'
                             : 'text-slate-600 hover:bg-[#F1F5FF] hover:text-[#2447FF]' }}">
 
-                <svg xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5 shrink-0"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="1.8"
-                        d="M17 21v-2a4 4 0 00-4-4H9a4 4 0 00-4 4v2m12-13a4 4 0 11-8 0 4 4 0 018 0zm3 13v-2a4 4 0 00-3-3.87" />
-                </svg>
+            <svg xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5 shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.8"
+                    d="M17 21v-2a4 4 0 00-4-4H9a4 4 0 00-4 4v2m12-13a4 4 0 11-8 0 4 4 0 018 0zm3 13v-2a4 4 0 00-3-3.87" />
+            </svg>
 
-                <span>Empleados</span>
+            <span>Empleados</span>
 
-                @if(request()->routeIs('admin.empleados*'))
-                    <span class="ml-auto h-2 w-2 rounded-full bg-white"></span>
-                @endif
+            @if(request()->routeIs('admin.empleados*'))
+            <span class="ml-auto h-2 w-2 rounded-full bg-white"></span>
+            @endif
 
-            </a>
+        </a>
 
         @endif
 
         {{-- ADMINISTRACIÓN --}}
         @if(auth()->user()->level_user >= 1)
 
-            <p class="mb-3 mt-8 px-3 text-[11px] font-bold uppercase
+        <p class="mb-3 mt-8 px-3 text-[11px] font-bold uppercase
                       tracking-wider text-slate-400">
-                Administración
-            </p>
+            Administración
+        </p>
 
-            {{-- AUSENCIAS --}}
-            <a
-                href="{{ route('admin.ausencias.index') }}"
-                class="group flex items-center gap-3 rounded-xl px-3 py-3
+        {{-- AUSENCIAS --}}
+        <a
+            href="{{ route('admin.ausencias.index') }}"
+            class="group flex items-center gap-3 rounded-xl px-3 py-3
                        text-sm font-medium transition-all duration-200
                        {{ request()->routeIs('admin.ausencias*')
                             ? 'bg-[#2447FF] text-white shadow-md shadow-[#2447FF]/20'
                             : 'text-slate-600 hover:bg-[#F1F5FF] hover:text-[#2447FF]' }}">
 
-                <svg xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5 shrink-0"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="1.8"
-                        d="M8 7V3m8 4V3M4 11h16M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1zm4 10l2 2 4-4" />
-                </svg>
+            <svg xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5 shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.8"
+                    d="M8 7V3m8 4V3M4 11h16M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1zm4 10l2 2 4-4" />
+            </svg>
 
-                <span>Ausencias</span>
+            <span>Ausencias</span>
 
-                @if(request()->routeIs('admin.ausencias*'))
-                    <span class="ml-auto h-2 w-2 rounded-full bg-white"></span>
-                @endif
+            @if(request()->routeIs('admin.ausencias*'))
+            <span class="ml-auto h-2 w-2 rounded-full bg-white"></span>
+            @endif
 
-            </a>
+        </a>
 
-            {{-- FESTIVOS --}}
-            <a
-                href="{{ route('admin.festivos.index') }}"
-                class="group flex items-center gap-3 rounded-xl px-3 py-3
+        {{-- FESTIVOS --}}
+        <a
+            href="{{ route('admin.festivos.index') }}"
+            class="group flex items-center gap-3 rounded-xl px-3 py-3
                        text-sm font-medium transition-all duration-200
                        {{ request()->routeIs('admin.festivos*')
                             ? 'bg-[#2447FF] text-white shadow-md shadow-[#2447FF]/20'
                             : 'text-slate-600 hover:bg-[#F1F5FF] hover:text-[#2447FF]' }}">
 
-                <svg xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5 shrink-0"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="1.8"
-                        d="M8 7V3m8 4V3M4 11h16M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1zm3 10h2m4 0h2m-8 3h2m4 0h2" />
-                </svg>
+            <svg xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5 shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.8"
+                    d="M8 7V3m8 4V3M4 11h16M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1zm3 10h2m4 0h2m-8 3h2m4 0h2" />
+            </svg>
 
-                <span>Festivos</span>
+            <span>Festivos</span>
 
-                @if(request()->routeIs('admin.festivos*'))
-                    <span class="ml-auto h-2 w-2 rounded-full bg-white"></span>
-                @endif
+            @if(request()->routeIs('admin.festivos*'))
+            <span class="ml-auto h-2 w-2 rounded-full bg-white"></span>
+            @endif
 
-            </a>
+        </a>
 
-            {{-- PREFERENCIAS --}}
-            <a
-                href="{{ route('admin.preferencias') }}"
-                class="group flex items-center gap-3 rounded-xl px-3 py-3
+        {{-- PREFERENCIAS --}}
+        <a
+            href="{{ route('admin.preferencias') }}"
+            class="group flex items-center gap-3 rounded-xl px-3 py-3
                        text-sm font-medium transition-all duration-200
                        {{ request()->routeIs('admin.preferencias*')
                             ? 'bg-[#2447FF] text-white shadow-md shadow-[#2447FF]/20'
                             : 'text-slate-600 hover:bg-[#F1F5FF] hover:text-[#2447FF]' }}">
 
-                <svg xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5 shrink-0"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="1.8"
-                        d="M12 8a4 4 0 100 8 4 4 0 000-8zm0-5v2m0 14v2m9-9h-2M5 12H3m15.36-6.36l-1.42 1.42M7.06 16.94l-1.42 1.42m12.72 0l-1.42-1.42M7.06 7.06L5.64 5.64" />
-                </svg>
+            <svg xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5 shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.8"
+                    d="M12 8a4 4 0 100 8 4 4 0 000-8zm0-5v2m0 14v2m9-9h-2M5 12H3m15.36-6.36l-1.42 1.42M7.06 16.94l-1.42 1.42m12.72 0l-1.42-1.42M7.06 7.06L5.64 5.64" />
+            </svg>
 
-                <span>Preferencias</span>
+            <span>Preferencias</span>
 
-                @if(request()->routeIs('admin.preferencias*'))
-                    <span class="ml-auto h-2 w-2 rounded-full bg-white"></span>
-                @endif
+            @if(request()->routeIs('admin.preferencias*'))
+            <span class="ml-auto h-2 w-2 rounded-full bg-white"></span>
+            @endif
 
-            </a>
+        </a>
 
         @endif
 
@@ -227,22 +209,16 @@
             <div class="flex h-9 w-9 shrink-0 items-center justify-center
                         rounded-lg bg-white text-[#2447FF] shadow-sm">
 
-                <svg xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="1.8"
-                        d="M12 3l2.5 5.5L20 11l-5.5 2.5L12 19l-2.5-5.5L4 11l5.5-2.5L12 3z" />
-                </svg>
+                <img
+                    src="{{ asset('img/iconos/icono-512.png') }}"
+                    alt="Mi icono"
+                    class="h-5 w-5 object-contain">
 
             </div>
 
             <div class="min-w-0">
                 <p class="text-xs font-bold text-[#0A1033]">
-                    Cumbres
+                    cheko
                 </p>
 
                 <p class="text-[11px] text-slate-500">

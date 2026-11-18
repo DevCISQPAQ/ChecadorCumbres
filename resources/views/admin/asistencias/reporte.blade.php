@@ -103,13 +103,13 @@
     <table class="w-full">
         <tr>
             <td class="w-half">
-                 <img src="{{ public_path('img/escudo-gris.svg') }}"
-                    style="width: .5rem;">
+                 <img src="{{ public_path('img/logos/svg/logo-recuadro.svg') }}"
+                    style="width: 10rem;">
             </td>
 
             <td class="w-half" style="text-align: right;">
                 <h2 style="color: #374151; margin: 0;">
-                    Cumbres International School
+                    cheko
                 </h2>
             </td>
         </tr>
@@ -278,7 +278,7 @@
 
     {{-- PIE DE PÁGINA --}}
     <footer class="footer">
-        <div>&copy; Cumbres International School</div>
+        <div>&copy; cheko</div>
         <div>Documento generado automáticamente por el sistema.</div>
     </footer>
 

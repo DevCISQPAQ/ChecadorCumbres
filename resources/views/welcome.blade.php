@@ -4,12 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checador Cumbres</title>
+    <title>cheko</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <link rel="shortcut icon" type="image/svg"
-        href="{{ asset('/img/sello-cumbres-en-blanco-01.png') }}">
+        href="{{ asset('/img/iconos/favicon.svg') }}">
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -36,7 +36,10 @@
         }
 
         body {
-            font-family: 'Roboto', sans-serif;
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         .lector-qr {
@@ -167,8 +170,8 @@
 
         <div class="max-w-[1400px] mx-auto px-8 py-3 flex items-center justify-between">
 
-            <img src="{{ asset('img/escuworblan.png') }}"
-                alt="Cumbres International School"
+            <img src="{{ asset('img/logos/svg/logo-recuadro.svg') }}"
+                alt="cheko"
                 class="w-44 h-auto">
 
             <div class="flex items-center gap-8 text-white">
@@ -365,7 +368,7 @@
                         <div class="w-40 h-40 rounded-xl border border-[#DCE8FF] bg-white overflow-hidden flex items-center justify-center">
 
                             <img id="foto-empleado"
-                                src="{{ asset('img/escudo-gris.png') }}"
+                                src="{{ asset('img/iconos/icono-1024.png') }}"
                                 alt="Foto empleado"
                                 class="w-full h-full object-cover">
 
@@ -494,8 +497,7 @@
 
         <p class="text-center text-xs text-[#DCE8FF]">
 
-            &copy; {{ date('Y') }} Cumbres International School.
-            Desarrollado e implementado por el Depto. de Tecnologías de la Información.
+            &copy; {{ date('Y') }} cheko.
 
         </p>
 
@@ -530,8 +532,6 @@
         </div>
 
     </div>
-
-
 
     {{-- LOADER --}}
     <div id="loader"
