@@ -2,273 +2,295 @@
 
 @section('content')
 
+{{-- ALERTAS DE VALIDACIÓN --}}
 @if ($errors->any())
 <div x-data="{ show: true }"
-    x-init="setTimeout(() => show = false, 4000)"
+    x-init="setTimeout(() => show = false, 5000)"
     x-show="show"
     x-transition
-    class="mb-5 bg-red-100 border border-red-400 text-red-700 p-4 rounded">
+    class="mb-5 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
 
-    <ul class="list-disc pl-5 text-sm">
-        @foreach ($errors->all() as $error)
-        <li>{{ $error }}</li>
-        @endforeach
-    </ul>
+    <div class="min-w-0">
+        <p class="text-sm font-bold">No se pudo completar la operación</p>
+        <ul class="mt-1 list-disc pl-5 text-xs">
+            @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
 
+    <button type="button" @click="show = false"
+        class="ml-auto text-red-500 hover:text-red-700">
+        ✕
+    </button>
 </div>
 @endif
 
-<div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+{{-- ENCABEZADO --}}
+<div class="mb-6">
+    <h2 class="text-xl font-bold tracking-tight text-[#0A1033]">
+        Gestión de ausencias
+    </h2>
+    <p class="mt-1 text-sm text-slate-500">
+        Administración de vacaciones, permisos e incapacidades del personal.
+    </p>
+</div>
 
-    {{-- ================================= --}}
+<div class="grid grid-cols-1 gap-5 xl:grid-cols-2">
+
     {{-- REGISTRAR AUSENCIA --}}
-    {{-- ================================= --}}
+    <div class="h-fit overflow-visible rounded-2xl border border-slate-200 bg-white shadow-sm">
 
-    <div class="bg-white p-6 rounded-xl shadow h-fit">
+        <div class="border-b border-slate-100 px-5 py-4">
+            <div class="flex items-center gap-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#DCE8FF] text-[#2447FF]">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        class="h-5 w-5" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            stroke-width="1.8"
+                            d="M8 7V3m8 4V3M4 11h16M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" />
+                    </svg>
+                </div>
 
-        <div class="mb-3">
-            <h1 class="text-2xl font-bold text-gray-800">
-                Registrar ausencia
-            </h1>
-
-            <p class="text-sm text-gray-500">
-                Asigna vacaciones, permisos o incapacidades a un empleado.
-            </p>
+                <div>
+                    <h3 class="text-base font-bold text-[#0A1033]">
+                        Registrar ausencia
+                    </h3>
+                    <p class="text-xs text-slate-500">
+                        Completa los datos del registro.
+                    </p>
+                </div>
+            </div>
         </div>
 
         <form id="guardar-ausencia"
             action="{{ route('admin.ausencias.store') }}"
-            method="POST">
+            method="POST"
+            class="space-y-4 p-5">
 
             @csrf
 
-            {{-- TIPO DE AUSENCIA --}}
-            <div class="mb-4">
-
-                <label class="block text-sm font-medium text-gray-700 mb-2">
+            {{-- TIPO --}}
+            <div>
+                <label class="mb-1.5 block text-xs font-semibold text-[#0A1033]">
                     Tipo de ausencia
                 </label>
 
-                <select
-                    name="tipo"
-                    required
-                    class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                <select name="tipo" required
+                    class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#0A1033] outline-none transition focus:border-[#2447FF] focus:ring-2 focus:ring-[#2447FF]/15">
 
                     <option value="">Seleccionar tipo</option>
-
-                    <option value="vacaciones">Vacaciones</option>
-                    <option value="permiso">Permiso</option>
-                    <option value="incapacidad">Incapacidad</option>
-
+                    <option value="vacaciones" {{ old('tipo') == 'vacaciones' ? 'selected' : '' }}>Vacaciones</option>
+                    <option value="permiso" {{ old('tipo') == 'permiso' ? 'selected' : '' }}>Permiso</option>
+                    <option value="incapacidad" {{ old('tipo') == 'incapacidad' ? 'selected' : '' }}>Incapacidad</option>
                 </select>
-
             </div>
 
-            {{-- EMPLEADO --}}
+            {{-- BUSCADOR DE EMPLEADO --}}
             <div
                 x-data="buscadorEmpleado({{ Js::from($empleados) }})"
-                class="mb-4 relative">
+                class="relative">
 
-                <label class="text-sm font-medium text-gray-700">
+                <label class="mb-1.5 block text-xs font-semibold text-[#0A1033]">
                     Asignar empleado
                 </label>
 
                 <input
                     type="text"
                     x-model="buscarEmpleado"
-                    placeholder="Buscar empleado..."
-                    class="w-full border px-3 py-2 mt-1 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400">
+                    placeholder="Buscar por nombre o número..."
+                    autocomplete="off"
+                    class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#0A1033] outline-none transition placeholder:text-slate-400 focus:border-[#2447FF] focus:ring-2 focus:ring-[#2447FF]/15">
 
                 {{-- RESULTADOS --}}
                 <template x-if="buscarEmpleado.length >= 2">
+                    <div class="absolute z-50 mt-1 max-h-52 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl">
 
-                    <div class="absolute z-50 w-full max-h-52 overflow-y-auto border bg-white border-gray-300 rounded-lg shadow">
-
-                        <template
-                            x-for="emp in empleadosFiltrados.slice(0,8)"
-                            :key="emp.id">
-
-                            <div
+                        <template x-for="emp in empleadosFiltrados.slice(0,8)" :key="emp.id">
+                            <button
+                                type="button"
                                 @click="seleccionarEmpleado(emp)"
-                                class="p-3 hover:bg-gray-100 cursor-pointer border-b">
+                                class="flex w-full flex-col border-b border-slate-100 px-4 py-3 text-left transition last:border-0 hover:bg-[#F1F5FF]">
 
-                                <div class="font-medium text-gray-800">
-
+                                <span class="text-sm font-semibold text-[#0A1033]">
                                     <span x-text="emp.nombres"></span>
                                     <span x-text="emp.apellido_paterno"></span>
                                     <span x-text="emp.apellido_materno"></span>
+                                </span>
 
-                                </div>
-
-                                <div class="text-xs text-gray-500">
+                                <span class="mt-1 text-xs text-slate-500">
                                     No. empleado:
                                     <span x-text="emp.n_empleado"></span>
-                                </div>
-
-                            </div>
-
+                                </span>
+                            </button>
                         </template>
 
+                        <template x-if="empleadosFiltrados.length === 0">
+                            <p class="p-4 text-center text-xs text-slate-500">
+                                No se encontraron empleados.
+                            </p>
+                        </template>
                     </div>
-
                 </template>
 
                 {{-- EMPLEADO SELECCIONADO --}}
-                <div
-                    x-show="empleadoSeleccionado"
-                    class="mt-3 text-sm text-green-600">
+                <div x-show="empleadoSeleccionado"
+                    x-cloak
+                    class="mt-3 flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-3">
 
-                    Empleado seleccionado:
+                    <span class="text-sm text-green-700">✓</span>
 
-                    <span
-                        class="font-semibold"
-                        x-text="empleadoCompleto"></span>
-
+                    <div class="min-w-0">
+                        <p class="text-[10px] font-semibold uppercase tracking-wide text-green-700">
+                            Empleado seleccionado
+                        </p>
+                        <p class="truncate text-sm font-semibold text-green-800"
+                            x-text="empleadoCompleto"></p>
+                    </div>
                 </div>
 
-                {{-- INPUT HIDDEN --}}
-                <input
-                    type="hidden"
+                <input type="hidden"
                     name="empleado_id"
                     :value="empleadoSeleccionado?.id">
-
             </div>
 
             {{-- FECHAS --}}
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Fecha inicio
+                    <label class="mb-1.5 block text-xs font-semibold text-[#0A1033]">
+                        Fecha de inicio
                     </label>
-
-                    <input
-                        type="date"
+                    <input type="date"
                         name="fecha_inicio"
                         value="{{ old('fecha_inicio') }}"
                         required
-                        class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        class="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none transition focus:border-[#2447FF] focus:ring-2 focus:ring-[#2447FF]/15">
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Fecha fin
+                    <label class="mb-1.5 block text-xs font-semibold text-[#0A1033]">
+                        Fecha de finalización
                     </label>
-
-                    <input
-                        type="date"
+                    <input type="date"
                         name="fecha_fin"
                         value="{{ old('fecha_fin') }}"
                         required
-                        class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        class="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none transition focus:border-[#2447FF] focus:ring-2 focus:ring-[#2447FF]/15">
                 </div>
 
             </div>
 
             {{-- MOTIVO --}}
-            <div class="mb-5">
-
-                <label class="block text-sm font-medium text-gray-700 mb-2">
+            <div>
+                <label class="mb-1.5 block text-xs font-semibold text-[#0A1033]">
                     Observaciones / Motivo
+                    <span class="font-normal text-slate-400">(Opcional)</span>
                 </label>
 
                 <textarea
                     name="motivo"
-                    rows="4"
-                    class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Opcional...">{{ old('motivo') }}</textarea>
-
+                    rows="3"
+                    placeholder="Escribe alguna observación..."
+                    class="w-full resize-y rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-[#2447FF] focus:ring-2 focus:ring-[#2447FF]/15">{{ old('motivo') }}</textarea>
             </div>
 
             {{-- BOTÓN --}}
-            <div class="flex justify-end">
+            <div class="flex justify-end border-t border-slate-100 pt-4">
+                <button type="submit"
+                    class="inline-flex items-center gap-2 rounded-lg bg-[#2447FF] px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-[#2447FF]/20 transition hover:bg-[#131F6B] focus:outline-none focus:ring-2 focus:ring-[#2447FF]/30">
 
-                <button
-                    type="submit"
-                    class="bg-blue-600 cursor-pointer hover:bg-blue-700 text-white px-5 py-2 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        class="h-4 w-4" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
 
                     Guardar ausencia
-
                 </button>
-
             </div>
 
         </form>
-
     </div>
 
-    {{-- ================================= --}}
     {{-- LISTADO DE AUSENCIAS --}}
-    {{-- ================================= --}}
+    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
 
-    <div class="bg-white p-6 rounded-xl shadow">
+        {{-- ENCABEZADO --}}
+        <div class="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
 
-        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#DCE8FF] text-[#2447FF]">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        class="h-5 w-5" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            stroke-width="1.8"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                </div>
 
-            <div>
-                <h2 class="text-lg font-semibold text-gray-800">
-                    Ausencias registradas
-                </h2>
-
-                <p class="text-sm text-gray-500">
-                    Vacaciones, permisos e incapacidades.
-                </p>
+                <div>
+                    <h3 class="text-base font-bold text-[#0A1033]">
+                        Ausencias registradas
+                    </h3>
+                    <p class="text-xs text-slate-500">
+                        Vacaciones, permisos e incapacidades.
+                    </p>
+                </div>
             </div>
 
-            <span class="text-sm text-gray-500">
-                Total: {{ $ausencias->count() }}
+            <span class="inline-flex w-fit items-center rounded-lg bg-[#F1F5FF] px-3 py-1.5 text-xs font-semibold text-[#131F6B]">
+                Total: {{ $ausencias->count() }} registros
             </span>
-
         </div>
 
-        <div class="max-h-[650px] overflow-y-auto overflow-x-auto border border-gray-200 rounded-xl">
+        {{-- TABLA --}}
+        <div class="max-h-[650px] overflow-x-auto overflow-y-auto">
 
-            <table class="min-w-full divide-y divide-gray-200">
+            <table class="min-w-full">
 
-                {{-- HEADER --}}
-                <thead class="sticky top-0 z-10 bg-gray-50">
+                <thead class="sticky top-0 z-10 bg-[#0A1033]">
+                    <tr class="text-[10px] font-semibold uppercase tracking-wider text-[#DCE8FF]">
 
-                    <tr>
-
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                        <th class="px-4 py-3 text-left whitespace-nowrap">
                             Empleado
                         </th>
 
-                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">
+                        <th class="px-4 py-3 text-center whitespace-nowrap">
                             Tipo
                         </th>
 
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                        <th class="px-4 py-3 text-center whitespace-nowrap">
                             Inicio
                         </th>
 
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                        <th class="px-4 py-3 text-center whitespace-nowrap">
                             Fin
                         </th>
 
-                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">
-                            Días
+                        <th class="px-4 py-3 text-center whitespace-nowrap">
+                            Duración
                         </th>
 
-                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">
+                        <th class="px-4 py-3 text-center whitespace-nowrap">
                             Estado
                         </th>
 
-                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">
+                        <th class="px-4 py-3 text-center whitespace-nowrap">
                             Acciones
                         </th>
 
                     </tr>
-
                 </thead>
 
-                {{-- BODY --}}
-                <tbody class="bg-white divide-y divide-gray-100">
+                <tbody class="divide-y divide-slate-100">
 
                     @forelse($ausencias as $ausencia)
 
                     @php
-
                     $inicio = \Carbon\Carbon::parse($ausencia->fecha_inicio);
                     $fin = \Carbon\Carbon::parse($ausencia->fecha_fin);
                     $hoy = now()->startOfDay();
@@ -277,13 +299,13 @@
 
                     if ($fin->lt($hoy)) {
                     $estado = 'Finalizada';
-                    $color = 'bg-red-100 text-red-700';
+                    $color = 'bg-slate-100 text-slate-700';
                     } elseif ($inicio->lte($hoy) && $fin->gte($hoy)) {
                     $estado = 'En curso';
-                    $color = 'bg-yellow-100 text-yellow-700';
+                    $color = 'bg-[#FFF4D6] text-[#956500]';
                     } else {
                     $estado = 'Próxima';
-                    $color = 'bg-green-100 text-green-700';
+                    $color = 'bg-green-50 text-[#1E9E5A]';
                     }
 
                     $tipos = [
@@ -293,75 +315,61 @@
                     ];
 
                     $colores = [
-                    'vacaciones' => 'bg-blue-100 text-blue-700',
-                    'permiso' => 'bg-purple-100 text-purple-700',
-                    'incapacidad' => 'bg-orange-100 text-orange-700'
+                    'vacaciones' => 'bg-[#DCE8FF] text-[#131F6B]',
+                    'permiso' => 'bg-[#EDE9FE] text-[#6D28D9]',
+                    'incapacidad' => 'bg-[#FFE4E6] text-[#BE123C]'
                     ];
-
                     @endphp
 
-                    <tr class="hover:bg-gray-50 transition">
+                    <tr class="transition-colors hover:bg-[#F1F5FF]/70">
 
                         {{-- EMPLEADO --}}
-                        <td class="px-4 py-4">
+                        <td class="px-4 py-3 whitespace-nowrap">
+                            <p class="text-xs font-semibold text-[#0A1033]">
+                                {{ $ausencia->empleado->nombres ?? '' }}
+                                {{ $ausencia->empleado->apellido_paterno ?? '' }}
+                                {{ $ausencia->empleado->apellido_materno ?? '' }}
+                            </p>
 
-                            <div class="text-xs font-medium text-gray-800">
-
-                                {{ $ausencia->empleado->nombres }}
-                                {{ $ausencia->empleado->apellido_paterno }}
-                                {{ $ausencia->empleado->apellido_materno }}
-
-                            </div>
-
-                            <div class="text-xs text-gray-500">
+                            <p class="mt-1 text-[10px] text-slate-500">
                                 No. empleado:
-                                {{ $ausencia->empleado->n_empleado }}
-                            </div>
-
+                                {{ $ausencia->empleado->n_empleado ?? 'N/A' }}
+                            </p>
                         </td>
 
                         {{-- TIPO --}}
-                        <td class="px-4 py-4 text-center whitespace-nowrap">
-
-                            <span class="{{ $colores[$ausencia->tipo] ?? 'bg-gray-100 text-gray-700' }} px-2 py-1 rounded-full text-xs font-semibold">
-
+                        <td class="px-4 py-3 text-center whitespace-nowrap">
+                            <span class="{{ $colores[$ausencia->tipo] ?? 'bg-slate-100 text-slate-700' }} inline-flex rounded-md px-2.5 py-1 text-[10px] font-bold">
                                 {{ $tipos[$ausencia->tipo] ?? $ausencia->tipo }}
-
                             </span>
-
                         </td>
 
                         {{-- INICIO --}}
-                        <td class="px-4 py-4 text-xs text-gray-600 whitespace-nowrap">
+                        <td class="px-4 py-3 text-center text-xs text-slate-600 whitespace-nowrap">
                             {{ $inicio->format('d/m/Y') }}
                         </td>
 
                         {{-- FIN --}}
-                        <td class="px-4 py-4 text-xs text-gray-600 whitespace-nowrap">
+                        <td class="px-4 py-3 text-center text-xs text-slate-600 whitespace-nowrap">
                             {{ $fin->format('d/m/Y') }}
                         </td>
 
                         {{-- DÍAS --}}
-                        <td class="px-4 py-4 text-center whitespace-nowrap">
-
-                            <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium">
+                        <td class="px-4 py-3 text-center whitespace-nowrap">
+                            <span class="font-semibold text-[#131F6B] text-xs">
                                 {{ $dias }} días
                             </span>
-
                         </td>
 
                         {{-- ESTADO --}}
-                        <td class="px-4 py-4 text-center">
-
-                            <span class="{{ $color }} px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap">
+                        <td class="px-4 py-3 text-center whitespace-nowrap">
+                            <span class="{{ $color }} inline-flex rounded-md px-2.5 py-1 text-[10px] font-bold">
                                 {{ $estado }}
                             </span>
-
                         </td>
 
                         {{-- ACCIONES --}}
-                        <td class="px-4 py-4">
-
+                        <td class="px-4 py-3 whitespace-nowrap">
                             <div class="flex items-center justify-center gap-2">
 
                                 {{-- EDITAR --}}
@@ -375,10 +383,9 @@
                                         'fecha_fin' => $fin->format('Y-m-d'),
                                         'motivo' => $ausencia->motivo ?? ''
                                     ]) }})"
-                                    class="cursor-pointer bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded-lg text-xs font-medium transition">
-
+                                    title="Editar ausencia"
+                                    class="rounded-lg bg-[#DCE8FF] px-3 py-1.5 text-[10px] font-bold text-[#131F6B] transition hover:bg-[#5C8DFF] hover:text-white">
                                     Editar
-
                                 </button>
 
                                 {{-- ELIMINAR --}}
@@ -392,16 +399,14 @@
 
                                     <button
                                         type="submit"
-                                        class="bg-red-100 hover:bg-red-200 cursor-pointer text-red-700 px-3 py-1 rounded-lg text-xs font-medium transition">
-
+                                        title="Eliminar ausencia"
+                                        class="rounded-lg bg-red-50 px-3 py-1.5 text-[10px] font-bold text-[#D93025] transition hover:bg-red-100">
                                         Eliminar
-
                                     </button>
 
                                 </form>
 
                             </div>
-
                         </td>
 
                     </tr>
@@ -409,23 +414,43 @@
                     @empty
 
                     <tr>
-                        <td colspan="7" class="px-4 py-8 text-center text-sm text-gray-500">
-                            No hay ausencias registradas.
+                        <td colspan="7" class="px-4 py-12 text-center">
+                            <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-[#F1F5FF] text-[#5C8DFF]">
+                                <svg xmlns="http://www.w3.org/2000/svg"
+                                    class="h-6 w-6" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round"
+                                        stroke-linejoin="round" stroke-width="1.7"
+                                        d="M8 7V3m8 4V3M4 11h16M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" />
+                                </svg>
+                            </div>
+
+                            <p class="text-sm font-semibold text-[#0A1033]">
+                                No hay ausencias registradas
+                            </p>
+
+                            <p class="mt-1 text-xs text-slate-500">
+                                Los registros aparecerán aquí cuando agregues una ausencia.
+                            </p>
                         </td>
                     </tr>
 
                     @endforelse
 
                 </tbody>
-
             </table>
+        </div>
 
+        {{-- PIE DE TABLA --}}
+        <div class="border-t border-slate-100 bg-[#F1F5FF]/60 px-5 py-3">
+            <p class="text-[11px] text-slate-500">
+                Mostrando {{ $ausencias->count() }} registros de ausencias.
+            </p>
         </div>
 
     </div>
 
 </div>
-
 
 {{-- ================================================ --}}
 {{-- MODAL EDITAR AUSENCIA --}}
@@ -448,51 +473,99 @@
             this.fecha_inicio = datos.fecha_inicio;
             this.fecha_fin = datos.fecha_fin;
             this.motivo = datos.motivo || '';
-
             this.abierto = true;
+        },
+
+        cerrar() {
+            this.abierto = false;
         }
     }"
-    @editar-ausencia.window="abrir($event.detail)">
+    @editar-ausencia.window="abrir($event.detail)"
+    @keydown.escape.window="cerrar()">
 
+    {{-- FONDO DEL MODAL --}}
     <div
         x-show="abierto"
         x-cloak
-        x-transition
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+        x-transition.opacity
+        class="fixed inset-0 z-[100] flex items-center justify-center bg-[#030614]/60 px-4 py-6 backdrop-blur-sm">
 
+        {{-- CONTENEDOR --}}
         <div
-            @click.outside="abierto = false"
-            class="bg-white w-full max-w-lg rounded-xl shadow-xl p-6">
+            x-show="abierto"
+            x-transition
+            @click.outside="cerrar()"
+            class="w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
 
             {{-- ENCABEZADO --}}
-            <div class="flex justify-between items-center mb-5">
+            <div class="flex items-center justify-between border-b border-slate-100 bg-white px-6 py-5">
 
-                <h2 class="text-xl font-bold text-gray-800">
-                    Editar ausencia
-                </h2>
+                <div class="flex items-center gap-3">
+
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#DCE8FF] text-[#2447FF]">
+
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                            class="h-5 w-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor">
+
+                            <path stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="1.8"
+                                d="M16.862 4.487l1.651-1.651a2.121 2.121 0 013 3l-9.193 9.193a4 4 0 01-1.697 1.02l-3.123.89.89-3.123a4 4 0 011.02-1.697l7.452-7.632zM19 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6" />
+
+                        </svg>
+
+                    </div>
+
+                    <div>
+                        <h2 class="text-lg font-bold text-[#0A1033]">
+                            Editar ausencia
+                        </h2>
+
+                        <p class="text-xs text-slate-500">
+                            Modifica la información del registro.
+                        </p>
+                    </div>
+
+                </div>
 
                 <button
                     type="button"
-                    @click="abierto = false"
-                    class="cursor-pointer text-gray-500 hover:text-gray-700 text-xl">
+                    @click="cerrar()"
+                    class="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-[#0A1033]">
 
-                    &times;
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        class="h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor">
+
+                        <path stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+
+                    </svg>
 
                 </button>
 
             </div>
 
+            {{-- FORMULARIO --}}
             <form
                 :action="url"
-                method="POST">
+                method="POST"
+                class="space-y-5 p-6">
 
                 @csrf
                 @method('PUT')
 
-                {{-- TIPO DE AUSENCIA --}}
-                <div class="mb-4">
+                {{-- TIPO --}}
+                <div>
 
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <label class="mb-1.5 block text-xs font-semibold text-[#0A1033]">
                         Tipo de ausencia
                     </label>
 
@@ -500,7 +573,7 @@
                         name="tipo"
                         x-model="tipo"
                         required
-                        class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#0A1033] outline-none transition focus:border-[#2447FF] focus:ring-2 focus:ring-[#2447FF]/15">
 
                         <option value="vacaciones">
                             Vacaciones
@@ -519,12 +592,12 @@
                 </div>
 
                 {{-- FECHAS --}}
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 
                     <div>
 
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Fecha inicio
+                        <label class="mb-1.5 block text-xs font-semibold text-[#0A1033]">
+                            Fecha de inicio
                         </label>
 
                         <input
@@ -532,14 +605,14 @@
                             name="fecha_inicio"
                             x-model="fecha_inicio"
                             required
-                            class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            class="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none transition focus:border-[#2447FF] focus:ring-2 focus:ring-[#2447FF]/15">
 
                     </div>
 
                     <div>
 
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Fecha fin
+                        <label class="mb-1.5 block text-xs font-semibold text-[#0A1033]">
+                            Fecha de finalización
                         </label>
 
                         <input
@@ -547,16 +620,16 @@
                             name="fecha_fin"
                             x-model="fecha_fin"
                             required
-                            class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            class="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none transition focus:border-[#2447FF] focus:ring-2 focus:ring-[#2447FF]/15">
 
                     </div>
 
                 </div>
 
                 {{-- MOTIVO --}}
-                <div class="mb-5">
+                <div>
 
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <label class="mb-1.5 block text-xs font-semibold text-[#0A1033]">
                         Observaciones / Motivo
                     </label>
 
@@ -564,17 +637,18 @@
                         name="motivo"
                         rows="4"
                         x-model="motivo"
-                        class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
+                        placeholder="Escribe alguna observación..."
+                        class="w-full resize-y rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-[#2447FF] focus:ring-2 focus:ring-[#2447FF]/15"></textarea>
 
                 </div>
 
                 {{-- BOTONES --}}
-                <div class="flex justify-end gap-3">
+                <div class="flex justify-end gap-3 border-t border-slate-100 pt-4">
 
                     <button
                         type="button"
-                        @click="abierto = false"
-                        class="cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2 rounded-lg">
+                        @click="cerrar()"
+                        class="rounded-lg border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
 
                         Cancelar
 
@@ -582,7 +656,7 @@
 
                     <button
                         type="submit"
-                        class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg">
+                        class="rounded-lg bg-[#2447FF] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#131F6B] focus:outline-none focus:ring-2 focus:ring-[#2447FF]/30">
 
                         Guardar cambios
 

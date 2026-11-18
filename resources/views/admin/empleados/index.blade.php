@@ -1,31 +1,39 @@
-
 @extends('layouts.admin')
+
+@section('title', 'Directorio de empleados')
+@section('page-title', 'Directorio de empleados')
 
 @section('content')
 
-<div x-data="{
-    buscar: '{{ addslashes(request('buscar', '')) }}',
-    editarActivo: false
-}">
+<div
+    x-data="{
+        buscar: @js(request('buscar', '')),
+        editarActivo: false
+    }"
+    class="space-y-5">
 
     {{-- ENCABEZADO --}}
-
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-5">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 
         <div>
-            <h2 class="text-xl font-bold text-gray-800">
+            <h2 class="text-xl font-bold tracking-tight text-[#0A1033]">
                 Directorio de empleados
             </h2>
 
-            <p class="text-sm text-gray-500 mt-1">
-                Administración y consulta del personal
+            <p class="mt-1 text-sm text-slate-500">
+                Administración y consulta del personal de Cumbres
             </p>
         </div>
 
-        <a href="{{ route('admin.empleados.crear') }}"
-           class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition">
+        <a
+            href="{{ route('admin.empleados.crear') }}"
+            class="inline-flex items-center justify-center gap-2 rounded-xl bg-[#2447FF] px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-[#2447FF]/20 transition hover:bg-[#1D39D8]">
 
-            <span class="text-lg">+</span>
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    stroke-width="2" d="M12 5v14m-7-7h14" />
+            </svg>
+
             Crear empleado
 
         </a>
@@ -33,33 +41,42 @@
     </div>
 
 
-    {{-- TARJETAS POR DEPARTAMENTO --}}
-
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-2 mb-4">
+    {{-- TARJETAS DE DEPARTAMENTOS --}}
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
 
         @foreach($departamentos as $departamento)
 
-        <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-2 hover:shadow-md transition">
+        <div class="group rounded-xl border border-slate-200 bg-white p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
 
-            <div class="flex justify-between items-center gap-2">
+            <div class="flex items-center justify-between gap-2">
 
-                <p class="text-xs font-medium text-gray-500 truncate">
+                <p class="truncate text-xs font-semibold text-slate-500">
                     {{ ucfirst($departamento->nombre) }}
                 </p>
 
-                <div class="w-6 h-6 flex-shrink-0 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">
-                    D
+                <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#DCE8FF] text-[#131F6B]">
+
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            stroke-width="1.8"
+                            d="M3 21h18M5 21V7l8-4v18m6 0V11l-6-4M9 9v.01M9 12v.01M9 15v.01M9 18v.01" />
+                    </svg>
+
                 </div>
 
             </div>
 
-            <h3 class="text-xl font-bold text-gray-800 mt-2">
+            <h3 class="mt-3 text-2xl font-bold tracking-tight text-[#0A1033]">
                 {{ number_format($departamento->empleados_count) }}
             </h3>
 
-            <p class="text-[10px] text-gray-400 mt-1">
+            <p class="mt-1 text-[11px] text-slate-400">
                 Empleados registrados
             </p>
+
+            <div class="mt-3 h-1 overflow-hidden rounded-full bg-[#DCE8FF]">
+                <div class="h-full w-1/2 rounded-full bg-[#5C8DFF]"></div>
+            </div>
 
         </div>
 
@@ -67,68 +84,87 @@
 
 
         {{-- TOTAL DE EMPLEADOS --}}
+        <div class="rounded-xl border border-[#2447FF]/15 bg-[#2447FF]/5 p-3 shadow-sm">
 
-        <div class="bg-blue-50 border border-blue-100 rounded-xl shadow-sm p-2">
+            <div class="flex items-center justify-between gap-2">
 
-            <div class="flex justify-between items-center gap-2">
-
-                <p class="text-xs font-semibold text-blue-700">
-                    Total de empleados
+                <p class="text-xs font-bold text-[#2447FF]">
+                    Total empleados
                 </p>
 
-                <div class="w-6 h-6 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">
-                    T
+                <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#2447FF] text-white">
+
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            stroke-width="1.8"
+                            d="M16 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2m12-13a4 4 0 11-8 0 4 4 0 018 0zm4 13v-2a4 4 0 00-3-3.87" />
+                    </svg>
+
                 </div>
 
             </div>
 
-            <h3 class="text-xl font-bold text-blue-700 mt-2">
+            <h3 class="mt-3 text-2xl font-bold tracking-tight text-[#2447FF]">
                 {{ number_format($totales_empleados) }}
             </h3>
 
-            <p class="text-[10px] text-blue-500 mt-1">
+            <p class="mt-1 text-[11px] text-[#2447FF]/70">
                 Personal registrado
             </p>
 
-        </div>
+            <div class="mt-3 h-1 overflow-hidden rounded-full bg-[#DCE8FF]">
+                <div class="h-full w-full rounded-full bg-[#2447FF]"></div>
+            </div>
 
+        </div>
     </div>
 
-
     {{-- BÚSQUEDA Y CONTROLES --}}
+    <section class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
 
-    <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-4 mb-4">
-
-        <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
 
             {{-- BUSCADOR --}}
+            <form
+                id="buscar-empleado-form"
+                method="GET"
+                action="{{ route('admin.empleados') }}"
+                class="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-end">
 
-            <form id="buscar-empleado-form"
-                  method="GET"
-                  action="{{ route('admin.empleados') }}"
-                  class="flex flex-col sm:flex-row gap-2 flex-1">
+                <div class="min-w-0 flex-1">
 
-                <div class="flex-1">
-
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">
+                    <label class="mb-1.5 block text-xs font-semibold text-[#0A1033]">
                         Buscar empleado
                     </label>
 
-                    <input
-                        type="text"
-                        name="buscar"
-                        x-model="buscar"
-                        placeholder="Nombre, número de empleado, departamento..."
-                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500"
-                        value="{{ request('buscar') }}"
-                    >
+                    <div class="relative">
+
+                        <div class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
+
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <circle cx="11" cy="11" r="7" stroke-width="1.8" />
+                                <path stroke-linecap="round" stroke-width="1.8"
+                                    d="m16 16 4 4" />
+                            </svg>
+
+                        </div>
+
+                        <input
+                            type="text"
+                            name="buscar"
+                            x-model="buscar"
+                            placeholder="Nombre, número o departamento..."
+                            class="w-full rounded-lg border border-slate-200 bg-[#F8FAFF] py-2 pl-9 pr-3 text-xs text-[#030614] outline-none transition placeholder:text-slate-400 focus:border-[#2447FF] focus:ring-2 focus:ring-[#2447FF]/10">
+
+                    </div>
 
                 </div>
 
-                <div class="flex gap-2 sm:items-end">
+                <div class="flex shrink-0 gap-2">
 
-                    <button type="submit"
-                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
+                    <button
+                        type="submit"
+                        class="inline-flex items-center justify-center gap-2 rounded-lg bg-[#2447FF] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#1D39D8]">
 
                         Buscar
 
@@ -136,8 +172,9 @@
 
                     @if(request('buscar'))
 
-                    <a href="{{ route('admin.empleados') }}"
-                       class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold transition">
+                    <a
+                        href="{{ route('admin.empleados') }}"
+                        class="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 transition hover:border-red-200 hover:bg-red-50 hover:text-[#D93025]">
 
                         Limpiar
 
@@ -150,45 +187,45 @@
             </form>
 
 
-            {{-- ACTIVAR EDICIÓN --}}
-
+            {{-- MODO DE EDICIÓN --}}
             @if(auth()->user()->level_user)
 
-            <div class="flex items-center gap-3 border-t lg:border-t-0 lg:border-l border-gray-200 pt-3 lg:pt-0 lg:pl-4">
+            <div class="flex items-center justify-between gap-4 border-t border-slate-100 pt-3 lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0">
 
                 <div>
-
-                    <p class="text-xs font-semibold text-gray-700">
+                    <p class="text-xs font-bold text-[#0A1033]">
                         Modo de edición
                     </p>
 
-                    <p class="text-[10px] text-gray-400">
+                    <p class="mt-0.5 text-[11px] text-slate-400">
                         Mostrar acciones administrativas
                     </p>
-
                 </div>
 
-                <label for="toggle"
-                       class="inline-flex relative items-center cursor-pointer">
+                <div class="flex shrink-0 items-center gap-2">
 
-                    <input
-                        type="checkbox"
-                        id="toggle"
-                        class="sr-only peer"
-                        x-model="editarActivo"
-                    >
+                    <label for="toggle"
+                        class="relative inline-flex cursor-pointer items-center">
 
-                    <div class="w-10 h-5 bg-gray-300 rounded-full peer-focus:ring-2 peer-focus:ring-blue-200 peer-checked:bg-green-600 transition-colors"></div>
+                        <input
+                            type="checkbox"
+                            id="toggle"
+                            class="peer sr-only"
+                            x-model="editarActivo">
 
-                    <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow transform peer-checked:translate-x-5 transition-transform"></div>
+                        <div class="h-5 w-10 rounded-full bg-slate-300 transition-colors peer-focus:ring-2 peer-focus:ring-[#2447FF]/20 peer-checked:bg-[#1E9E5A]"></div>
 
-                </label>
+                        <div class="absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-5"></div>
 
-                <span
-                    class="text-xs font-semibold"
-                    :class="editarActivo ? 'text-green-600' : 'text-gray-400'"
-                    x-text="editarActivo ? 'Activo' : 'Inactivo'">
-                </span>
+                    </label>
+
+                    <span
+                        class="min-w-[48px] text-xs font-semibold"
+                        :class="editarActivo ? 'text-[#1E9E5A]' : 'text-slate-400'"
+                        x-text="editarActivo ? 'Activo' : 'Inactivo'">
+                    </span>
+
+                </div>
 
             </div>
 
@@ -196,71 +233,76 @@
 
         </div>
 
-    </div>
+    </section>
 
 
     {{-- TABLA DE EMPLEADOS --}}
-
-    <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+    <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
 
         {{-- ENCABEZADO DE TABLA --}}
-
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-3 border-b border-gray-200">
+        <div class="flex flex-col gap-2 border-b border-slate-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
 
             <div>
 
-                <h3 class="text-sm font-bold text-gray-800">
+                <h3 class="text-sm font-bold text-[#0A1033]">
                     Personal registrado
                 </h3>
 
-                <p class="text-xs text-gray-400 mt-1">
-                    Listado de empleados de la institución
+                <p class="mt-0.5 text-xs text-slate-400">
+                    Listado general de empleados de Cumbres
                 </p>
 
             </div>
 
-            <span class="text-xs text-gray-500">
-                {{ $empleados->total() }} empleados encontrados
-            </span>
+            <div class="flex items-center gap-2">
+
+                <span class="rounded-lg bg-[#DCE8FF] px-3 py-1.5 text-xs font-semibold text-[#131F6B]">
+
+                    {{ $empleados->total() }} empleados encontrados
+
+                </span>
+
+            </div>
 
         </div>
 
 
-        {{-- CONTENIDO --}}
-
+        {{-- CONTENEDOR DE TABLA --}}
         <div class="overflow-x-auto">
 
             <div class="max-h-[550px] overflow-y-auto">
 
                 <table class="min-w-full text-left">
 
-                    <thead class="sticky top-0 z-10 bg-gray-50 border-b border-gray-200">
+                    {{-- ENCABEZADOS --}}
+                    <thead class="sticky top-0 z-10 border-b border-[#131F6B] bg-[#0A1033]">
 
-                        <tr class="text-[11px] uppercase tracking-wider text-gray-500">
+                        <tr class="text-[10px] font-semibold uppercase tracking-wider text-[#DCE8FF]">
 
-                            <th class="px-4 py-3 text-center whitespace-nowrap">
+                            <th class="whitespace-nowrap px-4 py-3 text-center">
                                 N. Empleado
                             </th>
 
-                            <th class="px-4 py-3 whitespace-nowrap">
+                            <th class="whitespace-nowrap px-4 py-3">
                                 Nombre completo
                             </th>
 
-                            <th class="px-4 py-3 whitespace-nowrap">
+                            <th class="whitespace-nowrap px-4 py-3">
                                 Departamento
                             </th>
 
-                            <th class="px-4 py-3 whitespace-nowrap">
+                            <th class="whitespace-nowrap px-4 py-3">
                                 Puesto
                             </th>
 
-                            <th class="px-4 py-3 whitespace-nowrap">
+                            <th class="whitespace-nowrap px-4 py-3">
                                 Correo electrónico
                             </th>
 
                             @if(auth()->user()->level_user)
 
-                            <th class="px-4 py-3 text-center whitespace-nowrap"
+                            <th
+                                class="whitespace-nowrap px-4 py-3 text-center"
                                 x-show="editarActivo"
                                 x-cloak>
                                 Acciones
@@ -273,28 +315,29 @@
                     </thead>
 
 
-                    <tbody class="divide-y divide-gray-100 text-xs">
+                    {{-- REGISTROS --}}
+                    <tbody class="divide-y divide-slate-100 text-xs">
 
                         @forelse($empleados as $empleado)
 
-                        <tr class="hover:bg-blue-50/50 transition-colors">
+                        <tr class="transition-colors hover:bg-[#F1F5FF]/70">
 
-                            {{-- NÚMERO --}}
+                            {{-- NÚMERO DE EMPLEADO --}}
+                            <td class="whitespace-nowrap px-4 py-3 text-center">
 
-                            <td class="px-4 py-3 text-center whitespace-nowrap">
+                                <span class="inline-flex rounded-md bg-[#DCE8FF] px-2.5 py-1 font-bold text-[#131F6B]">
 
-                                <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded-md font-semibold">
                                     {{ $empleado->n_empleado }}
+
                                 </span>
 
                             </td>
 
 
-                            {{-- NOMBRE --}}
+                            {{-- NOMBRE COMPLETO --}}
+                            <td class="whitespace-nowrap px-4 py-3">
 
-                            <td class="px-4 py-3 whitespace-nowrap">
-
-                                <div class="font-semibold text-gray-800">
+                                <div class="font-semibold text-[#0A1033]">
 
                                     {{ $empleado->nombres }}
                                     {{ $empleado->apellido_paterno }}
@@ -306,12 +349,11 @@
 
 
                             {{-- DEPARTAMENTO --}}
-
-                            <td class="px-4 py-3 whitespace-nowrap">
+                            <td class="whitespace-nowrap px-4 py-3">
 
                                 @if($empleado->departamento)
 
-                                <span class="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-medium">
+                                <span class="inline-flex rounded-md bg-[#F1F5FF] px-2.5 py-1 font-semibold text-[#2447FF]">
 
                                     {{ $empleado->departamento->nombre }}
 
@@ -319,7 +361,7 @@
 
                                 @else
 
-                                <span class="text-gray-400">
+                                <span class="text-slate-400">
                                     Sin departamento
                                 </span>
 
@@ -329,20 +371,19 @@
 
 
                             {{-- PUESTO --}}
+                            <td class="whitespace-nowrap px-4 py-3 text-slate-600">
 
-                            <td class="px-4 py-3 text-gray-600 whitespace-nowrap">
-
-                                {{ $empleado->puesto }}
+                                {{ $empleado->puesto ?? 'Sin puesto' }}
 
                             </td>
 
 
                             {{-- CORREO --}}
+                            <td class="max-w-[240px] px-4 py-3 text-slate-600">
 
-                            <td class="px-4 py-3 text-gray-600 max-w-[220px]">
-
-                                <span class="block truncate"
-                                      title="{{ $empleado->email }}">
+                                <span
+                                    class="block truncate"
+                                    title="{{ $empleado->email }}">
 
                                     {{ $empleado->email ?? 'Sin correo' }}
 
@@ -350,23 +391,22 @@
 
                             </td>
 
-
                             {{-- ACCIONES --}}
-
                             @if(auth()->user()->level_user)
 
-                            <td class="px-4 py-3 whitespace-nowrap"
+                            <td
+                                class="whitespace-nowrap px-4 py-3"
                                 x-show="editarActivo"
                                 x-cloak>
 
-                                <div class="flex items-center justify-center gap-2">
+                                <div class="flex items-center justify-center gap-1.5">
 
-                                    {{-- VACACIONES PDF --}}
-
-                                    <a href="{{ route('admin.empleados.vacaciones.pdf', $empleado->id) }}"
-                                       target="_blank"
-                                       title="Generar PDF de vacaciones"
-                                       class="bg-green-50 hover:bg-green-100 text-green-700 px-2.5 py-1.5 rounded-lg font-semibold transition">
+                                    {{-- PDF VACACIONES --}}
+                                    <a
+                                        href="{{ route('admin.empleados.vacaciones.pdf', $empleado->id) }}"
+                                        target="_blank"
+                                        title="Generar PDF de vacaciones"
+                                        class="inline-flex items-center justify-center rounded-lg border border-[#1E9E5A]/20 bg-[#1E9E5A]/10 px-2.5 py-1.5 text-[11px] font-bold text-[#1E9E5A] transition hover:bg-[#1E9E5A]/20">
 
                                         PDF
 
@@ -374,10 +414,10 @@
 
 
                                     {{-- EDITAR --}}
-
-                                    <a href="{{ route('admin.empleados.editar', $empleado->id) }}"
-                                       title="Editar empleado"
-                                       class="bg-amber-50 hover:bg-amber-100 text-amber-700 px-2.5 py-1.5 rounded-lg font-semibold transition">
+                                    <a
+                                        href="{{ route('admin.empleados.editar', $empleado->id) }}"
+                                        title="Editar empleado"
+                                        class="inline-flex items-center justify-center rounded-lg border border-[#F2A900]/20 bg-[#F2A900]/10 px-2.5 py-1.5 text-[11px] font-bold text-[#8A5A00] transition hover:bg-[#F2A900]/20">
 
                                         Editar
 
@@ -385,17 +425,18 @@
 
 
                                     {{-- ELIMINAR --}}
-
-                                    <form action="{{ route('admin.empleados.destroy', $empleado->id) }}"
-                                          method="POST"
-                                          onsubmit="return confirm('¿Estás seguro de que deseas eliminar este empleado?')">
+                                    <form
+                                        action="{{ route('admin.empleados.destroy', $empleado->id) }}"
+                                        method="POST"
+                                        onsubmit="return confirm('¿Estás seguro de que deseas eliminar este empleado?')">
 
                                         @csrf
                                         @method('DELETE')
 
-                                        <button type="submit"
-                                                title="Eliminar empleado"
-                                                class="bg-red-50 hover:bg-red-100 text-red-700 px-2.5 py-1.5 rounded-lg font-semibold transition">
+                                        <button
+                                            type="submit"
+                                            title="Eliminar empleado"
+                                            class="inline-flex items-center justify-center rounded-lg border border-[#D93025]/20 bg-[#D93025]/10 px-2.5 py-1.5 text-[11px] font-bold text-[#D93025] transition hover:bg-[#D93025]/20">
 
                                             Eliminar
 
@@ -413,22 +454,42 @@
 
                         @empty
 
+                        {{-- SIN RESULTADOS --}}
                         <tr>
 
-                            <td colspan="{{ auth()->user()->level_user ? 6 : 5 }}"
-                                class="px-4 py-12 text-center">
+                            <td
+                                colspan="{{ auth()->user()->level_user ? 6 : 5 }}"
+                                class="px-4 py-14 text-center">
 
-                                <div class="text-gray-400 text-3xl mb-2">
-                                    <span>◎</span>
+                                <div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F1F5FF] text-[#5C8DFF]">
+
+                                    <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <circle cx="11" cy="11" r="7" stroke-width="1.6" />
+                                        <path stroke-linecap="round" stroke-width="1.6"
+                                            d="m16 16 4 4M8 11h6" />
+                                    </svg>
+
                                 </div>
 
-                                <p class="text-sm font-semibold text-gray-600">
+                                <p class="text-sm font-bold text-[#0A1033]">
                                     No se encontraron empleados
                                 </p>
 
-                                <p class="text-xs text-gray-400 mt-1">
+                                <p class="mt-1 text-xs text-slate-400">
                                     Intenta cambiar el término de búsqueda.
                                 </p>
+
+                                @if(request('buscar'))
+
+                                <a
+                                    href="{{ route('admin.empleados') }}"
+                                    class="mt-3 inline-flex text-xs font-semibold text-[#2447FF] hover:underline">
+
+                                    Limpiar búsqueda
+
+                                </a>
+
+                                @endif
 
                             </td>
 
@@ -446,14 +507,13 @@
 
 
         {{-- PAGINACIÓN --}}
-
-        <div class="px-4 py-3 border-t border-gray-200 bg-gray-50">
+        <div class="border-t border-slate-100 bg-[#F8FAFF] px-4 py-3">
 
             {{ $empleados->appends(request()->query())->links() }}
 
         </div>
 
-    </div>
+    </section>
 
 </div>
 

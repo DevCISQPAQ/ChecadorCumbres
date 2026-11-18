@@ -1,475 +1,717 @@
 @extends('layouts.admin')
 
+@section('title', 'Asistencias')
+@section('page-title', 'Control de asistencias')
+
 @section('content')
-<!-- <div class="flex justify-between gap-4">
-    <h2 class="md:text-xl text-xm font-semibold text-blue-800 mb-6 text-center">Bienvenido(a), {{ Auth::user()->name }}</h2>
-    <h2 class="md:text-xl text-xm font-semibold text-gray-800 mb-6 text-center">{{ \Carbon\Carbon::now()->locale('es')->isoFormat('dddd, D [de] MMMM [de] YYYY') }}</h2>
-</div> -->
-<h2 class="text-2xl font-semibold text-gray-800 mb-6">Asistencias</h2>
 
-{{-- Tarjetas resumen --}}
-<div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-7 gap-2 md:gap-6 md:space-y-0 space-y-2">
+@php
+$hayFiltros = collect(request()->only([
+'buscar',
+'fecha_inicio',
+'fecha_fin',
+'departamento',
+'estado',
+'hora_entrada',
+'hora_salida'
+]))->filter(fn($value) => $value !== null && $value !== '')->isNotEmpty();
 
-    <div class="bg-white p-2 rounded-lg shadow">
-        <h3 class="text-sm text-center font-semibold text-gray-700">Asistencias</h3>
-        <p class="text-xl mt-1 text-center font-bold text-green-600">
-            {{ $asistenciaE ?? 0 }}
-        </p>
-    </div>
+$estadisticas = [
+[
+'titulo' => 'Asistencias',
+'valor' => $asistenciaE ?? 0,
+'color' => 'text-[#1E9E5A]',
+'fondo' => 'bg-[#1E9E5A]/10',
+'borde' => 'border-l-[#1E9E5A]',
+],
+[
+'titulo' => 'Retardos',
+'valor' => $retardosHoy ?? 0,
+'color' => 'text-[#B77900]',
+'fondo' => 'bg-[#F2A900]/10',
+'borde' => 'border-l-[#F2A900]',
+],
+[
+'titulo' => 'Faltas',
+'valor' => $faltasHoy ?? 0,
+'color' => 'text-[#D93025]',
+'fondo' => 'bg-[#D93025]/10',
+'borde' => 'border-l-[#D93025]',
+],
+[
+'titulo' => 'Vacaciones',
+'valor' => $vacacionesHoy ?? 0,
+'color' => 'text-[#2447FF]',
+'fondo' => 'bg-[#2447FF]/10',
+'borde' => 'border-l-[#2447FF]',
+],
+[
+'titulo' => 'Permisos',
+'valor' => $permisosHoy ?? 0,
+'color' => 'text-[#5C8DFF]',
+'fondo' => 'bg-[#5C8DFF]/15',
+'borde' => 'border-l-[#5C8DFF]',
+],
+[
+'titulo' => 'Incapacidades',
+'valor' => $incapacidadHoy ?? 0,
+'color' => 'text-[#131F6B]',
+'fondo' => 'bg-[#DCE8FF]',
+'borde' => 'border-l-[#131F6B]',
+],
+[
+'titulo' => 'Libres',
+'valor' => $libresHoy ?? 0,
+'color' => 'text-[#0A1033]',
+'fondo' => 'bg-[#DCE8FF]/70',
+'borde' => 'border-l-[#5C8DFF]',
+],
+];
 
-    <div class="bg-white p-2 rounded-lg shadow">
-        <h3 class="text-sm text-center font-semibold text-gray-700">Retardos</h3>
-        <p class="text-xl mt-1 text-center font-bold text-yellow-500">
-            {{ $retardosHoy ?? 0 }}
-        </p>
-    </div>
+$estados = [
+'presente' => [
+'texto' => 'Presente',
+'clase' => 'bg-[#1E9E5A]/10 text-[#167A46]'
+],
+'retardo' => [
+'texto' => 'Retardo',
+'clase' => 'bg-[#F2A900]/15 text-[#936000]'
+],
+'falta' => [
+'texto' => 'Falta',
+'clase' => 'bg-[#D93025]/10 text-[#D93025]'
+],
+'vacaciones' => [
+'texto' => 'Vacaciones',
+'clase' => 'bg-[#2447FF]/10 text-[#2447FF]'
+],
+'permiso' => [
+'texto' => 'Permiso',
+'clase' => 'bg-[#5C8DFF]/15 text-[#2447FF]'
+],
+'incapacidad' => [
+'texto' => 'Incapacidad',
+'clase' => 'bg-[#131F6B]/10 text-[#131F6B]'
+],
+'libre' => [
+'texto' => 'Libre',
+'clase' => 'bg-[#DCE8FF] text-[#131F6B]'
+],
+'festivo' => [
+'texto' => 'Festivo',
+'clase' => 'bg-slate-100 text-slate-700'
+],
+'fin_semana' => [
+'texto' => 'Fin de semana',
+'clase' => 'bg-slate-100 text-slate-700'
+],
+];
+@endphp
 
-    <div class="bg-white p-2 rounded-lg shadow">
-        <h3 class="text-sm text-center font-semibold text-gray-700">Faltas</h3>
-        <p class="text-xl mt-1 text-center font-bold text-red-600">
-            {{ $faltasHoy ?? 0 }}
-        </p>
-    </div>
+<div class="space-y-3">
 
-    <div class="bg-white p-2 rounded-lg shadow">
-        <h3 class="text-sm text-center font-semibold text-gray-700">Vacaciones</h3>
-        <p class="text-xl mt-1 text-center font-bold text-blue-600">
-            {{ $vacacionesHoy ?? 0 }}
-        </p>
-    </div>
+    {{-- RESUMEN --}}
+    <section>
+        <div class="mb-2">
+            <h2 class="text-lg font-bold text-[#0A1033]">
+                Resumen de asistencia
+            </h2>
 
-    <div class="bg-white p-2 rounded-lg shadow">
-        <h3 class="text-sm text-center font-semibold text-gray-700">Permisos</h3>
-        <p class="text-xl mt-1 text-center font-bold text-purple-600">
-            {{ $permisosHoy ?? 0 }}
-        </p>
-    </div>
+            <p class="mt-1 text-sm text-slate-500">
+                Indicadores generales del día.
+            </p>
+        </div>
 
-    <div class="bg-white p-2 rounded-lg shadow">
-        <h3 class="text-sm text-center font-semibold text-gray-700">Incapacidad</h3>
-        <p class="text-xl mt-1 text-center font-bold text-pink-600">
-            {{ $incapacidadHoy ?? 0 }}
-        </p>
-    </div>
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-7">
 
-    <div class="bg-white p-2 rounded-lg shadow">
-        <h3 class="text-sm text-center font-semibold text-gray-700">Libres</h3>
-        <p class="text-xl mt-1 text-center font-bold text-gray-600">
-            {{ $libresHoy ?? 0 }}
-        </p>
-    </div>
+            @foreach($estadisticas as $estadistica)
 
+            <div class="rounded-xl border border-slate-200 border-l-4 {{ $estadistica['borde'] }} bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+
+                <p class="text-xs font-semibold text-slate-500">
+                    {{ $estadistica['titulo'] }}
+                </p>
+
+                <div class="mt-1 flex items-center justify-between gap-2">
+
+                    <p class="text-2xl font-bold {{ $estadistica['color'] }}">
+                        {{ $estadistica['valor'] }}
+                    </p>
+
+                    <div class="flex h-9 w-9 items-center justify-center rounded-lg {{ $estadistica['fondo'] }}">
+
+                        <span class="text-lg font-bold {{ $estadistica['color'] }}">
+                            {{ $estadistica['valor'] }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+
+    </section>
+
+
+    {{-- FILTROS --}}
+    <section
+        x-data="{
+        buscar: @js(request('buscar', '')),
+        fecha_inicio: @js(request('fecha_inicio', '')),
+        fecha_fin: @js(request('fecha_fin', '')),
+        departamento: @js(request('departamento', '')),
+        hora_entrada: @js(request('hora_entrada', '')),
+        estado: @js(request('estado', '')),
+        hora_salida: @js(request('hora_salida', ''))}"
+        class="rounded-xl border border-slate-200 bg-white p-4 mb-2 shadow-sm">
+
+        {{-- ENCABEZADO --}}
+        <div class="mb-2 flex items-center gap-2.5">
+
+            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#2447FF]/10 text-[#2447FF]">
+
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="1.8"
+                        d="M3 4h18M6 8h12m-9 4h6m-4 4h2m-1 0v4" />
+                </svg>
+
+            </div>
+
+            <div>
+                <h3 class="text-sm font-bold text-[#0A1033]">
+                    Filtros de búsqueda
+                </h3>
+
+                <p class="text-[11px] text-slate-500">
+                    Filtra los registros de asistencia.
+                </p>
+            </div>
+
+        </div>
+
+        {{-- FORMULARIO --}}
+        <form
+            id="filtrosForm"
+            method="GET"
+            action="{{ route('admin.asistencias') }}"
+            class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
+
+            {{-- BUSCAR --}}
+            <div class="col-span-2 sm:col-span-2 xl:col-span-1">
+
+                <label class="mb-1 block text-[11px] font-semibold text-[#0A1033]">
+                    Empleado
+                </label>
+
+                <input
+                    type="text"
+                    name="buscar"
+                    x-model="buscar"
+                    placeholder="Nombre o apellido..."
+                    class="w-full rounded-lg border border-slate-200 bg-[#F8FAFF] px-3 py-2 text-xs text-[#030614] outline-none transition placeholder:text-slate-400 focus:border-[#2447FF] focus:ring-2 focus:ring-[#2447FF]/10">
+
+            </div>
+
+            {{-- FECHA INICIO --}}
+            <div>
+
+                <label class="mb-1 block text-[11px] font-semibold text-[#0A1033]">
+                    Fecha inicio
+                </label>
+
+                <input
+                    type="date"
+                    name="fecha_inicio"
+                    x-model="fecha_inicio"
+                    class="w-full min-w-0 rounded-lg border border-slate-200 bg-[#F8FAFF] px-2 py-2 text-xs outline-none focus:border-[#2447FF] focus:ring-2 focus:ring-[#2447FF]/10">
+
+            </div>
+
+            {{-- FECHA FIN --}}
+            <div>
+
+                <label class="mb-1 block text-[11px] font-semibold text-[#0A1033]">
+                    Fecha fin
+                </label>
+
+                <input
+                    type="date"
+                    name="fecha_fin"
+                    x-model="fecha_fin"
+                    class="w-full min-w-0 rounded-lg border border-slate-200 bg-[#F8FAFF] px-2 py-2 text-xs outline-none focus:border-[#2447FF] focus:ring-2 focus:ring-[#2447FF]/10">
+
+            </div>
+
+            {{-- DEPARTAMENTO --}}
+            <div>
+
+                <label class="mb-1 block text-[11px] font-semibold text-[#0A1033]">
+                    Departamento
+                </label>
+
+                <select
+                    name="departamento"
+                    x-model="departamento"
+                    class="w-full min-w-0 rounded-lg border border-slate-200 bg-[#F8FAFF] px-2 py-2 text-xs outline-none focus:border-[#2447FF] focus:ring-2 focus:ring-[#2447FF]/10">
+
+                    <option value="">Todos</option>
+
+                    @foreach($departamentos as $departamento)
+                    <option value="{{ $departamento->id }}">
+                        {{ $departamento->nombre }}
+                    </option>
+                    @endforeach
+
+                </select>
+
+            </div>
+
+            {{-- ESTADO --}}
+            <div>
+
+                <label class="mb-1 block text-[11px] font-semibold text-[#0A1033]">
+                    Estado
+                </label>
+
+                <select
+                    name="estado"
+                    x-model="estado"
+                    class="w-full min-w-0 rounded-lg border border-slate-200 bg-[#F8FAFF] px-2 py-2 text-xs outline-none focus:border-[#2447FF] focus:ring-2 focus:ring-[#2447FF]/10">
+
+                    <option value="">Todos</option>
+                    <option value="presente">Presente</option>
+                    <option value="retardo">Retardo</option>
+                    <option value="falta">Falta</option>
+                    <option value="vacaciones">Vacaciones</option>
+                    <option value="permiso">Permiso</option>
+                    <option value="incapacidad">Incapacidad</option>
+                    <option value="libre">Libre</option>
+                    <option value="festivo">Festivo</option>
+
+                </select>
+
+            </div>
+
+            {{-- HORA ENTRADA --}}
+            <div>
+
+                <label class="mb-1 block text-[11px] font-semibold text-[#0A1033]">
+                    Entrada
+                </label>
+
+                <select
+                    name="hora_entrada"
+                    x-model="hora_entrada"
+                    class="w-full min-w-0 rounded-lg border border-slate-200 bg-[#F8FAFF] px-2 py-2 text-xs outline-none focus:border-[#2447FF] focus:ring-2 focus:ring-[#2447FF]/10">
+
+                    <option value="">Todos</option>
+                    <option value="1">Con hora</option>
+                    <option value="0">Sin hora</option>
+
+                </select>
+
+            </div>
+
+            {{-- HORA SALIDA --}}
+            <div>
+
+                <label class="mb-1 block text-[11px] font-semibold text-[#0A1033]">
+                    Salida
+                </label>
+
+                <select
+                    name="hora_salida"
+                    x-model="hora_salida"
+                    class="w-full min-w-0 rounded-lg border border-slate-200 bg-[#F8FAFF] px-2 py-2 text-xs outline-none focus:border-[#2447FF] focus:ring-2 focus:ring-[#2447FF]/10">
+
+                    <option value="">Todos</option>
+                    <option value="1">Con hora</option>
+                    <option value="0">Sin hora</option>
+
+                </select>
+
+            </div>
+
+            {{-- BOTONES --}}
+            <div class="col-span-2 flex flex-wrap justify-end gap-2 sm:col-span-3 lg:col-span-4 xl:col-span-7 pt-1">
+
+                <button
+                    type="submit"
+                    class="inline-flex items-center justify-center gap-2 rounded-lg bg-[#2447FF] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#1D39D8]">
+
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M21 21l-4.5-4.5m2-5.5a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0z" />
+                    </svg>
+
+                    Filtrar
+
+                </button>
+
+                @if(request()->query())
+
+                <a
+                    href="{{ route('admin.asistencias') }}"
+                    class="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 transition hover:border-red-200 hover:bg-red-50 hover:text-[#D93025]">
+
+                    Limpiar filtros
+
+                </a>
+
+                @endif
+
+            </div>
+
+        </form>
+
+    </section>
 </div>
-{{-- Sección adicional --}}
 
-<div x-data="{
-    buscar: '{{ request('buscar', '') }}',
-    fecha_inicio: '{{ request('fecha_inicio', '') }}',
-    fecha_fin: '{{ request('fecha_fin', '') }}',
-    departamento: '{{ request('departamento', '') }}',
-    retardo: '{{ request('retardo', '') }}',
-    hora_entrada: '{{ request('hora_entrada', '') }}',
-    estado: '{{ request('estado', '') }}',
-    hora_salida: '{{ request('hora_salida', '') }}'}" class="pt-5">
-    <!-- Formulario de filtros -->
-    <form id="filtrosForm" method="GET" action="{{ route('admin.asistencias') }}"
-        class="flex flex-col md:flex-row flex-wrap md:items-end md:gap-4 space-y-2 md:space-y-0">
+{{-- TABLA Y EXPORTACIONES --}}
+<section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
 
-        <div class="w-full md:w-auto">
-            <label class="block mb-1 font-semibold text-sm">Buscar nombre o apellido</label>
-            <input type="text" name="buscar" x-model="buscar" placeholder="Buscar..."
-                class="border rounded px-3 py-1 w-full md:w-64 text-sm" />
+    {{-- ENCABEZADO TABLA --}}
+    <div class="flex flex-col gap-4 border-b border-slate-100 p-2 sm:flex-row sm:items-center sm:justify-between">
+
+        <div>
+            <h3 class="font-bold text-[#0A1033]">
+                Registro de asistencias
+            </h3>
+
+            <p class="mt-1 text-xs text-slate-500">
+                Consulta las entradas, salidas y estados de los empleados.
+            </p>
         </div>
 
-        <div class="w-full sm:w-1/2 md:w-auto">
-            <label class="block mb-1 font-semibold text-sm">Fecha inicio</label>
-            <input type="date" name="fecha_inicio" x-model="fecha_inicio"
-                class="border rounded px-3 py-1 w-full text-sm" />
-        </div>
-
-        <div class="w-full sm:w-1/2 md:w-auto">
-            <label class="block mb-1 font-semibold text-sm">Fecha fin</label>
-            <input type="date" name="fecha_fin" x-model="fecha_fin"
-                class="border rounded px-3 py-1 w-full text-sm" />
-        </div>
-
-        <!-- grupo de select filtrar -->
-        <div class=" flex flex-col md:flex-row gap-4">
-            <!-- 2 columnas SOLO en móvil -->
-            <div class="w-full flex flex-row gap-2">
-                <!-- Departamento -->
-                <div class="w-1/2 md:w-32">
-                    <label class="block mb-1 font-semibold text-sm">Departamento</label>
-                    <select name="departamento"
-                        x-model="departamento"
-                        class="border rounded px-3 py-1 w-full text-sm">
-
-                        <option value="">Todos</option>
-
-                        @foreach ($departamentos as $departamento)
-
-                        <option value="{{ $departamento->id }}"
-                            {{ request('departamento') == $departamento->id ? 'selected' : '' }}>
-
-                            {{ $departamento->nombre }}
-
-                        </option>
-
-                        @endforeach
-
-                    </select>
-                </div>
-
-                <div class="w-full md:w-32">
-                    <label class="block mb-1 font-semibold text-sm">Estado</label>
-
-                    <select name="estado" x-model="estado"
-                        class="border rounded px-3 py-1 w-full text-sm">
-
-                        <option value="">Todos</option>
-
-                        <option value="presente">Presente</option>
-                        <option value="retardo">Retardo</option>
-                        <option value="falta">Falta</option>
-                        <option value="vacaciones">Vacaciones</option>
-                        <option value="permiso">Permiso</option>
-                        <option value="incapacidad">Incapacidad</option>
-                        <option value="libre">Libre</option>
-                        <option value="festivo">Festivo</option>
-
-                    </select>
-                </div>
-
-            </div>
-
-            <!-- Hora entrada + salida (solo se agrupan en móviles) -->
-            <div class="w-full flex flex-row gap-2 md:w-auto">
-                <!-- Hora de entrada -->
-                <div class="w-1/2 md:w-32">
-                    <label class="block mb-1 font-semibold text-sm">Hora de entrada</label>
-                    <select name="hora_entrada" x-model="hora_entrada" class="border rounded px-3 py-1 w-full text-sm">
-                        <option value="">Todos</option>
-                        <option value="1">Con hora</option>
-                        <option value="0">Sin hora</option>
-                    </select>
-                </div>
-                <!-- Hora de salida -->
-                <div class="w-1/2 md:w-32">
-                    <label class="block mb-1 font-semibold text-sm">Hora de salida</label>
-                    <select name="hora_salida" x-model="hora_salida" class="border rounded px-3 py-1 w-full text-sm">
-                        <option value="">Todos</option>
-                        <option value="1">Con hora</option>
-                        <option value="0">Sin hora</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        <!-- Boton filtrar -->
-        <div class="w-full sm:w-1/2 md:w-auto">
-            <button type="submit" class="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700 w-full">
-                Filtrar
-            </button>
-        </div>
-
-        @php
-        $hayFiltros = collect(request()->only([
-        'buscar',
-        'fecha_inicio',
-        'fecha_fin',
-        'departamento',
-        'estado',
-        'hora_entrada',
-        'hora_salida'
-        ]))->filter()->isNotEmpty();
-        @endphp
+        {{-- EXPORTACIONES --}}
+        <div class="flex flex-col gap-2 sm:flex-row">
 
-        @if(request()->query())
-        <div class="w-full sm:w-1/2 md:w-auto">
-            <a href="{{ route('admin.asistencias') }}"
-                class="block text-center px-4 py-1 bg-red-600 hover:bg-red-400 text-white rounded w-full">
-                Borrar filtros
-            </a>
-        </div>
-        @endif
-    </form>
+            {{-- PDF --}}
+            <form method="GET"
+                action="{{ route('admin.asistencias.reporte.pdf') }}"
+                target="_blank">
 
-    <div class="flex justify-end gap-2 mb-1 pr-4 pt-5"">
-        <form method=" GET" action="{{ route('admin.asistencias.reporte.pdf') }}" target="_blank">
-        <!-- Envía los filtros actuales como inputs ocultos -->
-        <input type="hidden" name="buscar" value="{{ request('buscar') }}">
-        <input type="hidden" name="fecha_inicio" value="{{ request('fecha_inicio') }}">
-        <input type="hidden" name="fecha_fin" value="{{ request('fecha_fin') }}">
-        <input type="hidden" name="departamento" value="{{ request('departamento') }}">
-        <input type="hidden" name="retardo" value="{{ request('retardo') }}">
-        <input type="hidden" name="hora_entrada" value="{{ request('hora_entrada') }}">
-        <input type="hidden" name="hora_salida" value="{{ request('hora_salida') }}">
-        <input type="hidden" name="estado" value="{{ request('estado') }}">
+                @foreach(request()->only([
+                'buscar',
+                'fecha_inicio',
+                'fecha_fin',
+                'departamento',
+                'retardo',
+                'hora_entrada',
+                'hora_salida',
+                'estado'
+                ]) as $key => $value)
 
-        <button type="submit" class="bg-gray-600 text-white px-4 py-1 rounded hover:bg-blue-700">
-            Crear reporte
-        </button>
-        </form>
+                <input type="hidden" name="{{ $key }}" value="{{ $value }}">
 
-        <form method="GET" action="{{ route('admin.asistencias.reporte.excel') }}">
-            <!-- Envía los filtros actuales como inputs ocultos -->
-            <input type="hidden" name="buscar" value="{{ request('buscar') }}">
-            <input type="hidden" name="fecha_inicio" value="{{ request('fecha_inicio') }}">
-            <input type="hidden" name="fecha_fin" value="{{ request('fecha_fin') }}">
-            <input type="hidden" name="departamento" value="{{ request('departamento') }}">
-            <input type="hidden" name="retardo" value="{{ request('retardo') }}">
-            <input type="hidden" name="hora_entrada" value="{{ request('hora_entrada') }}">
-            <input type="hidden" name="hora_salida" value="{{ request('hora_salida') }}">
-            <input type="hidden" name="estado" value="{{ request('estado') }}">
+                @endforeach
 
-            <button type="submit"
-                class="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700">
-                Exportar Excel
-            </button>
-        </form>
-    </div>
+                <button
+                    type="submit"
+                    class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-[#0A1033] transition hover:border-[#2447FF] hover:bg-[#F1F5FF] sm:w-auto">
 
+                    <svg class="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor">
 
-    <!-- Tabla de asistencias -->
-    <div class="overflow-x-auto">
+                        <path stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.8"
+                            d="M12 3v12m0 0l-4-4m4 4l4-4M5 17v3h14v-3" />
 
-        <div class="max-h-[500px] overflow-y-auto border border-gray-300 rounded-lg">
+                    </svg>
 
-            <table class="min-w-full bg-white">
+                    Crear reporte PDF
 
-                <thead class="sticky top-0 bg-gray-700 text-white">
+                </button>
 
-                    <tr class="text-xs">
+            </form>
 
-                        <th class="p-2 text-center">N. Empleado</th>
+            {{-- EXCEL --}}
+            <form method="GET"
+                action="{{ route('admin.asistencias.reporte.excel') }}">
 
-                        <th class="p-2 text-center">Nombre</th>
+                @foreach(request()->only([
+                'buscar',
+                'fecha_inicio',
+                'fecha_fin',
+                'departamento',
+                'retardo',
+                'hora_entrada',
+                'hora_salida',
+                'estado'
+                ]) as $key => $value)
 
-                        <th class="p-2 text-center">Departamento</th>
+                <input type="hidden" name="{{ $key }}" value="{{ $value }}">
 
-                        @if($hayFiltros)
-                        <th class="p-2 text-center">Fecha</th>
-                        @endif
+                @endforeach
 
-                        <th class="p-2 text-center">Hora de entrada</th>
+                <button
+                    type="submit"
+                    class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#1E9E5A] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#167A46] sm:w-auto">
 
-                        <th class="p-2 text-center">Hora de salida</th>
+                    <svg class="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor">
 
-                        <th class="p-2 text-center">Estado</th>
+                        <path stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.8"
+                            d="M8 3v4m8-4v4M4 11h16M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1zm4 10l2 2 4-4" />
 
-                    </tr>
+                    </svg>
 
-                </thead>
+                    Exportar Excel
 
-                <tbody class="text-xs">
+                </button>
 
-                    @forelse ($asistencias as $asistencia)
-
-                    @php
-
-                    $empleado = $asistencia->empleado;
-
-                    // Obtener checadas del día
-                    $checadas = $asistencia->checadas->filter(function ($checada) use ($asistencia) {
-
-                    return \Carbon\Carbon::parse($checada->fecha_hora)->toDateString()
-                    === \Carbon\Carbon::parse($asistencia->fecha)->toDateString();
-
-                    });
-
-                    $entrada = $checadas
-                    ->where('tipo', 'entrada')
-                    ->first();
-
-                    $salida = $checadas
-                    ->where('tipo', 'salida')
-                    ->last();
-
-                    @endphp
-
-                    <tr class="border border-gray-300 hover:bg-gray-50">
-
-                        <!-- NÚMERO EMPLEADO -->
-                        <td class="p-3 text-center">
-
-                            {{ $empleado->n_empleado ?? 'N/A' }}
-
-                        </td>
-
-                        <!-- NOMBRE -->
-                        <td class="p-3 text-center">
-
-                            {{ $empleado
-                                ? $empleado->nombres . ' ' .
-                                  $empleado->apellido_paterno . ' ' .
-                                  $empleado->apellido_materno
-                                : 'N/A'
-                            }}
-
-                        </td>
-
-                        <!-- DEPARTAMENTO -->
-                        <td class="p-3 text-center">
-
-                            {{ $empleado->departamento->nombre ?? 'N/A' }}
-
-                        </td>
-
-                        <!-- FECHA -->
-                        @if($hayFiltros)
-
-                        <td class="p-3 text-center">
-
-                            {{ \Carbon\Carbon::parse($asistencia->fecha)->format('d/m/Y') }}
-
-                        </td>
-
-                        @endif
-
-                        <!-- ENTRADA -->
-                        <td class="p-3 text-center {{ !$entrada && $asistencia->estado !== 'libre' ? 'text-red-600 font-semibold' : '' }}">
-
-                            {{ $asistencia->estado === 'libre' && !$entrada && in_array(\Carbon\Carbon::parse($asistencia->fecha)->dayOfWeekIso, [6, 7]) ? 'Fin de semana'  : ($asistencia->estado === 'libre' && !$entrada ? 'Libre' : ($entrada ? \Carbon\Carbon::parse($entrada->fecha_hora)->format('H:i') : 'Sin registro')) }}
-
-                        </td>
-
-                        <!-- SALIDA -->
-                        <td class="p-3 text-center {{ !$salida && $asistencia->estado !== 'libre' ? 'text-red-600 font-semibold' : '' }}">
-
-                            {{ $asistencia->estado === 'libre' && !$salida && in_array(\Carbon\Carbon::parse($asistencia->fecha)->dayOfWeekIso, [6, 7]) ? 'Fin de semana' : ($asistencia->estado === 'libre' && !$salida ? 'Libre' : ($salida ? \Carbon\Carbon::parse($salida->fecha_hora)->format('H:i') : 'Sin registro')) }}
-                        </td>
-
-
-                        <!-- ESTADO -->
-                        <td class="p-3 text-center font-semibold
-
-                            @switch($asistencia->estado)
-
-                                @case('presente')
-                                    text-green-600
-                                @break
-
-                                @case('retardo')
-                                    text-yellow-600
-                                @break
-
-                                @case('falta')
-                                    text-red-600
-                                @break
-
-                                @case('vacaciones')
-                                    text-blue-600
-                                @break
-
-                                @case('permiso')
-                                    text-purple-600
-                                @break
-
-                                @case('incapacidad')
-                                    text-red-700
-                                @break
-
-                                @case('libre')
-                                    text-cyan-600
-                                @break
-
-                                @case('festivo')
-                                    text-gray-600
-                                @break
-
-                                @case('fin_semana')
-                                text-orange-400
-                                @break
-
-                                @default
-                                    text-gray-500
-
-                            @endswitch
-                        ">
-
-                            @switch($asistencia->estado)
-
-                            @case('presente')
-                            Presente
-                            @break
-
-                            @case('retardo')
-                            Retardo
-                            @break
-
-                            @case('falta')
-                            Falta
-                            @break
-
-                            @case('vacaciones')
-                            Vacaciones
-                            @break
-
-                            @case('permiso')
-                            Permiso
-                            @break
-
-                            @case('incapacidad')
-                            Incapacidad
-                            @break
-
-                            @case('festivo')
-                            Festivo
-                            @break
-
-                            @case('libre')
-                            Libre
-                            @break
-
-                            @case('fin_semana')
-                            Fin de semana
-                            @break
-
-                            @default
-                            Sin registro
-
-                            @endswitch
-
-                        </td>
-
-                    </tr>
-
-                    @empty
-
-                    <tr>
-
-                        <td
-                            colspan="{{ $hayFiltros ? 7 : 6 }}"
-                            class="text-center p-4">
-                            No se encontraron registros.
-                        </td>
-
-                    </tr>
-
-                    @endforelse
-
-                </tbody>
-
-            </table>
+            </form>
 
         </div>
 
     </div>
 
-    <!-- Paginación -->
-    <div class="mt-4">
+    {{-- TABLA --}}
+    <div class="max-h-[600px] overflow-auto">
+
+        <table class="min-w-[850px] w-full border-collapse text-sm">
+
+            {{-- CABECERA --}}
+            <thead class="sticky top-0 z-10 bg-[#0A1033] text-white">
+
+                <tr class="text-xs uppercase tracking-wide">
+
+                    <th class="whitespace-nowrap px-4 py-4 text-center font-semibold">
+                        N. Empleado
+                    </th>
+
+                    <th class="whitespace-nowrap px-4 py-4 text-left font-semibold">
+                        Nombre
+                    </th>
+
+                    <th class="whitespace-nowrap px-4 py-4 text-center font-semibold">
+                        Departamento
+                    </th>
+
+                    @if($hayFiltros)
+
+                    <th class="whitespace-nowrap px-4 py-4 text-center font-semibold">
+                        Fecha
+                    </th>
+
+                    @endif
+
+                    <th class="whitespace-nowrap px-4 py-4 text-center font-semibold">
+                        Hora de entrada
+                    </th>
+
+                    <th class="whitespace-nowrap px-4 py-4 text-center font-semibold">
+                        Hora de salida
+                    </th>
+
+                    <th class="whitespace-nowrap px-4 py-4 text-center font-semibold">
+                        Estado
+                    </th>
+
+                </tr>
+
+            </thead>
+
+            {{-- CUERPO --}}
+            <tbody class="divide-y divide-slate-100">
+
+                @forelse($asistencias as $asistencia)
+
+                @php
+
+                $empleado = $asistencia->empleado;
+
+                // Obtener checadas correspondientes al día
+                $checadas = $asistencia->checadas->filter(function ($checada) use ($asistencia) {
+
+                return \Carbon\Carbon::parse($checada->fecha_hora)->toDateString()
+                === \Carbon\Carbon::parse($asistencia->fecha)->toDateString();
+
+                });
+
+                // Entrada y salida
+                $entrada = $checadas
+                ->where('tipo', 'entrada')
+                ->first();
+
+                $salida = $checadas
+                ->where('tipo', 'salida')
+                ->last();
+
+                // Fecha de asistencia
+                $fecha = \Carbon\Carbon::parse($asistencia->fecha);
+
+                // Identificar fin de semana
+                $esFinSemana = in_array($fecha->dayOfWeekIso, [6, 7]);
+
+                // Texto de entrada
+                $entradaTexto = $asistencia->estado === 'libre' && !$entrada
+                ? ($esFinSemana ? 'Fin de semana' : 'Libre')
+                : ($entrada
+                ? \Carbon\Carbon::parse($entrada->fecha_hora)->format('H:i')
+                : 'Sin registro');
+
+                // Texto de salida
+                $salidaTexto = $asistencia->estado === 'libre' && !$salida
+                ? ($esFinSemana ? 'Fin de semana' : 'Libre')
+                : ($salida
+                ? \Carbon\Carbon::parse($salida->fecha_hora)->format('H:i')
+                : 'Sin registro');
+
+                // Estado visual
+                $estado = $estados[$asistencia->estado] ?? [
+                'texto' => 'Sin registro',
+                'clase' => 'bg-slate-100 text-slate-600'
+                ];
+
+                @endphp
+
+                <tr class="transition hover:bg-[#F1F5FF]/70">
+
+                    {{-- NÚMERO EMPLEADO --}}
+                    <td class="whitespace-nowrap px-4 py-4 text-center font-semibold text-[#131F6B]">
+
+                        {{ $empleado->n_empleado ?? 'N/A' }}
+
+                    </td>
+
+                    {{-- NOMBRE --}}
+                    <td class="px-4 py-4 font-semibold text-[#0A1033]">
+
+                        {{ $empleado
+                                    ? $empleado->nombres . ' ' .
+                                      $empleado->apellido_paterno . ' ' .
+                                      $empleado->apellido_materno
+                                    : 'N/A'
+                                }}
+
+                    </td>
+
+                    {{-- DEPARTAMENTO --}}
+                    <td class="px-4 py-4 text-center text-slate-600">
+
+                        {{ $empleado->departamento->nombre ?? 'N/A' }}
+
+                    </td>
+
+                    {{-- FECHA --}}
+                    @if($hayFiltros)
+
+                    <td class="whitespace-nowrap px-4 py-4 text-center text-slate-600">
+
+                        {{ $fecha->format('d/m/Y') }}
+
+                    </td>
+
+                    @endif
+
+                    {{-- ENTRADA --}}
+                    <td class="whitespace-nowrap px-4 py-4 text-center">
+
+                        <span class="{{ $entrada ? 'font-semibold text-[#0A1033]' : 'text-slate-400' }}">
+
+                            {{ $entradaTexto }}
+
+                        </span>
+
+                    </td>
+
+                    {{-- SALIDA --}}
+                    <td class="whitespace-nowrap px-4 py-4 text-center">
+
+                        <span class="{{ $salida ? 'font-semibold text-[#0A1033]' : 'text-slate-400' }}">
+
+                            {{ $salidaTexto }}
+
+                        </span>
+
+                    </td>
+
+                    {{-- ESTADO --}}
+                    <td class="whitespace-nowrap px-4 py-4 text-center">
+
+                        <span class="inline-flex items-center rounded-lg px-3 py-1.5 text-xs font-bold {{ $estado['clase'] }}">
+
+                            {{ $estado['texto'] }}
+
+                        </span>
+
+                    </td>
+
+                </tr>
+
+                @empty
+
+                {{-- SIN REGISTROS --}}
+                <tr>
+
+                    <td
+                        colspan="{{ $hayFiltros ? 7 : 6 }}"
+                        class="px-4 py-16 text-center">
+
+                        <div class="flex flex-col items-center gap-3">
+
+                            <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F1F5FF] text-[#5C8DFF]">
+
+                                <svg class="h-7 w-7"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor">
+
+                                    <path stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="1.6"
+                                        d="M8 7h8m-8 4h8m-8 4h4M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z" />
+
+                                </svg>
+
+                            </div>
+
+                            <div>
+
+                                <p class="font-semibold text-[#0A1033]">
+                                    No se encontraron registros
+                                </p>
+
+                                <p class="mt-1 text-xs text-slate-500">
+                                    No hay asistencias que coincidan con la búsqueda.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                @endforelse
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {{-- PAGINACIÓN --}}
+    <div class="border-t border-slate-100 p-4">
+
         {{ $asistencias->links() }}
+
     </div>
+
+</section>
+
 </div>
 
 @endsection
-
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // Si hay query string y queremos ocultarla tras carga:
-        if (window.location.search.length) {
-            // opcional: conservas historial (replaceState) sin query
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }
-    });
-</script>
